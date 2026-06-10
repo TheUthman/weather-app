@@ -1,0 +1,22 @@
+.app-layout {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  background-color: var(--background-color-light); /* Fallback */
+  background-color: var(--background-color);
+}
+
+.app-content {
+  flex: 1;
+  margin-left: 80px; /* Offset for the sidebar width */
+  overflow-y: auto;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.page-container {
+  width: 100%;
+  max-width: 1200px;
+}

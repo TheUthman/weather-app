@@ -1,0 +1,85 @@
+.settings-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  margin-top: 2rem;
+}
+
+.settings-group {
+  background-color: var(--card-bg);
+  padding: 2rem;
+  border-radius: 1.5rem;
+  text-align: left;
+}
+
+.settings-group h2 {
+  font-size: 1.25rem;
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.setting-row:last-child {
+  border-bottom: none;
+}
+
+.setting-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.setting-info label {
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.setting-description {
+  font-size: 0.9rem;
+  color: var(--secondary-text);
+  max-width: 320px;
+}
+
+.setting-control select,
+.setting-control .city-input {
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid var(--border-color);
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: inherit;
+  font-size: 0.95rem;
+  outline: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  min-width: 160px;
+}
+
+.setting-control select:focus,
+.setting-control .city-input:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+.setting-control .city-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.settings-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
