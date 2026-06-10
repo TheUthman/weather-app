@@ -1,6 +1,6 @@
 import { FiSearch, FiSettings } from "react-icons/fi";
 
-const Header = ({ searchQuery, setSearchQuery, unit, setUnit, onOpenSettings }) => {
+const Header = ({ searchQuery, setSearchQuery, unit, setUnit, onOpenSettings, onSearch }) => {
   return (
     <header className="weather-header">
       <div className="search-container">
@@ -10,6 +10,11 @@ const Header = ({ searchQuery, setSearchQuery, unit, setUnit, onOpenSettings }) 
           placeholder="Search location..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && onSearch) {
+              onSearch(searchQuery);
+            }
+          }}
           className="search-input"
         />
       </div>

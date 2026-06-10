@@ -1,32 +1,46 @@
+.settings-page {
+  animation: fadeSlideUp 0.4s var(--ease) both;
+}
+
 .settings-container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 24px;
   width: 100%;
-  margin-top: 2rem;
+  margin-top: 24px;
 }
 
 .settings-group {
-  background-color: var(--card-bg);
-  padding: 2rem;
-  border-radius: 1.5rem;
+  background: var(--card-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow-md);
+  padding: 28px;
+  border-radius: 24px;
   text-align: left;
+  transition: all 0.3s var(--ease);
+}
+
+.settings-group:hover {
+  box-shadow: var(--shadow-lg);
 }
 
 .settings-group h2 {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   margin-top: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 20px;
   color: var(--primary-color);
   font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .setting-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid var(--border-color);
+  padding: 16px 0;
+  border-bottom: 1px solid var(--card-border);
 }
 
 .setting-row:last-child {
@@ -36,50 +50,74 @@
 .setting-info {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 4px;
 }
 
 .setting-info label {
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
+  color: var(--text-color);
   cursor: pointer;
 }
 
 .setting-description {
-  font-size: 0.9rem;
-  color: var(--secondary-text);
-  max-width: 320px;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  max-width: 380px;
+  line-height: 1.5;
 }
 
 .setting-control select,
 .setting-control .city-input {
-  padding: 0.6rem 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid var(--border-color);
-  background-color: var(--background-color);
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  background: var(--input-bg);
+  backdrop-filter: blur(12px);
   color: var(--text-color);
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   outline: none;
-  transition:
-    border-color 0.2s,
-    box-shadow 0.2s;
-  min-width: 160px;
+  transition: all 0.25s var(--ease);
+  min-width: 170px;
+  cursor: pointer;
 }
 
 .setting-control select:focus,
 .setting-control .city-input:focus {
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  background: var(--input-bg-focus);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .setting-control .city-input {
   width: 100%;
   box-sizing: border-box;
+  cursor: text;
 }
 
 .settings-header h1 {
   font-size: 2rem;
   font-weight: 700;
   margin: 0;
+  letter-spacing: -0.5px;
+}
+
+@media (max-width: 576px) {
+  .setting-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .setting-control select,
+  .setting-control .city-input {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .settings-group {
+    padding: 20px;
+    border-radius: 20px;
+  }
 }

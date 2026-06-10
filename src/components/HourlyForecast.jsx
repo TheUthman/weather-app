@@ -12,7 +12,7 @@ const HourlyForecast = ({ data, unit }) => {
     <section className="hourly-forecast">
       <h2>Hourly Forecast</h2>
       <div className="hourly-scroll">
-        {data.map((hour, index) => (
+        {data && data.map((hour, index) => (
           <div key={index} className="hourly-card">
             <span className="hourly-time">{hour.time}</span>
             <WeatherIcon iconName={hour.icon} size={32} />

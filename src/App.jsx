@@ -52,7 +52,7 @@ const App = () => {
       <Sidebar activePage={activePage} setActivePage={setActivePage} />
       <main className="app-content">
         {activePage === "weather" ? (
-          <Weather preferences={preferences} />
+          <Weather preferences={preferences} setActivePage={setActivePage} />
         ) : (
           <Settings preferences={preferences} setPreferences={setPreferences} />
         )}

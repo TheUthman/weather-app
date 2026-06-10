@@ -12,7 +12,7 @@ const DailyForecast = ({ data, unit }) => {
     <section className="daily-forecast">
       <h2>7-Day Forecast</h2>
       <div className="daily-list">
-        {data.map((day, index) => (
+        {data && data.map((day, index) => (
           <div key={index} className="daily-row">
             <span className="daily-day">{day.day}</span>
             <div className="daily-condition">

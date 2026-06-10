@@ -1,5 +1,3 @@
-// src/components/WeatherCard.jsx
-import React from "react";
 import { getWeatherIcon } from "../weatherData";
 
 const WeatherCard = ({ time, temperature, icon, unit }) => {

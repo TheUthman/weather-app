@@ -1,4 +1,4 @@
-const WEATHER_API_KEY = import.meta.env.WEATHER_API_KEY;
+const WEATHER_API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
 
 export const fetchGeocodingData = async (location) => {
   try {
