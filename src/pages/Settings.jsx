@@ -1,9 +1,12 @@
+/* eslint-disable no-unused-vars */
 // src/pages/Settings.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Toggle from "../components/Toggle";
 import "./Settings.css";
 
 const Settings = ({ preferences, setPreferences }) => {
+  const [localCity, setLocalCity] = useState(preferences.defaultCity);
+
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     updatePreference(name, type === "checkbox" ? checked : value);
@@ -119,10 +122,9 @@ const Settings = ({ preferences, setPreferences }) => {
               <div className="setting-control">
                 <input
                   type="text"
-                  id="defaultCity"
-                  name="defaultCity"
-                  value={preferences.defaultCity}
-                  onChange={handleChange}
+                  value={localCity}
+                  onChange={(e) => setLocalCity(e.target.value)}
+                  onBlur={() => updatePreference("defaultCity", localCity)}
                   placeholder="e.g., New York"
                   className="city-input"
                 />

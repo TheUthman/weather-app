@@ -1,6 +1,12 @@
 import { FiMapPin } from "react-icons/fi";
 import { IoWater } from "react-icons/io5";
-import { WiStrongWind, WiHumidity, WiBarometer, WiSunrise, WiSunset } from "react-icons/wi";
+import {
+  WiStrongWind,
+  WiHumidity,
+  WiBarometer,
+  WiSunrise,
+  WiSunset,
+} from "react-icons/wi";
 import WeatherIcon from "./WeatherIcon";
 
 const CurrentWeather = ({ data, unit }) => {
@@ -21,13 +27,17 @@ const CurrentWeather = ({ data, unit }) => {
         <div className="current-temp-icon">
           <WeatherIcon iconName={data.current.icon} size={120} />
           <div className="temp-display">
-            <span className="current-temp">{convertTemp(data.current.temp)}</span>
+            <span className="current-temp">
+              {convertTemp(data.current.temp)}
+            </span>
             <span className="temp-unit">°{unit}</span>
           </div>
         </div>
         <div className="current-details">
           <p className="condition">{data.current.condition}</p>
-          <p className="feels-like">Feels like {convertTemp(data.current.feelsLike)}°</p>
+          <p className="feels-like">
+            Feels like {convertTemp(data.current.feelsLike)}°
+          </p>
         </div>
       </div>
 
