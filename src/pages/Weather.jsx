@@ -166,52 +166,27 @@ const Weather = ({ preferences, setActivePage }) => {
       }
     };
 
-    const loadInitialLocation = async () => {
-      if (preferences.location === "auto") {
-        if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(
-            async (position) => {
-              if (!active) return;
-              const { latitude, longitude } = position.coords;
-              setCoords({ lat: latitude, lng: longitude });
-              try {
-                const cityName = await fetchReverseGeocodingData(
-                  latitude,
-                  longitude,
-                );
-                if (active) {
-                  setActiveLocationName(cityName || "Detected Location");
-                }
-              } catch (err) {
-                console.error(
-                  "Reverse geocoding failed for coordinates:",
-                  latitude,
-                  longitude,
-                  err,
-                );
-                if (active) {
-                  // Fallback to coordinates if the city name cannot be resolved
-                  setActiveLocationName(
-                    `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`,
-                  );
-                }
-              }
-            },
-            async (error) => {
-              console.warn(
-                "Geolocation failed or denied, falling back to manual defaultCity:",
-                error,
-              );
-              if (!active) return;
-              await loadDefaultCity();
-            },
-          );
+    const loadLocationByIP = async () => {
+      try {
+        const response = await fetch("https://ipapi.co/json/");
+        const data = await response.json();
+        if (!active) return;
+        if (data.latitude && data.longitude) {
+          setCoords({ lat: data.latitude, lng: data.longitude });
+          setActiveLocationName(data.city || "Detected Location");
+          console.log(`IP-based location detected: ${data.city}`);
         } else {
-          console.warn(
-            "Geolocation not supported by browser, falling back to manual defaultCity.",
-          );
           await loadDefaultCity();
         }
+      } catch (err) {
+        console.error("IP Geolocation failed:", err);
+        await loadDefaultCity();
+      }
+    };
+
+    const loadInitialLocation = async () => {
+      if (preferences.location === "auto") {
+        await loadLocationByIP();
       } else {
         await loadDefaultCity();
       }

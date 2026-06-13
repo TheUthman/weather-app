@@ -1,16 +1,40 @@
-# React + Vite
+# Weather App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, responsive weather application built with React and Vite. This application allows users to check real-time weather conditions and forecasts for locations worldwide.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Current Weather:** View temperature, humidity, wind speed, and conditions.
+- **City Search:** Search for weather data by city name.
+- **Forecast:** View multi-day or hourly forecasts.
+- **Responsive UI:** Optimized for both mobile and desktop viewing.
 
-## React Compiler
+## Getting Started
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Prerequisites
 
-## Expanding the ESLint configuration
+- Node.js (v18.0.0 or higher)
+- npm or yarn
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone <your-repo-url>
+   ```
+2. Navigate to the project directory:
+   ```bash
+   cd weather-app
+   ```
+3. Install dependencies:
+   ```bash
+   npm install
+   ```
+4. Create a `.env` file in the root directory and add your weather API key:
+   ```env
+   VITE_WEATHER_API_KEY=your_api_key_here
+   ```
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
