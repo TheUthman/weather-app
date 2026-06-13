@@ -1,12 +1,30 @@
 import WeatherIcon from "./WeatherIcon";
 
-const DailyForecast = ({ data, unit }) => {
+const DailyForecast = ({ data, unit, loading }) => {
   const convertTemp = (temp) => {
     if (unit === "C") {
       return Math.round(((temp - 32) * 5) / 9);
     }
     return temp;
   };
+
+  if (loading || !data || data.length === 0) {
+    return (
+      <section className="daily-forecast skeleton-card">
+        <h2>7-Day Forecast</h2>
+        <div className="daily-list">
+          {[...Array(7)].map((_, index) => (
+            <div key={index} className="daily-row-skeleton">
+              <div className="skeleton-line skeleton-day"></div>
+              <div className="skeleton-line skeleton-icon-text"></div>
+              <div className="skeleton-line skeleton-precip-lbl"></div>
+              <div className="skeleton-line skeleton-temp-range"></div>
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="daily-forecast">

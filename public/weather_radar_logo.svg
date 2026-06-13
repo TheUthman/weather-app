@@ -1,0 +1,24 @@
+<svg width="512" height="512" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Geometric Monogram W with Wave integration -->
+  <path
+    d="M20 35L35 75L50 45L65 75C75 75 85 45 90 45"
+    stroke="url(#logoGradient)"
+    stroke-width="7"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <!-- Concentric Radar Sweep Line -->
+  <path
+    d="M85 55A35 35 0 0 0 15 55"
+    stroke="url(#logoGradient)"
+    stroke-width="3"
+    stroke-linecap="round"
+    opacity="0.5"
+  />
+</svg>

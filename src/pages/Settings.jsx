@@ -2,10 +2,27 @@
 // src/pages/Settings.jsx
 import React, { useState, useEffect } from "react";
 import Toggle from "../components/Toggle";
+import CustomSelect from "../components/CustomSelect";
 import "./Settings.css";
 
 const Settings = ({ preferences, setPreferences }) => {
   const [localCity, setLocalCity] = useState(preferences.defaultCity);
+
+  const unitOptions = [
+    { value: "imperial", label: "Fahrenheit (°F)" },
+    { value: "metric", label: "Celsius (°C)" },
+  ];
+
+  const themeOptions = [
+    { value: "system", label: "System Default" },
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+  ];
+
+  const locationOptions = [
+    { value: "auto", label: "Auto-detect" },
+    { value: "manual", label: "Manual" },
+  ];
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -36,15 +53,12 @@ const Settings = ({ preferences, setPreferences }) => {
               </span>
             </div>
             <div className="setting-control">
-              <select
-                id="units"
+              <CustomSelect
                 name="units"
                 value={preferences.units}
                 onChange={handleChange}
-              >
-                <option value="imperial">Fahrenheit (°F)</option>
-                <option value="metric">Celsius (°C)</option>
-              </select>
+                options={unitOptions}
+              />
             </div>
           </div>
         </section>
@@ -59,16 +73,12 @@ const Settings = ({ preferences, setPreferences }) => {
               </span>
             </div>
             <div className="setting-control">
-              <select
-                id="theme"
+              <CustomSelect
                 name="theme"
                 value={preferences.theme}
                 onChange={handleChange}
-              >
-                <option value="system">System Default</option>
-                <option value="light">Light</option>
-                <option value="dark">Dark</option>
-              </select>
+                options={themeOptions}
+              />
             </div>
           </div>
         </section>
@@ -103,15 +113,12 @@ const Settings = ({ preferences, setPreferences }) => {
               </span>
             </div>
             <div className="setting-control">
-              <select
-                id="location"
+              <CustomSelect
                 name="location"
                 value={preferences.location}
                 onChange={handleChange}
-              >
-                <option value="auto">Auto-detect</option>
-                <option value="manual">Manual</option>
-              </select>
+                options={locationOptions}
+              />
             </div>
           </div>
           {preferences.location === "manual" && (
@@ -132,6 +139,13 @@ const Settings = ({ preferences, setPreferences }) => {
             </div>
           )}
         </section>
+        
+        <div className="about-section">
+          <img src="/weather_radar_logo.png" alt="Weather Radar Logo" className="about-logo" />
+          <h3 className="about-title">Weather Radar</h3>
+          <p className="about-version">Version 1.0.0</p>
+          <p className="about-copyright">© 2026 Weather Radar Inc.</p>
+        </div>
       </div>
     </div>
   );

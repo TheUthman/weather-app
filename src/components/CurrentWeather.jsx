@@ -9,13 +9,62 @@ import {
 } from "react-icons/wi";
 import WeatherIcon from "./WeatherIcon";
 
-const CurrentWeather = ({ data, unit }) => {
+const CurrentWeather = ({ data, unit, loading }) => {
   const convertTemp = (temp) => {
     if (unit === "C") {
       return Math.round(((temp - 32) * 5) / 9);
     }
     return temp;
   };
+
+  if (loading || !data || !data.current) {
+    return (
+      <section className="current-weather skeleton-card">
+        <div className="location">
+          <FiMapPin size={18} style={{ color: "rgba(255, 255, 255, 0.2)" }} />
+          <div className="skeleton-line skeleton-title"></div>
+        </div>
+        <div className="current-main">
+          <div className="current-temp-icon">
+            <div className="skeleton-circle"></div>
+            <div className="temp-display">
+              <div className="skeleton-line skeleton-temp"></div>
+            </div>
+          </div>
+          <div className="current-details">
+            <div className="skeleton-line skeleton-condition"></div>
+            <div className="skeleton-line skeleton-feels"></div>
+          </div>
+        </div>
+
+        <div className="weather-stats">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="stat-card">
+              <div className="skeleton-circle-small" style={{ marginBottom: "8px" }}></div>
+              <div className="skeleton-line skeleton-stat-val"></div>
+            </div>
+          ))}
+        </div>
+
+        <div className="sun-times">
+          <div className="sun-item" style={{ width: "40%" }}>
+            <div className="skeleton-circle-small"></div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div className="skeleton-line skeleton-sun-val"></div>
+              <div className="skeleton-line skeleton-sun-lbl"></div>
+            </div>
+          </div>
+          <div className="sun-item" style={{ width: "40%" }}>
+            <div className="skeleton-circle-small"></div>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div className="skeleton-line skeleton-sun-val"></div>
+              <div className="skeleton-line skeleton-sun-lbl"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="current-weather">

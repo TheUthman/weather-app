@@ -6,7 +6,10 @@ import CurrentWeather from "../components/CurrentWeather";
 import HourlyForecast from "../components/HourlyForecast";
 import DailyForecast from "../components/DailyForecast";
 import { useWeather } from "../hooks/useWeather";
-import { fetchGeocodingData } from "../services/geocodingService";
+import {
+  fetchGeocodingData,
+  fetchReverseGeocodingData,
+} from "../services/geocodingService";
 
 // Helper parser to extract temperature values and convert Celsius to Fahrenheit
 const parseTemp = (tempObj) => {
@@ -108,8 +111,31 @@ const formatDayName = (isoString) => {
 
 const getIcon = (uri) => {
   if (!uri) return "sunny";
-  const parts = uri.split("/");
-  return parts[parts.length - 1] || "sunny";
+  // Extract the filename from the URI (e.g., ".../partly_cloudy.svg")
+  const filename = uri.split("/").pop() || "sunny";
+  // Remove extension and normalize underscores to hyphens
+  const name = filename.split(".")[0].replace(/_/g, "-").toLowerCase();
+
+  // Map the normalized name to keys supported by the WeatherIcon component
+  if (name.includes("thunderstorm") || name.includes("storm"))
+    return "thunderstorm";
+  if (name.includes("snow") || name.includes("blizzard")) return "snow";
+  if (
+    name.includes("rain") ||
+    name.includes("showers") ||
+    name.includes("drizzle")
+  )
+    return "rain";
+  if (name.includes("cloudy")) {
+    if (name.includes("partly") || name.includes("mostly")) {
+      return name.includes("night") ? "night-cloudy" : "partly-cloudy";
+    }
+    return "cloudy";
+  }
+  if (name.includes("clear") || name.includes("sunny")) {
+    return name.includes("night") ? "night-clear" : "sunny";
+  }
+  return name;
 };
 
 const Weather = ({ preferences, setActivePage }) => {
@@ -144,11 +170,32 @@ const Weather = ({ preferences, setActivePage }) => {
       if (preferences.location === "auto") {
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
-            (position) => {
+            async (position) => {
               if (!active) return;
               const { latitude, longitude } = position.coords;
               setCoords({ lat: latitude, lng: longitude });
-              setActiveLocationName("Detected Location");
+              try {
+                const cityName = await fetchReverseGeocodingData(
+                  latitude,
+                  longitude,
+                );
+                if (active) {
+                  setActiveLocationName(cityName || "Detected Location");
+                }
+              } catch (err) {
+                console.error(
+                  "Reverse geocoding failed for coordinates:",
+                  latitude,
+                  longitude,
+                  err,
+                );
+                if (active) {
+                  // Fallback to coordinates if the city name cannot be resolved
+                  setActiveLocationName(
+                    `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`,
+                  );
+                }
+              }
             },
             async (error) => {
               console.warn(
@@ -177,11 +224,24 @@ const Weather = ({ preferences, setActivePage }) => {
     };
   }, [preferences.location, preferences.defaultCity]);
 
+  // Update browser document title when active location changes
+  useEffect(() => {
+    if (activeLocationName) {
+      document.title = `${activeLocationName} - Weather Radar`;
+    } else {
+      document.title = "Weather Radar";
+    }
+  }, [activeLocationName]);
+
   // Fetch weather data via custom hook
-  const { weather, hourly, daily, loading } = useWeather(
-    coords.lat,
-    coords.lng,
-  );
+  const {
+    weather,
+    hourly,
+    daily,
+    loadingCurrent,
+    loadingHourly,
+    loadingDaily,
+  } = useWeather(coords.lat, coords.lng);
 
   // Search input query submit handler
   const handleSearch = async (query) => {
@@ -203,16 +263,13 @@ const Weather = ({ preferences, setActivePage }) => {
 
   // Mapped weather data memoized to prevent lag during scrolling and unrelated re-renders
   const weatherData = useMemo(() => {
-    if (!weather) return null;
-
     const conditionText =
-      weather.weatherCondition?.description?.text ||
-      weather.weatherCondition?.text ||
+      weather?.weatherCondition?.description?.text ||
+      weather?.weatherCondition?.text ||
       "Clear";
-    const iconName = getIcon(weather.weatherCondition?.iconBaseUri);
+    const iconName = getIcon(weather?.weatherCondition?.iconBaseUri);
 
     const firstDay = daily?.[0];
-    // Updated to use sunEvents from the first day's forecast
     const sunriseStr = firstDay?.sunEvents?.sunriseTime
       ? formatTimeStr(firstDay.sunEvents.sunriseTime)
       : "06:00 AM";
@@ -222,43 +279,50 @@ const Weather = ({ preferences, setActivePage }) => {
 
     return {
       location: activeLocationName,
-      current: {
-        temp: parseTemp(weather.temperature),
-        condition: conditionText,
-        icon: iconName,
-        feelsLike: parseTemp(weather.feelsLikeTemperature),
-        humidity:
-          weather.relativeHumidity !== undefined ? weather.relativeHumidity : 0,
-        windSpeed: getWindSpeed(weather.wind),
-        pressure: getPressure(weather.airPressure),
-        uvIndex: weather.uvIndex !== undefined ? weather.uvIndex : 0,
-        sunrise: sunriseStr,
-        sunset: sunsetStr,
-      },
+      current: weather
+        ? {
+            temp: parseTemp(weather.temperature),
+            condition: conditionText,
+            icon: iconName,
+            feelsLike: parseTemp(weather.feelsLikeTemperature),
+            humidity:
+              weather.relativeHumidity !== undefined
+                ? weather.relativeHumidity
+                : 0,
+            windSpeed: getWindSpeed(weather.wind),
+            pressure: getPressure(weather.airPressure),
+            uvIndex: weather.uvIndex !== undefined ? weather.uvIndex : 0,
+            sunrise: sunriseStr,
+            sunset: sunsetStr,
+          }
+        : null,
       hourly: (hourly || []).slice(0, 12).map((h, index) => ({
         time: formatHour(h.interval?.startTime, index),
         temp: parseTemp(h.temperature),
-        icon: getIcon(h.weatherCondition?.iconBaseUri), // Assuming hourly data structure is unchanged
+        icon: getIcon(h.weatherCondition?.iconBaseUri),
       })),
       daily: (daily || []).map((d) => ({
         day: formatDayName(d.interval?.startTime),
-        high: parseTemp(d.maxTemperature), // Use d.maxTemperature object
-        low: parseTemp(d.minTemperature), // Use d.minTemperature object
+        high: parseTemp(d.maxTemperature),
+        low: parseTemp(d.minTemperature),
         icon: getIcon(
+          // Prioritize daytime icons for the 7-day overview
           d.daytimeForecast?.weatherCondition?.iconBaseUri ||
             d.weatherCondition?.iconBaseUri,
-        ),
+        )
+          .replace("night-", "")
+          .replace("clear", "sunny"),
         condition:
           d.daytimeForecast?.weatherCondition?.description?.text ||
           d.daytimeForecast?.weatherCondition?.text ||
           "Clear",
-        precip: d.daytimeForecast?.precipitation?.probability?.percent || 0, // Use percent from probability object
+        precip: d.daytimeForecast?.precipitation?.probability?.percent || 0,
       })),
     };
   }, [weather, hourly, daily, activeLocationName]);
 
-  // Show a loading screen while initial coords or weather are loading
-  if (loading || !weatherData || searchLoading) {
+  // Show a loading screen only when we do not have coordinates yet (initial loading)
+  if (coords.lat === null || coords.lng === null) {
     return (
       <div
         className="weather-page page-container"
@@ -269,9 +333,10 @@ const Weather = ({ preferences, setActivePage }) => {
           height: "80vh",
         }}
       >
-        <p style={{ fontSize: "18px", color: "rgba(255, 255, 255, 0.7)" }}>
-          Loading weather details...
-        </p>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Locating weather station...</p>
+        </div>
       </div>
     );
   }
@@ -289,10 +354,22 @@ const Weather = ({ preferences, setActivePage }) => {
 
       <div className="weather-dashboard">
         <div className="main-stats">
-          <CurrentWeather data={weatherData} unit={unit} />
-          <HourlyForecast data={weatherData.hourly} unit={unit} />
+          <CurrentWeather
+            data={weatherData}
+            unit={unit}
+            loading={loadingCurrent || searchLoading}
+          />
+          <DailyForecast
+            data={weatherData.daily}
+            unit={unit}
+            loading={loadingDaily || searchLoading}
+          />
         </div>
-        <DailyForecast data={weatherData.daily} unit={unit} />
+        <HourlyForecast
+          data={weatherData.hourly}
+          unit={unit}
+          loading={loadingHourly || searchLoading}
+        />
       </div>
     </div>
   );

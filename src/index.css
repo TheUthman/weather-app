@@ -230,8 +230,10 @@ body {
 
 /* ===== DASHBOARD GRID ===== */
 .weather-dashboard {
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  /* display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); */
+  display: flex;
+  flex-direction: column;
   gap: 20px;
   width: 100%;
   max-width: 100%;
@@ -239,7 +241,7 @@ body {
 
 .main-stats {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 20px;
   min-width: 0;
 }
@@ -430,14 +432,18 @@ body {
 }
 
 /* ===== HOURLY FORECAST ===== */
-.hourly-forecast h2,
-.daily-forecast h2 {
+.hourly-forecast h2{
   font-size: 18px;
   font-weight: 600;
-  margin-bottom: 20px;
   letter-spacing: 0.2px;
+  margin-bottom: 20px;
 }
-
+.daily-forecast h2{
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin-bottom: 10px;
+}
 .hourly-scroll {
   display: flex;
   gap: 10px;
@@ -462,6 +468,7 @@ body {
 .hourly-card {
   display: flex;
   flex-direction: column;
+  flex: 0 0 7.49%;
   align-items: center;
   min-width: 72px;
   padding: 16px 12px;
@@ -590,6 +597,7 @@ body {
 
 .current-weather {
   animation: fadeSlideUp 0.5s var(--ease) both;
+  width:65%;
 }
 
 .hourly-forecast {
@@ -598,6 +606,7 @@ body {
 
 .daily-forecast {
   animation: fadeSlideUp 0.5s var(--ease) 0.15s both;
+  width: 35%;
 }
 
 /* ===== RESPONSIVE ===== */
@@ -656,4 +665,154 @@ body {
     min-width: 64px;
     padding: 12px 10px;
   }
+}
+
+/* ===== SKELETON LOADER ANIMATIONS ===== */
+.skeleton-card {
+  pointer-events: none;
+}
+
+.skeleton-line,
+.skeleton-circle,
+.skeleton-circle-small {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.12) 37%,
+    rgba(255, 255, 255, 0.04) 63%
+  );
+  background-size: 400% 100%;
+  animation: skeleton-pulse 1.4s ease infinite;
+  border-radius: 8px;
+}
+
+body.light .skeleton-line,
+body.light .skeleton-circle,
+body.light .skeleton-circle-small {
+  background: linear-gradient(
+    90deg,
+    rgba(15, 23, 42, 0.04) 25%,
+    rgba(15, 23, 42, 0.12) 37%,
+    rgba(15, 23, 42, 0.04) 63%
+  );
+  background-size: 400% 100%;
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.skeleton-title {
+  width: 140px;
+  height: 24px;
+  display: inline-block;
+}
+
+.skeleton-temp {
+  width: 90px;
+  height: 60px;
+  margin-left: 8px;
+}
+
+.skeleton-condition {
+  width: 120px;
+  height: 20px;
+  margin: 0 auto 6px auto;
+}
+
+.skeleton-feels {
+  width: 90px;
+  height: 14px;
+  margin: 0 auto;
+}
+
+.skeleton-stat-val {
+  width: 50px;
+  height: 16px;
+  margin: 0 auto;
+}
+
+.skeleton-sun-val {
+  width: 70px;
+  height: 18px;
+}
+
+.skeleton-sun-lbl {
+  width: 50px;
+  height: 12px;
+}
+
+/* Daily row skeleton */
+.daily-row-skeleton {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr 0.8fr 1fr;
+  align-items: center;
+  padding: 14px 12px;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.daily-row-skeleton:last-child {
+  border-bottom: none;
+}
+
+.skeleton-day {
+  height: 16px;
+  width: 60px;
+}
+
+.skeleton-icon-text {
+  height: 24px;
+  width: 100px;
+}
+
+.skeleton-precip-lbl {
+  height: 18px;
+  width: 40px;
+  margin: 0 auto;
+}
+
+.skeleton-temp-range {
+  height: 16px;
+  width: 60px;
+  justify-self: end;
+}
+
+/* Hourly card skeleton */
+.hourly-card-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 72px;
+  padding: 16px 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  scroll-snap-align: start;
+}
+
+.skeleton-time-lbl {
+  height: 12px;
+  width: 40px;
+}
+
+.skeleton-temp-lbl {
+  height: 16px;
+  width: 30px;
+}
+
+.skeleton-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+
+.skeleton-circle-small {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
 }
