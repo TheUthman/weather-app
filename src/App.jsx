@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
+import { Routes, Route } from "react-router-dom";
 import Weather from "./pages/Weather";
 import Settings from "./pages/Settings";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
 
 const App = () => {
-  const [activePage, setActivePage] = useState("weather");
   const [preferences, setPreferences] = useState(() => {
     // Initialize preferences from localStorage or default values
     try {
@@ -49,13 +49,12 @@ const App = () => {
 
   return (
     <div className="app-layout">
-      <Sidebar activePage={activePage} setActivePage={setActivePage} />
+      <Sidebar />
       <main className="app-content">
-        {activePage === "weather" ? (
-          <Weather preferences={preferences} setActivePage={setActivePage} />
-        ) : (
-          <Settings preferences={preferences} setPreferences={setPreferences} />
-        )}
+        <Routes>
+          <Route path="/" element={<Weather preferences={preferences} />} />
+          <Route path="/settings" element={<Settings preferences={preferences} setPreferences={setPreferences} />} />
+        </Routes>
       </main>
     </div>
   );

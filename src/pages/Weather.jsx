@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
 import HourlyForecast from "../components/HourlyForecast";
@@ -138,7 +139,8 @@ const getIcon = (uri) => {
   return name;
 };
 
-const Weather = ({ preferences, setActivePage }) => {
+const Weather = ({ preferences }) => {
+  const navigate = useNavigate();
   const [coords, setCoords] = useState({ lat: null, lng: null });
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLocationName, setActiveLocationName] = useState("");
@@ -323,7 +325,7 @@ const Weather = ({ preferences, setActivePage }) => {
         setSearchQuery={setSearchQuery}
         unit={unit}
         setUnit={setUnit}
-        onOpenSettings={() => setActivePage && setActivePage("settings")}
+        onOpenSettings={() => navigate("/settings")}
         onSearch={handleSearch}
       />
 
