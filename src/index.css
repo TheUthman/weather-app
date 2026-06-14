@@ -265,7 +265,6 @@ body {
   border-radius: 28px;
   border: 1px solid var(--card-border);
   box-shadow: var(--shadow-md);
-  padding: 32px;
   transition: all 0.4s var(--ease);
   min-width: 0;
   overflow: hidden;
@@ -611,6 +610,9 @@ body {
 }
 
 /* ===== DAILY FORECAST ===== */
+.daily-forecast{
+  padding: 28px 20px;
+}
 .daily-list {
   display: flex;
   flex-direction: column;
@@ -625,6 +627,7 @@ body {
   border-radius: 14px;
   transition: all 0.3s var(--ease);
   margin-bottom: 6px;
+  gap: 5px;
 }
 
 .daily-row:last-child {
@@ -676,7 +679,7 @@ body {
 .daily-condition {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .daily-condition svg {
@@ -711,7 +714,7 @@ body {
 .daily-temps {
   display: flex;
   justify-content: flex-end;
-  gap: 16px;
+  gap: 5px;
 }
 
 .daily-high {
@@ -758,11 +761,13 @@ body {
   }
 
   .current-weather,
-  .hourly-forecast,
-  .daily-forecast {
+  .hourly-forecast{
     padding: 28px;
   }
 
+  .daily-forecast{
+    padding: 28px 21px;
+  }
   .weather-header {
     margin-bottom: 32px;
   }
