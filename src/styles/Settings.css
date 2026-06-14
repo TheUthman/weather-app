@@ -85,6 +85,7 @@
   border: 1px solid var(--card-border);
   background: var(--input-bg);
   backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   color: var(--text-color);
   font-family: inherit;
   font-size: 0.9rem;

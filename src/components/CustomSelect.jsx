@@ -1,13 +1,14 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FiChevronDown } from "react-icons/fi";
-import "./CustomSelect.css";
+import "../styles/CustomSelect.css";
 
 const CustomSelect = ({ value, onChange, options, name }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const selectedOption = options.find((opt) => opt.value === value) || options[0];
+  const selectedOption =
+    options.find((opt) => opt.value === value) || options[0];
 
   useEffect(() => {
     const handleClickOutside = (event) => {

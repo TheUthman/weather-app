@@ -1,3 +1,4 @@
+import { memo } from "react";
 import WeatherIcon from "./WeatherIcon";
 
 const HourlyForecast = ({ data, unit, loading }) => {
@@ -16,7 +17,10 @@ const HourlyForecast = ({ data, unit, loading }) => {
           {[...Array(12)].map((_, index) => (
             <div key={index} className="hourly-card-skeleton">
               <div className="skeleton-line skeleton-time-lbl"></div>
-              <div className="skeleton-circle-small" style={{ margin: "8px 0" }}></div>
+              <div
+                className="skeleton-circle-small"
+                style={{ margin: "8px 0" }}
+              ></div>
               <div className="skeleton-line skeleton-temp-lbl"></div>
             </div>
           ))}
@@ -42,4 +46,4 @@ const HourlyForecast = ({ data, unit, loading }) => {
   );
 };
 
-export default HourlyForecast;
+export default memo(HourlyForecast);

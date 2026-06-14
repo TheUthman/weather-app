@@ -1,9 +1,9 @@
 /* eslint-disable no-unused-vars */
 // src/pages/Settings.jsx
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Toggle from "../components/Toggle";
 import CustomSelect from "../components/CustomSelect";
-import "./Settings.css";
+import "../styles/Settings.css";
 
 const Settings = ({ preferences, setPreferences }) => {
   const [localCity, setLocalCity] = useState(preferences.defaultCity);
@@ -139,9 +139,13 @@ const Settings = ({ preferences, setPreferences }) => {
             </div>
           )}
         </section>
-        
+
         <div className="about-section">
-          <img src="/weather_radar_logo.png" alt="Weather Radar Logo" className="about-logo" />
+          <img
+            src="/weather_radar_logo.png"
+            alt="Weather Radar Logo"
+            className="about-logo"
+          />
           <h3 className="about-title">Weather Radar</h3>
           <p className="about-version">Version 1.0.0</p>
           <p className="about-copyright">© 2026 Weather Radar Inc.</p>

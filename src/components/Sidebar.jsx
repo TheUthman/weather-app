@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
-import React from "react";
+import { memo } from "react";
 import { FiCloud, FiSettings, FiMap } from "react-icons/fi";
-import "./Sidebar.css";
+import "../styles/Sidebar.css";
 
 const Sidebar = ({ activePage, setActivePage }) => {
   return (
@@ -29,4 +29,4 @@ const Sidebar = ({ activePage, setActivePage }) => {
   );
 };
 
-export default Sidebar;
+export default memo(Sidebar);

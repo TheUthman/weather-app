@@ -1,3 +1,4 @@
+import { memo } from "react";
 import WeatherIcon from "./WeatherIcon";
 
 const DailyForecast = ({ data, unit, loading }) => {
@@ -54,4 +55,4 @@ const DailyForecast = ({ data, unit, loading }) => {
   );
 };
 
-export default DailyForecast;
+export default memo(DailyForecast);
