@@ -2,8 +2,8 @@
   width: 80px;
   height: 100vh;
   background: var(--sidebar-bg);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   display: flex;
   flex-direction: column;
   align-items: center;
