@@ -703,6 +703,7 @@ body {
 .daily-list {
   display: flex;
   flex-direction: column;
+  content-visibility: auto; /* Optimization for longer lists */
 }
 
 .daily-row {

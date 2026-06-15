@@ -141,7 +141,16 @@ const getIcon = (uri) => {
 
 const Weather = ({ preferences }) => {
   const navigate = useNavigate();
-  const [coords, setCoords] = useState({ lat: null, lng: null });
+  
+  // Initialize with cached coordinates to trigger weather fetch immediately on load
+  const [coords, setCoords] = useState(() => {
+    const cached = localStorage.getItem("last_weather_coords");
+    if (cached) {
+      return JSON.parse(cached);
+    }
+    return { lat: null, lng: null };
+  });
+
   const [searchQuery, setSearchQuery] = useState("");
   const [activeLocationName, setActiveLocationName] = useState("");
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
@@ -151,11 +160,20 @@ const Weather = ({ preferences }) => {
     setUnit(preferences.units === "metric" ? "C" : "F");
   }, [preferences.units]);
 
+  // Persist coordinates whenever they change
+  useEffect(() => {
+    if (coords.lat && coords.lng) {
+      localStorage.setItem("last_weather_coords", JSON.stringify(coords));
+    }
+  }, [coords]);
+
   useEffect(() => {
     let active = true;
 
     const loadDefaultCity = async () => {
       try {
+        // Skip if we already have coordinates from cache
+        if (coords.lat !== null) return;
         const city = preferences.defaultCity || "San Francisco";
         const result = await fetchGeocodingData(city);
         if (!active) return;
@@ -170,6 +188,8 @@ const Weather = ({ preferences }) => {
 
     const loadLocationByIP = async () => {
       try {
+        // Skip if we already have coordinates from cache
+        if (coords.lat !== null) return;
         const response = await fetch("https://ipapi.co/json/");
         const data = await response.json();
         if (!active) return;
