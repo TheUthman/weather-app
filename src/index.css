@@ -1158,7 +1158,7 @@ body {
 
   .daily-temps {
     gap: 8px;
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-end;
   }
 
