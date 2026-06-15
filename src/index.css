@@ -836,6 +836,9 @@ body {
 }
 
 @media (max-width: 768px) {
+  .main-stats {
+    flex-direction: column-reverse;
+  }
   .weather-header {
     flex-direction: column;
     align-items: stretch;
