@@ -3,6 +3,8 @@ import { Routes, Route } from "react-router-dom";
 import Weather from "./pages/Weather";
 import Settings from "./pages/Settings";
 import Sidebar from "./components/Sidebar";
+import { SpeedInsights } from "@vercel/speed-insights/react";
+import { Analytics } from "@vercel/analytics/react";
 import "./App.css";
 
 const App = () => {
@@ -56,6 +58,8 @@ const App = () => {
           <Route path="/settings" element={<Settings preferences={preferences} setPreferences={setPreferences} />} />
         </Routes>
       </main>
+      <SpeedInsights />
+      <Analytics />
     </div>
   );
 };
