@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef, useTransition } from "react";
 import { useNavigate } from "react-router-dom";
+import { FiRefreshCw } from "react-icons/fi";
 import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
 import HourlyForecast from "../components/HourlyForecast";
@@ -156,6 +157,23 @@ const Weather = ({ preferences }) => {
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
   const [searchLoading, setSearchLoading] = useState(false);
 
+  // Transition for high-responsiveness
+  const [isPending, startTransition] = useTransition();
+
+  // Pull to refresh states
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const pullThreshold = 70;
+  const touchStartRef = useRef(0);
+  const containerRef = useRef(null);
+
+  // Wrapped unit toggle to improve INP
+  const handleUnitChange = useCallback((newUnit) => {
+    startTransition(() => {
+      setUnit(newUnit);
+    });
+  }, []);
+
   useEffect(() => {
     setUnit(preferences.units === "metric" ? "C" : "F");
   }, [preferences.units]);
@@ -206,11 +224,16 @@ const Weather = ({ preferences }) => {
       }
     };
 
-    const loadInitialLocation = async () => {
+    const loadInitialLocation = async (force = false) => {
+      if (force) setIsRefreshing(true);
       if (preferences.location === "auto") {
         await loadLocationByIP();
       } else {
         await loadDefaultCity();
+      }
+      if (force) {
+        // Artificial delay for smooth animation feedback
+        setTimeout(() => setIsRefreshing(false), 800);
       }
     };
 
@@ -220,6 +243,40 @@ const Weather = ({ preferences }) => {
       active = false;
     };
   }, [preferences.location, preferences.defaultCity]);
+
+  // Pull to Refresh Handlers
+  const handleTouchStart = (e) => {
+    if (window.scrollY === 0) {
+      touchStartRef.current = e.touches[0].clientY;
+    } else {
+      touchStartRef.current = 0;
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (touchStartRef.current === 0 || isRefreshing) return;
+    
+    const currentY = e.touches[0].clientY;
+    const distance = currentY - touchStartRef.current;
+    
+    if (distance > 0) {
+      // Add resistance to the pull
+      const dampedDistance = Math.min(distance * 0.4, 120);
+      setPullDistance(dampedDistance);
+      if (dampedDistance > 10) {
+        if (e.cancelable) e.preventDefault();
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (pullDistance > pullThreshold && !isRefreshing) {
+      // Trigger actual refresh logic here
+      window.location.reload(); // Simple approach, or call your fetch logic
+    }
+    setPullDistance(0);
+    touchStartRef.current = 0;
+  };
 
   // Update browser document title when active location changes
   useEffect(() => {
@@ -247,9 +304,11 @@ const Weather = ({ preferences }) => {
       setSearchLoading(true);
       const newCoords = await fetchGeocodingData(query);
       if (newCoords && newCoords.lat && newCoords.lng) {
-        setCoords(newCoords);
-        setActiveLocationName(query);
-        setSearchQuery("");
+        startTransition(() => {
+          setCoords(newCoords);
+          setActiveLocationName(query);
+          setSearchQuery("");
+        });
       }
     } catch (err) {
       console.error("Geocoding failed for search query:", err);
@@ -339,12 +398,29 @@ const Weather = ({ preferences }) => {
   }
 
   return (
-    <div className="weather-page page-container">
+    <div 
+      className={`weather-page page-container ${pullDistance > 0 ? 'pulling' : ''}`}
+      ref={containerRef}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+      style={{ 
+        transform: `translateY(${pullDistance}px)`,
+        transition: pullDistance === 0 ? 'transform 0.3s cubic-bezier(0.2, 0, 0.1, 1)' : 'none'
+      }}
+    >
+      <div className="pull-indicator" style={{ opacity: pullDistance / pullThreshold }}>
+        <FiRefreshCw 
+          className={pullDistance > pullThreshold ? "spin-ready" : ""}
+          style={{ transform: `rotate(${pullDistance * 3}deg)` }}
+        />
+      </div>
+
       <Header
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
         unit={unit}
-        setUnit={setUnit}
+        setUnit={handleUnitChange}
         onOpenSettings={() => navigate("/settings")}
         onSearch={handleSearch}
       />
