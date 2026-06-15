@@ -67,13 +67,13 @@ const CurrentWeather = ({ data, unit, loading }) => {
   }
 
   return (
-    <section className="current-weather">
+    <section className={`current-weather weather-${data.current.icon}`}>
       <div className="location">
         <FiMapPin size={18} />
         <h1>{data.location}</h1>
       </div>
       <div className="current-main">
-        <div className="current-temp-icon">
+        <div className={`current-temp-icon icon-${data.current.icon}`}>
           <WeatherIcon iconName={data.current.icon} size={120} />
           <div className="temp-display">
             <span className="current-temp">

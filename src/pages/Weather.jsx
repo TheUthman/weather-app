@@ -330,23 +330,23 @@ const Weather = ({ preferences }) => {
       />
 
       <div className="weather-dashboard">
-        <div className="main-stats">
-          <CurrentWeather
+        <CurrentWeather
             data={weatherData}
             unit={unit}
             loading={loadingCurrent || searchLoading}
           />
+        <div className="main-stats">
+          <HourlyForecast
+          data={weatherData.hourly}
+          unit={unit}
+          loading={loadingHourly || searchLoading}
+        />
           <DailyForecast
             data={weatherData.daily}
             unit={unit}
             loading={loadingDaily || searchLoading}
           />
         </div>
-        <HourlyForecast
-          data={weatherData.hourly}
-          unit={unit}
-          loading={loadingHourly || searchLoading}
-        />
       </div>
     </div>
   );
