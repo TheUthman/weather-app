@@ -1,11 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import Weather from "./pages/Weather";
-import Settings from "./pages/Settings";
 import Sidebar from "./components/Sidebar";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import "./App.css";
+
+// Lazy load non-critical pages to improve LCP of the main dashboard
+const Settings = lazy(() => import("./pages/Settings"));
+const Search = lazy(() => import("./pages/Search"));
 
 const App = () => {
   const [preferences, setPreferences] = useState(() => {
@@ -53,10 +56,13 @@ const App = () => {
     <div className="app-layout">
       <Sidebar />
       <main className="app-content">
-        <Routes>
-          <Route path="/" element={<Weather preferences={preferences} />} />
-          <Route path="/settings" element={<Settings preferences={preferences} setPreferences={setPreferences} />} />
-        </Routes>
+        <Suspense fallback={<div className="page-loader" />}>
+          <Routes>
+            <Route path="/" element={<Weather preferences={preferences} />} />
+            <Route path="/settings" element={<Settings preferences={preferences} setPreferences={setPreferences} />} />
+            <Route path="/search" element={<Search />} />
+          </Routes>
+        </Suspense>
       </main>
       <SpeedInsights />
       <Analytics />

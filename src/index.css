@@ -203,69 +203,24 @@ body {
 /* ===== HEADER ===== */
 .weather-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   margin-bottom: 40px;
   gap: 16px;
   padding: 0 4px;
 }
 
-.search-container {
-  flex: 1;
-  position: relative;
-  display: flex;
-  align-items: center;
-  max-width: 500px;
-}
-
-.search-icon {
-  position: absolute;
-  left: 16px;
-  color: var(--text-muted);
-  pointer-events: none;
-  transition: color 0.3s var(--ease);
-}
-
-.search-input {
-  width: 100%;
-  padding: 14px 16px 14px 48px;
-  border: 1px solid var(--card-border);
-  border-radius: 18px;
-  background: var(--input-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  color: var(--text-color);
-  font-size: 15px;
-  font-family: inherit;
-  font-weight: 500;
-  outline: none;
-  transition: all 0.3s var(--ease);
-}
-
-.search-input::placeholder {
-  color: var(--text-muted);
-  font-weight: 400;
-}
-
-.search-input:focus {
-  background: var(--input-bg-focus);
-  border-color: var(--secondary);
-  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.15);
-}
-
-.search-input:focus + .search-icon,
-.search-container:focus-within .search-icon {
-  color: var(--secondary);
-}
-
 .header-actions {
   display: flex;
   gap: 10px;
   align-items: center;
+  margin-left: auto;
 }
 
+.search-nav-btn,
 .unit-toggle,
-.settings-btn {
+.settings-btn,
+.icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -283,16 +238,20 @@ body {
   font-family: inherit;
 }
 
+.search-nav-btn:hover,
 .unit-toggle:hover,
-.settings-btn:hover {
+.settings-btn:hover,
+.icon-btn:hover {
   background: var(--input-bg-focus);
   transform: translateY(-3px);
   box-shadow: var(--shadow-sm);
   border-color: var(--primary-color);
 }
 
+.search-nav-btn:active,
 .unit-toggle:active,
-.settings-btn:active {
+.settings-btn:active,
+.icon-btn:active {
   transform: translateY(-1px);
 }
 
@@ -920,9 +879,32 @@ body {
   font-weight: 700;
 }
 
+/* Animation for when location is being detected */
+@keyframes pulse-ring {
+  0% { transform: scale(1) rotate(45deg); }
+  50% { transform: scale(1.1) rotate(45deg); }
+  100% { transform: scale(1) rotate(45deg); }
+}
+
+@keyframes spin-loader {
+  from { transform: rotate(45deg); }
+  to { transform: rotate(405deg); }
+}
+
+.icon-btn.detecting .spin-detect {
+  animation: spin-loader 1s infinite linear;
+}
+
+.icon-btn.detecting {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--accent-color, #60a5fa);
+}
+
+
 .daily-condition {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
 }
 
@@ -959,7 +941,7 @@ body {
 
 .daily-temps {
   display: flex;
-  justify-content: flex-end;
+  justify-content:space-around;
   gap: 5px;
 }
 
@@ -1107,13 +1089,6 @@ body {
     width: 100%;
   }
 
-  .search-container {
-    max-width: 100%;
-    width: 100%;
-    order: -1;
-    margin-bottom: 12px;
-  }
-
   .weather-stats {
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
@@ -1245,13 +1220,10 @@ body {
     margin-bottom: 20px;
   }
 
-  .search-input {
-    padding: 12px 14px 12px 44px;
-    font-size: 14px;
-  }
-
+  .search-nav-btn,
   .unit-toggle,
-  .settings-btn {
+  .settings-btn,
+  .icon-btn {
     width: 44px;
     height: 44px;
   }
@@ -1447,17 +1419,10 @@ body {
 }
 
 @media (max-width: 420px) {
-  .search-input {
-    padding: 10px 12px 10px 40px;
-    font-size: 13px;
-  }
-
-  .search-icon {
-    left: 12px;
-  }
-
+  .search-nav-btn,
   .unit-toggle,
-  .settings-btn {
+  .settings-btn,
+  .icon-btn {
     width: 40px;
     height: 40px;
     font-size: 14px;
@@ -1485,6 +1450,151 @@ body {
     grid-template-columns: 0.6fr 0.8fr 0.5fr 0.6fr;
     padding: 8px 6px;
   }
+}
+
+/* ===== SEARCH PAGE ===== */
+.search-page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding-top: 20px;
+}
+
+.search-page-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.search-back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  background: var(--input-bg);
+  backdrop-filter: blur(16px);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+}
+
+.search-back-btn:hover {
+  background: var(--input-bg-focus);
+  transform: translateY(-2px);
+  border-color: var(--primary-color);
+}
+
+.search-page-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.search-page-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.search-page-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-page-input-icon {
+  position: absolute;
+  left: 18px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-page-input {
+  width: 100%;
+  padding: 16px 18px 16px 52px;
+  border: 1px solid var(--card-border);
+  border-radius: 18px;
+  background: var(--input-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  color: var(--text-color);
+  font-size: 16px;
+  font-family: inherit;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.3s var(--ease);
+}
+
+.search-page-input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.search-page-input:focus {
+  background: var(--input-bg-focus);
+  border-color: var(--secondary);
+  box-shadow: 0 0 0 4px rgba(0, 212, 255, 0.15);
+}
+
+.search-page-input:focus ~ .search-page-input-icon,
+.search-page-input-wrapper:focus-within .search-page-input-icon {
+  color: var(--secondary);
+}
+
+.search-page-error {
+  font-size: 14px;
+  color: var(--error);
+  font-weight: 500;
+  padding: 0 4px;
+}
+
+.search-page-submit {
+  padding: 14px 24px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s var(--ease);
+}
+
+.search-page-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 136, 255, 0.35);
+}
+
+.search-page-submit:active {
+  transform: translateY(0);
+}
+
+.search-page-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.search-page-hints {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.search-page-hints svg {
+  color: var(--secondary);
+  flex-shrink: 0;
 }
 
 /* ===== SKELETON LOADER ANIMATIONS ===== */

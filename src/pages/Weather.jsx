@@ -1,7 +1,14 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useMemo, useCallback, useRef, useTransition } from "react";
-import { useNavigate } from "react-router-dom";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+  useTransition,
+} from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { FiRefreshCw } from "react-icons/fi";
 import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
@@ -111,38 +118,39 @@ const formatDayName = (isoString) => {
   }
 };
 
+const weatherCodeMap = {
+  0: { condition: "Clear Sky", icon: "sunny" },
+  1: { condition: "Mainly Clear", icon: "sunny" },
+  2: { condition: "Partly Cloudy", icon: "partly-cloudy" },
+  3: { condition: "Overcast", icon: "cloudy" },
+  45: { condition: "Fog", icon: "cloudy" },
+  48: { condition: "Fog", icon: "cloudy" },
+  51: { condition: "Light Drizzle", icon: "rain" },
+  53: { condition: "Drizzle", icon: "rain" },
+  55: { condition: "Heavy Drizzle", icon: "rain" },
+  61: { condition: "Rain", icon: "rain" },
+  63: { condition: "Moderate Rain", icon: "rain" },
+  65: { condition: "Heavy Rain", icon: "rain" },
+  71: { condition: "Snow", icon: "snow" },
+  80: { condition: "Rain Showers", icon: "rain" },
+  95: { condition: "Thunderstorm", icon: "thunderstorm" },
+};
+
 const getIcon = (uri) => {
   if (!uri) return "sunny";
-  // Extract the filename from the URI (e.g., ".../partly_cloudy.svg")
-  const filename = uri.split("/").pop() || "sunny";
-  // Remove extension and normalize underscores to hyphens
-  const name = filename.split(".")[0].replace(/_/g, "-").toLowerCase();
-
-  // Map the normalized name to keys supported by the WeatherIcon component
-  if (name.includes("thunderstorm") || name.includes("storm"))
-    return "thunderstorm";
-  if (name.includes("snow") || name.includes("blizzard")) return "snow";
-  if (
-    name.includes("rain") ||
-    name.includes("showers") ||
-    name.includes("drizzle")
-  )
-    return "rain";
-  if (name.includes("cloudy")) {
-    if (name.includes("partly") || name.includes("mostly")) {
-      return name.includes("night") ? "night-cloudy" : "partly-cloudy";
-    }
-    return "cloudy";
-  }
-  if (name.includes("clear") || name.includes("sunny")) {
-    return name.includes("night") ? "night-clear" : "sunny";
-  }
-  return name;
+  const name = uri.split("/").pop()?.split(".")[0].replace(/_/g, "-").toLowerCase() || "sunny";
+  if (name.includes("thunderstorm")) return "thunderstorm";
+  if (name.includes("snow")) return "snow";
+  if (name.includes("rain") || name.includes("drizzle")) return "rain";
+  if (name.includes("cloudy")) return name.includes("night") ? "night-cloudy" : "partly-cloudy";
+  if (name.includes("clear") || name.includes("sunny")) return name.includes("night") ? "night-clear" : "sunny";
+  return "cloudy";
 };
 
 const Weather = ({ preferences }) => {
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
   // Initialize with cached coordinates to trigger weather fetch immediately on load
   const [coords, setCoords] = useState(() => {
     const cached = localStorage.getItem("last_weather_coords");
@@ -152,10 +160,18 @@ const Weather = ({ preferences }) => {
     return { lat: null, lng: null };
   });
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeLocationName, setActiveLocationName] = useState("");
+  // UI Cache: Store weather object to render LCP content instantly before fetch completes
+  const [cachedData, setCachedData] = useState(() => {
+    const saved = localStorage.getItem("last_weather_ui_data");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [activeLocationName, setActiveLocationName] = useState(
+    localStorage.getItem("last_weather_name") || "",
+  );
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
-  const [searchLoading, setSearchLoading] = useState(false);
+  const [openMeteoDaily, setOpenMeteoDaily] = useState([]);
+  const [loadingDailyMeteo, setLoadingDailyMeteo] = useState(false);
 
   // Transition for high-responsiveness
   const [isPending, startTransition] = useTransition();
@@ -178,26 +194,64 @@ const Weather = ({ preferences }) => {
     setUnit(preferences.units === "metric" ? "C" : "F");
   }, [preferences.units]);
 
+  // Handle navigation state from Search page (incoming search results)
+  useEffect(() => {
+    const state = location.state;
+    if (state?.searchCoords) {
+      startTransition(() => {
+        setCoords(state.searchCoords);
+        setActiveLocationName(state.searchQuery || "Searched Location");
+      });
+      // Clear the navigation state so it doesn't re-trigger
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   // Persist coordinates whenever they change
   useEffect(() => {
     if (coords.lat && coords.lng) {
       localStorage.setItem("last_weather_coords", JSON.stringify(coords));
     }
-  }, [coords]);
+    if (activeLocationName) {
+      localStorage.setItem("last_weather_name", activeLocationName);
+    }
+  }, [coords, activeLocationName]);
+
+  // Manually trigger location detection (Feature Request)
+  const handleManualDetect = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      const response = await fetch("https://ipapi.co/json/");
+      const data = await response.json();
+      if (data.latitude && data.longitude) {
+        const result = { lat: data.latitude, lng: data.longitude };
+        setCoords(result);
+        setActiveLocationName(data.city || "Detected Location");
+      }
+    } catch (err) {
+      console.error("Manual detection failed", err);
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 600);
+    }
+  }, []);
 
   useEffect(() => {
+    // Don't auto-trigger if we have cached coords or a search result
+    if (location.state?.searchCoords || coords.lat) return;
+
     let active = true;
 
     const loadDefaultCity = async () => {
       try {
-        // Skip if we already have coordinates from cache
-        if (coords.lat !== null) return;
         const city = preferences.defaultCity || "San Francisco";
         const result = await fetchGeocodingData(city);
         if (!active) return;
         if (result && result.lat && result.lng) {
-          setCoords(result);
-          setActiveLocationName(city);
+          setCoords((prev) => {
+            if (prev.lat === result.lat && prev.lng === result.lng) return prev;
+            return result;
+          });
+          setActiveLocationName((prev) => (prev === city ? prev : city));
         }
       } catch (err) {
         console.error("Failed to load default city location:", err);
@@ -206,14 +260,19 @@ const Weather = ({ preferences }) => {
 
     const loadLocationByIP = async () => {
       try {
-        // Skip if we already have coordinates from cache
-        if (coords.lat !== null) return;
         const response = await fetch("https://ipapi.co/json/");
         const data = await response.json();
         if (!active) return;
         if (data.latitude && data.longitude) {
-          setCoords({ lat: data.latitude, lng: data.longitude });
-          setActiveLocationName(data.city || "Detected Location");
+          const newLat = data.latitude;
+          const newLng = data.longitude;
+          const newName = data.city || "Detected Location";
+
+          setCoords((prev) => {
+            if (prev.lat === newLat && prev.lng === newLng) return prev;
+            return { lat: newLat, lng: newLng };
+          });
+          setActiveLocationName((prev) => (prev === newName ? prev : newName));
           console.log(`IP-based location detected: ${data.city}`);
         } else {
           await loadDefaultCity();
@@ -232,7 +291,6 @@ const Weather = ({ preferences }) => {
         await loadDefaultCity();
       }
       if (force) {
-        // Artificial delay for smooth animation feedback
         setTimeout(() => setIsRefreshing(false), 800);
       }
     };
@@ -242,7 +300,39 @@ const Weather = ({ preferences }) => {
     return () => {
       active = false;
     };
-  }, [preferences.location, preferences.defaultCity]);
+  }, [preferences.location, preferences.defaultCity, location.state]);
+
+  // Fetch Open-Meteo Daily Forecast separately as requested
+  useEffect(() => {
+    if (!coords.lat || !coords.lng) return;
+    let cancelled = false;
+
+    const fetchMeteo = async () => {
+      setLoadingDailyMeteo(true);
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=10&timezone=auto`;
+        const response = await fetch(url);
+        const result = await response.json();
+        if (!cancelled && result.daily) {
+          const mapped = result.daily.time.map((time, i) => ({
+            day: formatDayName(time),
+            high: Math.round((result.daily.temperature_2m_max[i] * 9) / 5 + 32),
+            low: Math.round((result.daily.temperature_2m_min[i] * 9) / 5 + 32),
+            icon: weatherCodeMap[result.daily.weather_code[i]]?.icon || "cloudy",
+            condition: weatherCodeMap[result.daily.weather_code[i]]?.condition || "Unknown",
+            precip: result.daily.precipitation_probability_max[i] || 0,
+          }));
+          setOpenMeteoDaily(mapped);
+        }
+      } catch (err) {
+        console.error("Open-Meteo fetch failed", err);
+      } finally {
+        if (!cancelled) setLoadingDailyMeteo(false);
+      }
+    };
+    fetchMeteo();
+    return () => { cancelled = true; };
+  }, [coords.lat, coords.lng]);
 
   // Pull to Refresh Handlers
   const handleTouchStart = (e) => {
@@ -255,12 +345,11 @@ const Weather = ({ preferences }) => {
 
   const handleTouchMove = (e) => {
     if (touchStartRef.current === 0 || isRefreshing) return;
-    
+
     const currentY = e.touches[0].clientY;
     const distance = currentY - touchStartRef.current;
-    
+
     if (distance > 0) {
-      // Add resistance to the pull
       const dampedDistance = Math.min(distance * 0.4, 120);
       setPullDistance(dampedDistance);
       if (dampedDistance > 10) {
@@ -271,8 +360,7 @@ const Weather = ({ preferences }) => {
 
   const handleTouchEnd = () => {
     if (pullDistance > pullThreshold && !isRefreshing) {
-      // Trigger actual refresh logic here
-      window.location.reload(); // Simple approach, or call your fetch logic
+      window.location.reload();
     }
     setPullDistance(0);
     touchStartRef.current = 0;
@@ -296,26 +384,6 @@ const Weather = ({ preferences }) => {
     loadingHourly,
     loadingDaily,
   } = useWeather(coords.lat, coords.lng);
-
-  // Search input query submit handler
-  const handleSearch = async (query) => {
-    if (!query || !query.trim()) return;
-    try {
-      setSearchLoading(true);
-      const newCoords = await fetchGeocodingData(query);
-      if (newCoords && newCoords.lat && newCoords.lng) {
-        startTransition(() => {
-          setCoords(newCoords);
-          setActiveLocationName(query);
-          setSearchQuery("");
-        });
-      }
-    } catch (err) {
-      console.error("Geocoding failed for search query:", err);
-    } finally {
-      setSearchLoading(false);
-    }
-  };
 
   // Mapped weather data memoized to prevent lag during scrolling and unrelated re-renders
   const weatherData = useMemo(() => {
@@ -357,25 +425,16 @@ const Weather = ({ preferences }) => {
         temp: parseTemp(h.temperature),
         icon: getIcon(h.weatherCondition?.iconBaseUri),
       })),
-      daily: (daily || []).map((d) => ({
-        day: formatDayName(d.interval?.startTime),
-        high: parseTemp(d.maxTemperature),
-        low: parseTemp(d.minTemperature),
-        icon: getIcon(
-          // Prioritize daytime icons for the 7-day overview
-          d.daytimeForecast?.weatherCondition?.iconBaseUri ||
-            d.weatherCondition?.iconBaseUri,
-        )
-          .replace("night-", "")
-          .replace("clear", "sunny"),
-        condition:
-          d.daytimeForecast?.weatherCondition?.description?.text ||
-          d.daytimeForecast?.weatherCondition?.text ||
-          "Clear",
-        precip: d.daytimeForecast?.precipitation?.probability?.percent || 0,
-      })),
+      daily: openMeteoDaily || [],
     };
-  }, [weather, hourly, daily, activeLocationName]);
+  }, [weather, hourly, openMeteoDaily, activeLocationName]);
+
+  // Persist UI data to localStorage for instant subsequent LCP
+  useEffect(() => {
+    if (weatherData.current && !loadingCurrent) {
+      localStorage.setItem("last_weather_ui_data", JSON.stringify(weatherData));
+    }
+  }, [weatherData, loadingCurrent]);
 
   // Show a loading screen only when we do not have coordinates yet (initial loading)
   if (coords.lat === null || coords.lng === null) {
@@ -398,49 +457,55 @@ const Weather = ({ preferences }) => {
   }
 
   return (
-    <div 
-      className={`weather-page page-container ${pullDistance > 0 ? 'pulling' : ''}`}
+    <div
+      className={`weather-page page-container ${pullDistance > 0 ? "pulling" : ""}`}
       ref={containerRef}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
-      style={{ 
+      style={{
         transform: `translateY(${pullDistance}px)`,
-        transition: pullDistance === 0 ? 'transform 0.3s cubic-bezier(0.2, 0, 0.1, 1)' : 'none'
+        transition:
+          pullDistance === 0
+            ? "transform 0.3s cubic-bezier(0.2, 0, 0.1, 1)"
+            : "none",
       }}
     >
-      <div className="pull-indicator" style={{ opacity: pullDistance / pullThreshold }}>
-        <FiRefreshCw 
+      <div
+        className="pull-indicator"
+        style={{ opacity: pullDistance / pullThreshold }}
+      >
+        <FiRefreshCw
           className={pullDistance > pullThreshold ? "spin-ready" : ""}
           style={{ transform: `rotate(${pullDistance * 3}deg)` }}
         />
       </div>
 
       <Header
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
         unit={unit}
         setUnit={handleUnitChange}
         onOpenSettings={() => navigate("/settings")}
-        onSearch={handleSearch}
+        onOpenSearch={() => navigate("/search")}
+        onDetectLocation={handleManualDetect}
+        isDetecting={isRefreshing}
       />
 
       <div className="weather-dashboard">
         <CurrentWeather
-            data={weatherData}
-            unit={unit}
-            loading={loadingCurrent || searchLoading}
-          />
+          data={weatherData.current ? weatherData : cachedData}
+          unit={unit}
+          loading={loadingCurrent && !cachedData}
+        />
         <div className="main-stats">
           <HourlyForecast
-          data={weatherData.hourly}
-          unit={unit}
-          loading={loadingHourly || searchLoading}
-        />
-          <DailyForecast
-            data={weatherData.daily}
+            data={weatherData.current ? weatherData.hourly : (cachedData?.hourly || [])}
             unit={unit}
-            loading={loadingDaily || searchLoading}
+            loading={loadingHourly && !cachedData}
+          />
+          <DailyForecast
+            data={weatherData.current ? weatherData.daily : (cachedData?.daily || [])}
+            unit={unit}
+            loading={loadingDailyMeteo && !cachedData}
           />
         </div>
       </div>

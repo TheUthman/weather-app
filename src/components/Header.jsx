@@ -1,24 +1,26 @@
-import { FiSearch, FiSettings } from "react-icons/fi";
+import { FiSettings, FiNavigation } from "react-icons/fi";
 
-const Header = ({ searchQuery, setSearchQuery, unit, setUnit, onOpenSettings, onSearch }) => {
+const Header = ({
+  unit,
+  setUnit,
+  onOpenSettings,
+  onDetectLocation,
+  isDetecting,
+}) => {
   return (
     <header className="weather-header">
-      <div className="search-container">
-        <FiSearch className="search-icon" />
-        <input
-          type="text"
-          placeholder="Search location..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && onSearch) {
-              onSearch(searchQuery);
-            }
-          }}
-          className="search-input"
-        />
-      </div>
       <div className="header-actions">
+        <button
+          className={`icon-btn ${isDetecting ? "detecting" : ""}`}
+          onClick={onDetectLocation}
+          title="Detect My Location"
+          disabled={isDetecting}
+        >
+          <FiNavigation
+            size={20}
+            className={isDetecting ? "spin-detect" : ""}
+          />
+        </button>
         <button
           className="unit-toggle"
           onClick={() => setUnit(unit === "F" ? "C" : "F")}

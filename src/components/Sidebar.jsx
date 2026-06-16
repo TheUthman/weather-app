@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import { memo } from "react";
 import { NavLink } from "react-router-dom";
-import { FiCloud, FiSettings, FiMap } from "react-icons/fi";
+import { FiCloud, FiSearch, FiSettings, FiMap } from "react-icons/fi";
 import "../styles/Sidebar.css";
 
 const Sidebar = () => {
@@ -17,6 +17,13 @@ const Sidebar = () => {
           title="Weather"
         >
           <FiCloud size={22} />
+        </NavLink>
+        <NavLink
+          to="/search"
+          className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}
+          title="Search"
+        >
+          <FiSearch size={22} />
         </NavLink>
         <NavLink
           to="/settings"

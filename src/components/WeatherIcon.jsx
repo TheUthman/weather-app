@@ -21,7 +21,7 @@ const WeatherIcon = ({ iconName, size = 48 }) => {
     snow: <WiSnow size={size} />,
     thunderstorm: <WiThunderstorm size={size} />,
   };
-  return icons[iconName] || <WiDaySunny size={size} />;
+  return icons[iconName] || <WiCloud size={size} />;
 };
 
 export default memo(WeatherIcon);
