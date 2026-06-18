@@ -38,8 +38,10 @@
   border-radius: 4px;
 }
 
-.app-content::-webkit-scrollbar-thumb:hover {
-  background: rgba(51, 153, 255, 0.4);
+@media (hover: hover) {
+  .app-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(51, 153, 255, 0.4);
+  }
 }
 
 @media (max-width: 768px) {

@@ -238,14 +238,16 @@ body {
   font-family: inherit;
 }
 
-.search-nav-btn:hover,
-.unit-toggle:hover,
-.settings-btn:hover,
-.icon-btn:hover {
-  background: var(--input-bg-focus);
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-sm);
-  border-color: var(--primary-color);
+@media (hover: hover) {
+  .search-nav-btn:hover,
+  .unit-toggle:hover,
+  .settings-btn:hover,
+  .icon-btn:hover {
+    background: var(--input-bg-focus);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+    border-color: var(--primary-color);
+  }
 }
 
 .search-nav-btn:active,
@@ -355,7 +357,7 @@ body {
     opacity: 1;
   }
   50% {
-    transform: scale(1.03);
+    transform: scale(1.2);
     opacity: 0.92;
   }
   100% {
@@ -369,7 +371,7 @@ body {
     transform: translateX(0);
   }
   50% {
-    transform: translateX(3px);
+    transform: translateX(5px);
   }
   100% {
     transform: translateX(0);
@@ -430,31 +432,37 @@ body {
 [class*="icon-sunny"] > svg,
 [class*="icon-partly-cloudy"] > svg {
   color: var(--accent-light);
+  fill: var(--accent-light);
   filter: drop-shadow(0 8px 24px rgba(255, 213, 0, 0.4));
   animation: sun-pulse 8s ease-in-out infinite;
 }
 [class*="icon-cloudy"] > svg {
   color: var(--neutral-400);
+  fill: var(--neutral-400);
   filter: drop-shadow(0 8px 24px rgba(170, 181, 194, 0.3));
   animation: cloud-float 12s ease-in-out infinite;
 }
 [class*="icon-rain"] > svg {
   color: var(--secondary);
+  fill: var(--secondary);
   filter: drop-shadow(0 8px 24px rgba(0, 212, 255, 0.4));
   animation: rain-drop 4s ease-in-out infinite;
 }
 [class*="icon-thunderstorm"] > svg {
   color: var(--warning);
+  fill: var(--warning);
   filter: drop-shadow(0 8px 24px rgba(255, 138, 0, 0.4));
   animation: thunder-shake 2.5s ease-in-out infinite;
 }
 [class*="icon-snow"] > svg {
   color: var(--neutral-50);
+  fill: var(--neutral-50);
   filter: drop-shadow(0 8px 24px rgba(255, 255, 255, 0.3));
   animation: snow-fall 8s ease-in-out infinite;
 }
 [class*="icon-night"] > svg {
   color: var(--purple-accent);
+  fill: var(--purple-accent);
   filter: drop-shadow(0 8px 24px rgba(124, 92, 255, 0.4));
   animation: sun-pulse 10s ease-in-out infinite; /* Reusing sun-pulse for a subtle night glow */
 }
@@ -582,15 +590,17 @@ body {
   cursor: pointer;
 }
 
-.stat-card:hover {
-  transform: translateY(-6px);
-  background: linear-gradient(
-    135deg,
-    rgba(0, 136, 255, 0.15),
-    rgba(124, 92, 255, 0.12)
-  );
-  border-color: rgba(0, 200, 255, 0.5);
-  box-shadow: 0 12px 40px rgba(0, 136, 255, 0.25);
+@media (hover: hover) {
+  .stat-card:hover {
+    transform: translateY(-6px);
+    background: linear-gradient(
+      135deg,
+      rgba(0, 136, 255, 0.15),
+      rgba(124, 92, 255, 0.12)
+    );
+    border-color: rgba(0, 200, 255, 0.5);
+    box-shadow: 0 12px 40px rgba(0, 136, 255, 0.25);
+  }
 }
 
 .stat-card svg {
@@ -736,15 +746,17 @@ body {
   gap: 8px;
 }
 
-.hourly-card:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 136, 255, 0.2),
-    rgba(124, 92, 255, 0.15)
-  );
-  transform: translateY(-6px);
-  border-color: rgba(0, 200, 255, 0.5);
-  box-shadow: 0 12px 32px rgba(0, 136, 255, 0.2);
+@media (hover: hover) {
+  .hourly-card:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(0, 136, 255, 0.2),
+      rgba(124, 92, 255, 0.15)
+    );
+    transform: translateY(-6px);
+    border-color: rgba(0, 200, 255, 0.5);
+    box-shadow: 0 12px 32px rgba(0, 136, 255, 0.2);
+  }
 }
 
 .hourly-card:first-child {
@@ -828,14 +840,16 @@ body {
   margin-bottom: 0;
 }
 
-.daily-row:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 136, 255, 0.1),
-    rgba(124, 92, 255, 0.06)
-  );
-  transform: translateX(4px);
-  border-radius: 14px;
+@media (hover: hover) {
+  .daily-row:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(0, 136, 255, 0.1),
+      rgba(124, 92, 255, 0.06)
+    );
+    transform: translateX(4px);
+    border-radius: 14px;
+  }
 }
 
 .daily-condition svg {
@@ -864,14 +878,16 @@ body {
   margin-bottom: 0;
 }
 
-.daily-row:hover {
-  background: linear-gradient(
-    135deg,
-    rgba(51, 153, 255, 0.08),
-    rgba(26, 40, 85, 0.15)
-  );
-  transform: translateX(4px);
-  border-radius: 14px;
+@media (hover: hover) {
+  .daily-row:hover {
+    background: linear-gradient(
+      135deg,
+      rgba(51, 153, 255, 0.08),
+      rgba(26, 40, 85, 0.15)
+    );
+    transform: translateX(4px);
+    border-radius: 14px;
+  }
 }
 
 .daily-day {
@@ -1481,10 +1497,12 @@ body {
   transition: all 0.3s var(--ease);
 }
 
-.search-back-btn:hover {
-  background: var(--input-bg-focus);
-  transform: translateY(-2px);
-  border-color: var(--primary-color);
+@media (hover: hover) {
+  .search-back-btn:hover {
+    background: var(--input-bg-focus);
+    transform: translateY(-2px);
+    border-color: var(--primary-color);
+  }
 }
 
 .search-page-title {
@@ -1565,9 +1583,11 @@ body {
   transition: all 0.3s var(--ease);
 }
 
-.search-page-submit:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 136, 255, 0.35);
+@media (hover: hover) {
+  .search-page-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 136, 255, 0.35);
+  }
 }
 
 .search-page-submit:active {

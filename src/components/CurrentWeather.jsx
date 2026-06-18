@@ -40,7 +40,10 @@ const CurrentWeather = ({ data, unit, loading }) => {
         <div className="weather-stats">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="stat-card">
-              <div className="skeleton-circle-small" style={{ marginBottom: "8px" }}></div>
+              <div
+                className="skeleton-circle-small"
+                style={{ marginBottom: "8px" }}
+              ></div>
               <div className="skeleton-line skeleton-stat-val"></div>
             </div>
           ))}
@@ -49,14 +52,28 @@ const CurrentWeather = ({ data, unit, loading }) => {
         <div className="sun-times">
           <div className="sun-item" style={{ width: "40%" }}>
             <div className="skeleton-circle-small"></div>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+              }}
+            >
               <div className="skeleton-line skeleton-sun-val"></div>
               <div className="skeleton-line skeleton-sun-lbl"></div>
             </div>
           </div>
           <div className="sun-item" style={{ width: "40%" }}>
             <div className="skeleton-circle-small"></div>
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "6px" }}>
+            <div
+              style={{
+                flex: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+              }}
+            >
               <div className="skeleton-line skeleton-sun-val"></div>
               <div className="skeleton-line skeleton-sun-lbl"></div>
             </div>

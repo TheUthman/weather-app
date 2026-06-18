@@ -138,16 +138,20 @@ const weatherCodeMap = {
 
 const getIcon = (uri) => {
   if (!uri) return "sunny";
-  const name = uri.split("/").pop()?.split(".")[0].replace(/_/g, "-").toLowerCase() || "sunny";
+  const name =
+    uri.split("/").pop()?.split(".")[0].replace(/_/g, "-").toLowerCase() ||
+    "sunny";
   if (name.includes("thunderstorm")) return "thunderstorm";
   if (name.includes("snow")) return "snow";
   if (name.includes("rain") || name.includes("drizzle")) return "rain";
-  if (name.includes("cloudy")) return name.includes("night") ? "night-cloudy" : "partly-cloudy";
-  if (name.includes("clear") || name.includes("sunny")) return name.includes("night") ? "night-clear" : "sunny";
+  if (name.includes("cloudy"))
+    return name.includes("night") ? "night-cloudy" : "partly-cloudy";
+  if (name.includes("clear") || name.includes("sunny"))
+    return name.includes("night") ? "night-clear" : "sunny";
   return "cloudy";
 };
 
-const Weather = ({ preferences }) => {
+const Weather = ({ preferences, setPreferences }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -185,9 +189,13 @@ const Weather = ({ preferences }) => {
 
   // Wrapped unit toggle to improve INP
   const handleUnitChange = useCallback((newUnit) => {
-    startTransition(() => {
+    const newPreferenceUnit = newUnit === "C" ? "metric" : "imperial";
+    if (setPreferences) {
+      setPreferences((prev) => ({ ...prev, units: newPreferenceUnit }));
+    } else {
+      // Fallback if setter isn't provided
       setUnit(newUnit);
-    });
+    }
   }, []);
 
   useEffect(() => {
@@ -318,8 +326,11 @@ const Weather = ({ preferences }) => {
             day: formatDayName(time),
             high: Math.round((result.daily.temperature_2m_max[i] * 9) / 5 + 32),
             low: Math.round((result.daily.temperature_2m_min[i] * 9) / 5 + 32),
-            icon: weatherCodeMap[result.daily.weather_code[i]]?.icon || "cloudy",
-            condition: weatherCodeMap[result.daily.weather_code[i]]?.condition || "Unknown",
+            icon:
+              weatherCodeMap[result.daily.weather_code[i]]?.icon || "cloudy",
+            condition:
+              weatherCodeMap[result.daily.weather_code[i]]?.condition ||
+              "Unknown",
             precip: result.daily.precipitation_probability_max[i] || 0,
           }));
           setOpenMeteoDaily(mapped);
@@ -331,7 +342,9 @@ const Weather = ({ preferences }) => {
       }
     };
     fetchMeteo();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [coords.lat, coords.lng]);
 
   // Pull to Refresh Handlers
@@ -498,12 +511,18 @@ const Weather = ({ preferences }) => {
         />
         <div className="main-stats">
           <HourlyForecast
-            data={weatherData.current ? weatherData.hourly : (cachedData?.hourly || [])}
+            data={
+              weatherData.current
+                ? weatherData.hourly
+                : cachedData?.hourly || []
+            }
             unit={unit}
             loading={loadingHourly && !cachedData}
           />
           <DailyForecast
-            data={weatherData.current ? weatherData.daily : (cachedData?.daily || [])}
+            data={
+              weatherData.current ? weatherData.daily : cachedData?.daily || []
+            }
             unit={unit}
             loading={loadingDailyMeteo && !cachedData}
           />
