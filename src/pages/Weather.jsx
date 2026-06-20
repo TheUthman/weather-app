@@ -12,6 +12,7 @@ import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
 import HourlyForecast from "../components/HourlyForecast";
 import DailyForecast from "../components/DailyForecast";
+import WeatherBackdrop from "../components/WeatherBackdrop";
 import { useWeather } from "../hooks/useWeather";
 import {
   fetchGeocodingData,
@@ -159,6 +160,7 @@ const Weather = ({ preferences, setPreferences }) => {
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
   // Transition for high-responsiveness
   const [isPending, startTransition] = useTransition();
+  const [pointer, setPointer] = useState({ x: 50, y: 35 });
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   // Wrapped unit toggle to improve INP
@@ -354,6 +356,26 @@ const Weather = ({ preferences, setPreferences }) => {
     };
   }, [weather, hourly, daily, activeLocationName]);
 
+  const backdropWeatherType =
+    weatherData.current?.icon || cachedData?.current?.icon || "cloudy";
+
+  const handleBackdropPointerMove = useCallback((event) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+
+    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+
+    setPointer({
+      x: Math.max(0, Math.min(100, x)),
+      y: Math.max(0, Math.min(100, y)),
+    });
+  }, []);
+
+  const handleBackdropPointerLeave = useCallback(() => {
+    setPointer({ x: 50, y: 35 });
+  }, []);
+
   // Persist UI data to localStorage for instant subsequent LCP
   useEffect(() => {
     if (weatherData.current && !loadingCurrent) {
@@ -366,13 +388,18 @@ const Weather = ({ preferences, setPreferences }) => {
     return (
       <div
         className="weather-page page-container"
+        onPointerMove={handleBackdropPointerMove}
+        onPointerLeave={handleBackdropPointerLeave}
         style={{
+          "--pointer-x": `${pointer.x}%`,
+          "--pointer-y": `${pointer.y}%`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           height: "80vh",
         }}
       >
+        <WeatherBackdrop weatherType={backdropWeatherType} pointer={pointer} />
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p className="loading-text">Locating weather station...</p>
@@ -382,7 +409,19 @@ const Weather = ({ preferences, setPreferences }) => {
   }
 
   return (
-    <div className="weather-page page-container">
+    <div
+      className="weather-page page-container"
+      onPointerMove={handleBackdropPointerMove}
+      onPointerLeave={handleBackdropPointerLeave}
+      style={{
+        "--pointer-x": `${pointer.x}%`,
+        "--pointer-y": `${pointer.y}%`,
+      }}
+    >
+      <WeatherBackdrop
+        weatherType={backdropWeatherType}
+        pointer={pointer}
+      />
 
       <Header
         unit={unit}
