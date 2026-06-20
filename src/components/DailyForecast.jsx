@@ -35,7 +35,7 @@ const DailyForecast = ({ data, unit, loading }) => {
           <div key={index} className="daily-row">
             <span className="daily-day">{day.day}</span>
             <div className="daily-condition">
-              <WeatherIcon iconName={day.icon} size={28} />
+              <WeatherIcon iconName={day.icon} size={50} />
               <span className="daily-condition-text">{day.condition}</span>
             </div>
             <div className="daily-precip">

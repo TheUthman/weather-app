@@ -5,11 +5,9 @@ import {
   useEffect,
   useMemo,
   useCallback,
-  useRef,
   useTransition,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FiRefreshCw } from "react-icons/fi";
 import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
 import HourlyForecast from "../components/HourlyForecast";
@@ -118,24 +116,6 @@ const formatDayName = (isoString) => {
   }
 };
 
-const weatherCodeMap = {
-  0: { condition: "Clear Sky", icon: "sunny" },
-  1: { condition: "Mainly Clear", icon: "sunny" },
-  2: { condition: "Partly Cloudy", icon: "partly-cloudy" },
-  3: { condition: "Overcast", icon: "cloudy" },
-  45: { condition: "Fog", icon: "cloudy" },
-  48: { condition: "Fog", icon: "cloudy" },
-  51: { condition: "Light Drizzle", icon: "rain" },
-  53: { condition: "Drizzle", icon: "rain" },
-  55: { condition: "Heavy Drizzle", icon: "rain" },
-  61: { condition: "Rain", icon: "rain" },
-  63: { condition: "Moderate Rain", icon: "rain" },
-  65: { condition: "Heavy Rain", icon: "rain" },
-  71: { condition: "Snow", icon: "snow" },
-  80: { condition: "Rain Showers", icon: "rain" },
-  95: { condition: "Thunderstorm", icon: "thunderstorm" },
-};
-
 const getIcon = (uri) => {
   if (!uri) return "sunny";
   const name =
@@ -144,9 +124,12 @@ const getIcon = (uri) => {
   if (name.includes("thunderstorm")) return "thunderstorm";
   if (name.includes("snow")) return "snow";
   if (name.includes("rain") || name.includes("drizzle")) return "rain";
-  if (name.includes("cloudy"))
+  if (name.includes("fog") || name.includes("haz") || name.includes("mist") || name.includes("wind")) return "cloudy";
+  if (name.includes("cloudy")) {
+    if (name.includes("mostly") || name.includes("overcast")) return "cloudy";
     return name.includes("night") ? "night-cloudy" : "partly-cloudy";
-  if (name.includes("clear") || name.includes("sunny"))
+  }
+  if (name.includes("clear") || name.includes("sun") || name.includes("fair"))
     return name.includes("night") ? "night-clear" : "sunny";
   return "cloudy";
 };
@@ -174,19 +157,10 @@ const Weather = ({ preferences, setPreferences }) => {
     localStorage.getItem("last_weather_name") || "",
   );
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
-  const [openMeteoDaily, setOpenMeteoDaily] = useState([]);
-  const [loadingDailyMeteo, setLoadingDailyMeteo] = useState(false);
-
   // Transition for high-responsiveness
   const [isPending, startTransition] = useTransition();
 
-  // Pull to refresh states
-  const [pullDistance, setPullDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const pullThreshold = 70;
-  const touchStartRef = useRef(0);
-  const containerRef = useRef(null);
-
   // Wrapped unit toggle to improve INP
   const handleUnitChange = useCallback((newUnit) => {
     const newPreferenceUnit = newUnit === "C" ? "metric" : "imperial";
@@ -310,75 +284,6 @@ const Weather = ({ preferences, setPreferences }) => {
     };
   }, [preferences.location, preferences.defaultCity, location.state]);
 
-  // Fetch Open-Meteo Daily Forecast separately as requested
-  useEffect(() => {
-    if (!coords.lat || !coords.lng) return;
-    let cancelled = false;
-
-    const fetchMeteo = async () => {
-      setLoadingDailyMeteo(true);
-      try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&forecast_days=10&timezone=auto`;
-        const response = await fetch(url);
-        const result = await response.json();
-        if (!cancelled && result.daily) {
-          const mapped = result.daily.time.map((time, i) => ({
-            day: formatDayName(time),
-            high: Math.round((result.daily.temperature_2m_max[i] * 9) / 5 + 32),
-            low: Math.round((result.daily.temperature_2m_min[i] * 9) / 5 + 32),
-            icon:
-              weatherCodeMap[result.daily.weather_code[i]]?.icon || "cloudy",
-            condition:
-              weatherCodeMap[result.daily.weather_code[i]]?.condition ||
-              "Unknown",
-            precip: result.daily.precipitation_probability_max[i] || 0,
-          }));
-          setOpenMeteoDaily(mapped);
-        }
-      } catch (err) {
-        console.error("Open-Meteo fetch failed", err);
-      } finally {
-        if (!cancelled) setLoadingDailyMeteo(false);
-      }
-    };
-    fetchMeteo();
-    return () => {
-      cancelled = true;
-    };
-  }, [coords.lat, coords.lng]);
-
-  // Pull to Refresh Handlers
-  const handleTouchStart = (e) => {
-    if (window.scrollY === 0) {
-      touchStartRef.current = e.touches[0].clientY;
-    } else {
-      touchStartRef.current = 0;
-    }
-  };
-
-  const handleTouchMove = (e) => {
-    if (touchStartRef.current === 0 || isRefreshing) return;
-
-    const currentY = e.touches[0].clientY;
-    const distance = currentY - touchStartRef.current;
-
-    if (distance > 0) {
-      const dampedDistance = Math.min(distance * 0.4, 120);
-      setPullDistance(dampedDistance);
-      if (dampedDistance > 10) {
-        if (e.cancelable) e.preventDefault();
-      }
-    }
-  };
-
-  const handleTouchEnd = () => {
-    if (pullDistance > pullThreshold && !isRefreshing) {
-      window.location.reload();
-    }
-    setPullDistance(0);
-    touchStartRef.current = 0;
-  };
-
   // Update browser document title when active location changes
   useEffect(() => {
     if (activeLocationName) {
@@ -438,9 +343,16 @@ const Weather = ({ preferences, setPreferences }) => {
         temp: parseTemp(h.temperature),
         icon: getIcon(h.weatherCondition?.iconBaseUri),
       })),
-      daily: openMeteoDaily || [],
+      daily: (daily || []).map((d) => ({
+        day: formatDayName(d.interval?.startTime),
+        high: parseTemp(d.temperatureMax),
+        low: parseTemp(d.temperatureMin),
+        icon: getIcon(d.weatherCondition?.iconBaseUri),
+        condition: d.weatherCondition?.text || "Unknown",
+        precip: d.precipitationProbability || 0,
+      })),
     };
-  }, [weather, hourly, openMeteoDaily, activeLocationName]);
+  }, [weather, hourly, daily, activeLocationName]);
 
   // Persist UI data to localStorage for instant subsequent LCP
   useEffect(() => {
@@ -470,29 +382,7 @@ const Weather = ({ preferences, setPreferences }) => {
   }
 
   return (
-    <div
-      className={`weather-page page-container ${pullDistance > 0 ? "pulling" : ""}`}
-      ref={containerRef}
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
-      style={{
-        transform: `translateY(${pullDistance}px)`,
-        transition:
-          pullDistance === 0
-            ? "transform 0.3s cubic-bezier(0.2, 0, 0.1, 1)"
-            : "none",
-      }}
-    >
-      <div
-        className="pull-indicator"
-        style={{ opacity: pullDistance / pullThreshold }}
-      >
-        <FiRefreshCw
-          className={pullDistance > pullThreshold ? "spin-ready" : ""}
-          style={{ transform: `rotate(${pullDistance * 3}deg)` }}
-        />
-      </div>
+    <div className="weather-page page-container">
 
       <Header
         unit={unit}
@@ -524,7 +414,7 @@ const Weather = ({ preferences, setPreferences }) => {
               weatherData.current ? weatherData.daily : cachedData?.daily || []
             }
             unit={unit}
-            loading={loadingDailyMeteo && !cachedData}
+            loading={loadingDaily && !cachedData}
           />
         </div>
       </div>

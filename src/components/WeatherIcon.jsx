@@ -1,27 +1,23 @@
 import { memo } from "react";
-import {
-  WiDaySunny,
-  WiNightClear,
-  WiDayCloudy,
-  WiNightCloudy,
-  WiCloud,
-  WiRain,
-  WiSnow,
-  WiThunderstorm,
-} from "react-icons/wi";
+
+const iconMap = {
+  sunny: "clear-day",
+  "night-clear": "clear-night",
+  "partly-cloudy": "partly-cloudy-day",
+  "night-cloudy": "partly-cloudy-night",
+  cloudy: "cloudy",
+  rain: "rain",
+  snow: "snow",
+  thunderstorm: "thunderstorms",
+};
 
 const WeatherIcon = ({ iconName, size = 48 }) => {
-  const icons = {
-    sunny: <WiDaySunny size={size} />,
-    "night-clear": <WiNightClear size={size} />,
-    "partly-cloudy": <WiDayCloudy size={size} />,
-    "night-cloudy": <WiNightCloudy size={size} />,
-    cloudy: <WiCloud size={size} />,
-    rain: <WiRain size={size} />,
-    snow: <WiSnow size={size} />,
-    thunderstorm: <WiThunderstorm size={size} />,
-  };
-  return icons[iconName] || <WiCloud size={size} />;
+  const file = iconMap[iconName] || "cloudy";
+  return (
+    <span className={`animated-weather-icon-wrapper icon-${iconName}`}>
+      <img src={`/icons/meteocons/${file}.svg`} alt={iconName} width={size} height={size} />
+    </span>
+  );
 };
 
 export default memo(WeatherIcon);

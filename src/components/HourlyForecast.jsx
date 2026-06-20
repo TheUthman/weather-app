@@ -37,7 +37,7 @@ const HourlyForecast = ({ data, unit, loading }) => {
           data.map((hour, index) => (
             <div key={index} className="hourly-card">
               <span className="hourly-time">{hour.time}</span>
-              <WeatherIcon iconName={hour.icon} size={32} />
+              <WeatherIcon iconName={hour.icon} size={50} />
               <span className="hourly-temp">{convertTemp(hour.temp)}°</span>
             </div>
           ))}

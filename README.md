@@ -30,11 +30,7 @@ A modern, responsive weather application built with React and Vite. This applica
    ```bash
    npm install
    ```
-4. Create a `.env` file in the root directory and add your weather API key:
-   ```env
-   VITE_WEATHER_API_KEY=your_api_key_here
-   ```
-5. Start the development server:
+4. Start the development server:
    ```bash
    npm run dev
    ```

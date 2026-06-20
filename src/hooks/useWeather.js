@@ -12,15 +12,18 @@ export const useWeather = (lat, lng) => {
   const [loadingCurrent, setLoadingCurrent] = useState(true);
   const [loadingHourly, setLoadingHourly] = useState(true);
   const [loadingDaily, setLoadingDaily] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchCurrent = async () => {
       try {
         setLoadingCurrent(true);
+        setError(null);
         const current = await fetchWeatherData(lat, lng);
         setWeather(current);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "Failed to fetch weather data");
       } finally {
         setLoadingCurrent(false);
       }
@@ -31,8 +34,8 @@ export const useWeather = (lat, lng) => {
         setLoadingHourly(true);
         const hours = await fetchHourlyWeather(lat, lng);
         setHourly(hours.forecastHours || []);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoadingHourly(false);
       }
@@ -43,8 +46,8 @@ export const useWeather = (lat, lng) => {
         setLoadingDaily(true);
         const days = await fetchDaysWeather(lat, lng);
         setDaily(days.forecastDays || []);
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
       } finally {
         setLoadingDaily(false);
       }
@@ -64,6 +67,7 @@ export const useWeather = (lat, lng) => {
     loadingCurrent,
     loadingHourly,
     loadingDaily,
+    error,
     loading: loadingCurrent && loadingHourly && loadingDaily
   };
 };
