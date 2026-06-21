@@ -1,12 +1,12 @@
 .toggle-btn {
-  width: 52px;
-  height: 28px;
-  border-radius: 14px;
+  width: 48px;
+  height: 26px;
+  border-radius: 13px;
   background: var(--input-bg);
   border: 1px solid var(--card-border);
   position: relative;
   cursor: pointer;
-  transition: all 0.3s var(--ease);
+  transition: all 0.25s var(--ease);
   padding: 0;
   outline: none;
 }
@@ -16,22 +16,22 @@
 }
 
 .toggle-btn.active {
-  background: var(--success);
-  border-color: transparent;
+  background: var(--primary);
+  border-color: var(--primary);
 }
 
 .toggle-slider {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   background: white;
   border-radius: 50%;
   position: absolute;
   top: 2px;
   left: 2px;
-  transition: transform 0.3s var(--ease);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.25s var(--ease);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-btn.active .toggle-slider {
-  transform: translateX(24px);
+  transform: translateX(22px);
 }

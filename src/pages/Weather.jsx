@@ -12,7 +12,6 @@ import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
 import HourlyForecast from "../components/HourlyForecast";
 import DailyForecast from "../components/DailyForecast";
-import WeatherBackdrop from "../components/WeatherBackdrop";
 import { useWeather } from "../hooks/useWeather";
 import {
   fetchGeocodingData,
@@ -201,17 +200,23 @@ const Weather = ({ preferences, setPreferences }) => {
     }
   }, [coords, activeLocationName]);
 
-  // Manually trigger location detection (Feature Request)
+  // Manually trigger location detection using browser geolocation
   const handleManualDetect = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const response = await fetch("https://ipapi.co/json/");
-      const data = await response.json();
-      if (data.latitude && data.longitude) {
-        const result = { lat: data.latitude, lng: data.longitude };
-        setCoords(result);
-        setActiveLocationName(data.city || "Detected Location");
-      }
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        });
+      });
+      const { latitude, longitude } = position.coords;
+      const result = { lat: latitude, lng: longitude };
+      setCoords(result);
+      // Reverse geocode to get the city name
+      const cityName = await fetchReverseGeocodingData(latitude, longitude);
+      setActiveLocationName(cityName || "Detected Location");
     } catch (err) {
       console.error("Manual detection failed", err);
     } finally {
@@ -242,27 +247,29 @@ const Weather = ({ preferences, setPreferences }) => {
       }
     };
 
-    const loadLocationByIP = async () => {
+    const loadLocationByBrowser = async () => {
       try {
-        const response = await fetch("https://ipapi.co/json/");
-        const data = await response.json();
-        if (!active) return;
-        if (data.latitude && data.longitude) {
-          const newLat = data.latitude;
-          const newLng = data.longitude;
-          const newName = data.city || "Detected Location";
-
-          setCoords((prev) => {
-            if (prev.lat === newLat && prev.lng === newLng) return prev;
-            return { lat: newLat, lng: newLng };
+        const position = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 10000,
+            maximumAge: 300000, // Allow 5 min cache for initial load
           });
-          setActiveLocationName((prev) => (prev === newName ? prev : newName));
-          console.log(`IP-based location detected: ${data.city}`);
-        } else {
-          await loadDefaultCity();
-        }
+        });
+        if (!active) return;
+        const { latitude, longitude } = position.coords;
+        const newLat = latitude;
+        const newLng = longitude;
+        const newName = await fetchReverseGeocodingData(latitude, longitude);
+
+        setCoords((prev) => {
+          if (prev.lat === newLat && prev.lng === newLng) return prev;
+          return { lat: newLat, lng: newLng };
+        });
+        setActiveLocationName((prev) => (prev === newName ? prev : newName));
+        console.log(`Browser location detected: ${newName}`);
       } catch (err) {
-        console.error("IP Geolocation failed:", err);
+        console.error("Browser geolocation failed:", err);
         await loadDefaultCity();
       }
     };
@@ -270,7 +277,7 @@ const Weather = ({ preferences, setPreferences }) => {
     const loadInitialLocation = async (force = false) => {
       if (force) setIsRefreshing(true);
       if (preferences.location === "auto") {
-        await loadLocationByIP();
+        await loadLocationByBrowser();
       } else {
         await loadDefaultCity();
       }
@@ -399,7 +406,6 @@ const Weather = ({ preferences, setPreferences }) => {
           height: "80vh",
         }}
       >
-        <WeatherBackdrop weatherType={backdropWeatherType} pointer={pointer} />
         <div className="loading-container">
           <div className="loading-spinner"></div>
           <p className="loading-text">Locating weather station...</p>
@@ -418,10 +424,6 @@ const Weather = ({ preferences, setPreferences }) => {
         "--pointer-y": `${pointer.y}%`,
       }}
     >
-      <WeatherBackdrop
-        weatherType={backdropWeatherType}
-        pointer={pointer}
-      />
 
       <Header
         unit={unit}

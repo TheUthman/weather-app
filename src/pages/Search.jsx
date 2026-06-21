@@ -46,7 +46,7 @@ const Search = () => {
           onClick={() => navigate("/")}
           aria-label="Go back"
         >
-          <FiArrowLeft size={24} />
+          <FiArrowLeft size={27} />
         </button>
         <h2 className="search-page-title">Search Location</h2>
       </div>
@@ -67,12 +67,14 @@ const Search = () => {
           />
         </div>
         {error && <p className="search-page-error">{error}</p>}
+    
         <button
           type="submit"
           className="search-page-submit"
           disabled={isPending}
         >
-          {isPending ? "Searching..." : "Search"}
+          {isPending ? <span className="submit-span">Searching...</span> : <span className="submit-span">Search</span>}
+          <FiSearch className="search-submit-icon" />
         </button>
       </form>
 

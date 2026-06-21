@@ -21,7 +21,7 @@ const CurrentWeather = ({ data, unit, loading }) => {
     return (
       <section className="current-weather skeleton-card">
         <div className="location">
-          <FiMapPin size={18} style={{ color: "rgba(255, 255, 255, 0.2)" }} />
+          <FiMapPin size={18} style={{ color: "var(--text-muted)" }} />
           <div className="skeleton-line skeleton-title"></div>
         </div>
         <div className="current-main">
