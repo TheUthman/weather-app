@@ -1,12 +1,11 @@
 import { FiMapPin } from "react-icons/fi";
 import { IoWater } from "react-icons/io5";
 import {
-  WiStrongWind,
-  WiHumidity,
   WiBarometer,
   WiSunrise,
   WiSunset,
 } from "react-icons/wi";
+import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import WeatherIcon from "./WeatherIcon";
 
 const CurrentWeather = ({ data, unit, loading }) => {
@@ -91,7 +90,7 @@ const CurrentWeather = ({ data, unit, loading }) => {
       </div>
       <div className="current-main">
         <div className={`current-temp-icon icon-${data.current.icon}`}>
-          <WeatherIcon iconName={data.current.icon} size={120} />
+          <WeatherIcon iconName={data.current.icon} size={"100%"} />
           <div className="temp-display">
             <span className="current-temp">
               {convertTemp(data.current.temp)}
@@ -109,14 +108,24 @@ const CurrentWeather = ({ data, unit, loading }) => {
 
       <div className="weather-stats">
         <div className="stat-card">
-          <WiHumidity size={28} />
+          <DotLottieReact
+            src="https://lottie.host/93a4aacf-3ce2-4a3c-8a6e-207cb696dbe7/DHBVR0KNE3.lottie"
+            loop
+            autoplay
+            className="lottie"
+          />
           <div className="stat-info">
             <span className="stat-value">{data.current.humidity}%</span>
             <span className="stat-label">Humidity</span>
           </div>
         </div>
         <div className="stat-card">
-          <WiStrongWind size={28} />
+          <DotLottieReact
+            src="https://lottie.host/7618d137-1067-4d0a-bf8c-6d2662e77c1b/hBurLipvaO.lottie"
+            loop
+            autoplay
+            className="lottie"
+          />
           <div className="stat-info">
             <span className="stat-value">{data.current.windSpeed} mph</span>
             <span className="stat-label">Wind</span>

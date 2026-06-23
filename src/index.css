@@ -171,7 +171,10 @@ body {
     transform: rotate(360deg);
   }
 }
-
+.lottie{
+  width: 100px;
+  height: 50px;
+}
 /* ===== HEADER ===== */
 .weather-header {
   display: flex;
@@ -331,6 +334,7 @@ body {
 
 .current-temp-icon {
   display: flex;
+  flex-direction: column;
   align-items: center;
   gap: 0;
   flex-wrap: wrap;
@@ -338,7 +342,7 @@ body {
   margin-bottom: 12px;
 }
 
-.current-temp-icon .animated-weather-icon-wrapper {
+.current-temp-icon {
   flex-shrink: 0;
   width: 120px;
   height: 120px;
@@ -346,9 +350,20 @@ body {
   justify-content: center;
   align-items: center;
 }
-
+.animated-weather-icon-wrapper{
+  flex-shrink: 0;
+  flex: 0 0 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.animated-weather-icon-wrapper img{
+  width: 100%;
+  height: 100%;
+}
 .temp-display {
   display: flex;
+  flex: 0 0 50%;
   align-items: flex-start;
   justify-content: center;
   width: 100%;
@@ -522,16 +537,23 @@ body {
 .hourly-scroll::-webkit-scrollbar {
   height: 4px;
 }
-
+.daily-list::-webkit-scrollbar{
+  width: 10px;
+}
 .hourly-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
-
+.daily-list::-webkit-scrollbar-track {
+  background: transparent;
+}
 .hourly-scroll::-webkit-scrollbar-thumb {
   background: var(--card-border);
   border-radius: 4px;
 }
-
+.daily-list::-webkit-scrollbar-thumb {
+  background: var(--card-border);
+  border-radius: 4px;
+}
 .hourly-card {
   display: flex;
   flex-direction: column;
@@ -582,6 +604,7 @@ body {
 /* ===== DAILY FORECAST ===== */
 .daily-forecast {
   padding: 24px 18px;
+  padding-right: 10px
 }
 
 .daily-forecast h2 {
@@ -592,9 +615,13 @@ body {
 }
 
 .daily-list {
+  max-height: 800px;
   display: flex;
   flex-direction: column;
   content-visibility: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
 }
 
 .daily-row {
@@ -617,7 +644,7 @@ body {
 
 @media (hover: hover) {
   .daily-row:hover {
-    background: var(--card-bg);
+    /* background: var(--card-bg); */
     transform: translateX(3px);
   }
 }
