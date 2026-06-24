@@ -142,7 +142,7 @@ const Settings = ({ preferences, setPreferences }) => {
 
         <div className="about-section">
           <img
-            src="/weather_radar_logo.png"
+            src="/WRLogo.png"
             alt="Weather Radar Logo"
             className="about-logo"
           />

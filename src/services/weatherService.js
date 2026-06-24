@@ -50,7 +50,6 @@ const weatherCodeToCondition = (code) => {
   return map[code] || "Unknown";
 };
 
-// Transform Open-Meteo current weather to match the expected shape (Google-like)
 const transformCurrent = (current, daily) => {
   if (!current) return null;
 

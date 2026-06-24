@@ -244,6 +244,8 @@ body {
   gap: 24px;
   width: 100%;
   max-width: 100%;
+  position: relative;
+  z-index: 2;
 }
 
 .main-stats {
@@ -557,12 +559,11 @@ body {
 .hourly-card {
   display: flex;
   flex-direction: column;
-  flex: 0 0 28%;
+  flex: 0 0 31.2%;
   align-items: center;
   min-width: 80px;
   padding: 18px 12px;
   background: var(--card-bg);
-  filter: drop-shadow(0px 5px 5px var(--neutral-300));
   border: none;
   border-radius: 15px;
   transition: all 0.25s var(--ease);
@@ -615,7 +616,7 @@ body {
 }
 
 .daily-list {
-  max-height: 800px;
+  max-height: 875px;
   display: flex;
   flex-direction: column;
   content-visibility: auto;
@@ -630,7 +631,6 @@ body {
   align-items: center;
   padding: 14px 12px;
   border-bottom: 1px solid var(--border-color);
-  filter: drop-shadow(0px 5px 5px var(--neutral-300));
   border-radius: 10px;
   transition: all 0.25s var(--ease);
   margin-bottom: 4px;
@@ -1545,4 +1545,75 @@ body {
 .error-search-btn:hover {
   background: var(--primary-dark);
   transform: translateY(-1px);
+}
+.sky-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.celestial {
+  position: absolute;
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  transition: transform 1s linear;
+}
+
+.celestial.sun {
+  background: radial-gradient(circle, #fff59d, #ffca28);
+  box-shadow: 0 0 60px #ffca28, 0 0 120px rgba(255, 202, 40, 0.4);
+}
+
+.celestial.moon {
+  background: radial-gradient(circle, #e2e8f0, #94a3b8);
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+}
+
+.sky-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 2s ease-in-out;
+}
+
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 1.5s ease;
+}
+
+.star {
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  opacity: 0.8;
+  animation: twinkle 3s infinite ease-in-out;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+.flash {
+  animation: flash 0.4s ease-in-out;
+}
+
+@keyframes flash {
+  0% { background: rgba(255,255,255,0); }
+  50% { background: rgba(255,255,255,0.3); }
+  100% { background: rgba(255,255,255,0); }
+}
+
+.weather-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  transition: background-color 1.5s ease;
+  z-index: 2;
 }

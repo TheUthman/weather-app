@@ -12,7 +12,9 @@ import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
 import HourlyForecast from "../components/HourlyForecast";
 import DailyForecast from "../components/DailyForecast";
+import SkyLayer from "../components/SkyLayer";
 import { useWeather } from "../hooks/useWeather";
+import { useCelestial } from "../hooks/useCelestial";
 import {
   fetchGeocodingData,
   fetchReverseGeocodingData,
@@ -312,6 +314,9 @@ const Weather = ({ preferences, setPreferences }) => {
     loadingDaily,
   } = useWeather(coords.lat, coords.lng);
 
+  // Celestial data for sky-aware coloring of weather components
+  const celestial = useCelestial(daily);
+
   // Mapped weather data memoized to prevent lag during scrolling and unrelated re-renders
   const weatherData = useMemo(() => {
     const conditionText =
@@ -363,27 +368,6 @@ const Weather = ({ preferences, setPreferences }) => {
     };
   }, [weather, hourly, daily, activeLocationName]);
 
-  const backdropWeatherType =
-    weatherData.current?.icon || cachedData?.current?.icon || "cloudy";
-
-  const handleBackdropPointerMove = useCallback((event) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    if (!bounds.width || !bounds.height) return;
-
-    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
-    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
-
-    setPointer({
-      x: Math.max(0, Math.min(100, x)),
-      y: Math.max(0, Math.min(100, y)),
-    });
-  }, []);
-
-  const handleBackdropPointerLeave = useCallback(() => {
-    setPointer({ x: 50, y: 35 });
-  }, []);
-
-  // Persist UI data to localStorage for instant subsequent LCP
   useEffect(() => {
     if (weatherData.current && !loadingCurrent) {
       localStorage.setItem("last_weather_ui_data", JSON.stringify(weatherData));
@@ -395,8 +379,6 @@ const Weather = ({ preferences, setPreferences }) => {
     return (
       <div
         className="weather-page page-container"
-        onPointerMove={handleBackdropPointerMove}
-        onPointerLeave={handleBackdropPointerLeave}
         style={{
           "--pointer-x": `${pointer.x}%`,
           "--pointer-y": `${pointer.y}%`,
@@ -415,10 +397,13 @@ const Weather = ({ preferences, setPreferences }) => {
   }
 
   return (
+    <>
+      <SkyLayer
+        daily={weatherData.daily}
+        condition={weatherData.current?.condition}
+      />
     <div
       className="weather-page page-container"
-      onPointerMove={handleBackdropPointerMove}
-      onPointerLeave={handleBackdropPointerLeave}
       style={{
         "--pointer-x": `${pointer.x}%`,
         "--pointer-y": `${pointer.y}%`,
@@ -439,6 +424,8 @@ const Weather = ({ preferences, setPreferences }) => {
           data={weatherData.current ? weatherData : cachedData}
           unit={unit}
           loading={loadingCurrent && !cachedData}
+          celestialType={celestial.type}
+          celestialProgress={celestial.progress}
         />
         <div className="main-stats">
           <HourlyForecast
@@ -449,6 +436,8 @@ const Weather = ({ preferences, setPreferences }) => {
             }
             unit={unit}
             loading={loadingHourly && !cachedData}
+            celestialType={celestial.type}
+            celestialProgress={celestial.progress}
           />
           <DailyForecast
             data={
@@ -456,10 +445,13 @@ const Weather = ({ preferences, setPreferences }) => {
             }
             unit={unit}
             loading={loadingDaily && !cachedData}
+            celestialType={celestial.type}
+            celestialProgress={celestial.progress}
           />
         </div>
       </div>
     </div>
+    </>
   );
 };
 
