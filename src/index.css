@@ -260,12 +260,13 @@ body {
 .hourly-forecast,
 .daily-forecast {
   background: var(--card-bg);
-  border-radius: 20px;
+  border-radius: 24px;
   border: none;
   box-shadow: none;
-  transition: all 0.3s var(--ease);
+  transition: all 0.4s var(--ease);
   min-width: 0;
   overflow: hidden;
+  backdrop-filter: blur(8px);
 }
 
 /* ===== CURRENT WEATHER ===== */
@@ -420,12 +421,13 @@ body {
   padding: 18px 12px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  box-shadow: 0px 5px 5px var(--neutral-300);
-  border-radius: 10px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 14px;
   text-align: center;
-  transition: all 0.25s var(--ease);
+  transition: all 0.3s var(--ease);
   min-width: 0;
   cursor: pointer;
+  backdrop-filter: blur(6px);
 }
 
 @media (hover: hover) {
@@ -480,11 +482,13 @@ body {
   padding: 14px;
   background: linear-gradient(
     135deg,
-    rgba(255, 215, 0, 0.05),
-    rgba(51, 153, 255, 0.05)
+    rgba(255, 215, 0, 0.08),
+    rgba(51, 153, 255, 0.08)
   );
-  border-radius: 0px;
-  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 215, 0, 0.15);
+  backdrop-filter: blur(4px);
+  transition: all 0.3s var(--ease);
 }
 .sun-times .sun-item:nth-child(2) {
   flex-direction: row-reverse;
@@ -565,10 +569,12 @@ body {
   padding: 18px 12px;
   background: var(--card-bg);
   border: none;
-  border-radius: 15px;
-  transition: all 0.25s var(--ease);
+  border-radius: 16px;
+  transition: all 0.3s var(--ease);
   scroll-snap-align: start;
   gap: 6px;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 @media (hover: hover) {
@@ -631,10 +637,11 @@ body {
   align-items: center;
   padding: 14px 12px;
   border-bottom: 1px solid var(--border-color);
-  border-radius: 10px;
-  transition: all 0.25s var(--ease);
-  margin-bottom: 4px;
+  border-radius: 12px;
+  transition: all 0.3s var(--ease);
+  margin-bottom: 6px;
   gap: 4px;
+  backdrop-filter: blur(4px);
 }
 
 .daily-row:last-child {
@@ -1552,39 +1559,47 @@ body {
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  transition: background 2.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .celestial {
   position: absolute;
-  width: 90px;
-  height: 90px;
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  transition: transform 1s linear;
+  transition: transform 0.8s linear, box-shadow 1.5s ease-in-out;
+  filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.2));
 }
 
 .celestial.sun {
-  background: radial-gradient(circle, #fff59d, #ffca28);
-  box-shadow: 0 0 60px #ffca28, 0 0 120px rgba(255, 202, 40, 0.4);
+  background: radial-gradient(circle at 35% 35%, #ffeb99, #ffd966, #ffb84d);
+  box-shadow: 
+    0 0 40px rgba(255, 215, 0, 0.8),
+    0 0 80px rgba(255, 200, 0, 0.4),
+    inset -25px -25px 40px rgba(255, 240, 100, 0.3);
 }
 
 .celestial.moon {
-  background: radial-gradient(circle, #e2e8f0, #94a3b8);
-  box-shadow: 0 0 30px rgba(255, 255, 255, 0.6);
+  background: radial-gradient(circle at 30% 30%, #ffffff, #e8eef5, #cbd5e0);
+  box-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.5),
+    0 0 40px rgba(200, 220, 255, 0.3),
+    inset -15px -15px 25px rgba(0, 0, 20, 0.2);
 }
 
-.sky-layer {
-  position: fixed;
+.cloud-layer {
+  position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
-  transition: background 2s ease-in-out;
+  transition: background 1.8s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
 }
 
 .stars {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  transition: opacity 1.5s ease;
+  transition: opacity 1.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .star {
@@ -1592,12 +1607,15 @@ body {
   background: white;
   border-radius: 50%;
   opacity: 0.8;
-  animation: twinkle 3s infinite ease-in-out;
+  box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
+  animation: twinkle 3.5s infinite ease-in-out;
 }
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.2; }
+  0%, 100% { opacity: 0.15; }
+  25% { opacity: 0.4; }
   50% { opacity: 1; }
+  75% { opacity: 0.4; }
 }
 
 .flash {
@@ -1614,6 +1632,6 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  transition: background-color 1.5s ease;
+  transition: background-color 1.8s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 2;
 }
