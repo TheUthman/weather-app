@@ -180,14 +180,14 @@ body {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin-bottom: 32px;
-  gap: 12px;
+  margin-bottom: 40px;
+  gap: 16px;
   padding: 0 4px;
 }
 
 .header-actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
   margin-left: auto;
 }
@@ -199,21 +199,23 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   border: none;
-  border-radius: 10px;
-  background: var(--card-bg);
+  border-radius: 14px;
+  background: rgba(30, 41, 59, 0.5);
   color: var(--text-color);
   cursor: pointer;
-  transition: all 0.25s var(--ease);
-  font-size: 15px;
+  transition: all 0.3s var(--ease);
+  font-size: 16px;
   font-weight: 600;
   font-family: inherit;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
 .unit-toggle {
-  font-size: 18px;
+  font-size: 20px;
 }
 
 .icon-btn.detecting {
@@ -270,14 +272,17 @@ body {
 }
 
 /* ===== CURRENT WEATHER ===== */
+.current-weather {
+  padding: 32px 28px;
+}
 .location {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-  font-size: 14px;
+  gap: 12px;
+  margin-bottom: 28px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -332,7 +337,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-bottom: 28px;
+  margin-bottom: 36px;
 }
 
 .current-temp-icon {
@@ -377,12 +382,12 @@ body {
   font-size: 80px;
   font-weight: 300;
   line-height: 1;
-  letter-spacing: -2px;
+  letter-spacing: -1px;
   color: var(--text-color);
 }
 
 .temp-unit {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 400;
   margin-top: 10px;
   color: var(--text-muted);
@@ -394,9 +399,9 @@ body {
 }
 
 .condition {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
   letter-spacing: 0.3px;
 }
 
@@ -410,19 +415,19 @@ body {
 .weather-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 28px;
+  gap: 16px;
+  margin-bottom: 32px;
 }
 
 .stat-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 18px 12px;
+  padding: 24px 16px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
-  border-radius: 14px;
+  box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.12);
+  border-radius: 18px;
   text-align: center;
   transition: all 0.3s var(--ease);
   min-width: 0;
@@ -440,19 +445,19 @@ body {
 
 .stat-card svg {
   color: var(--primary-light);
-  margin-bottom: 10px;
-  width: 30px;
-  height: 30px;
+  margin-bottom: 12px;
+  width: 32px;
+  height: 32px;
 }
 
 .stat-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .stat-value {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text-color);
 }
@@ -461,7 +466,7 @@ body {
   font-size: 11px;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   font-weight: 600;
 }
 
@@ -469,23 +474,23 @@ body {
 .sun-times {
   display: flex;
   justify-content: space-between;
-  padding-top: 24px;
+  padding-top: 28px;
   border-top: 1px solid var(--card-border);
-  gap: 16px;
+  gap: 18px;
 }
 
 .sun-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   flex: 1;
-  padding: 14px;
+  padding: 16px 18px;
   background: linear-gradient(
     135deg,
     rgba(255, 215, 0, 0.08),
     rgba(51, 153, 255, 0.08)
   );
-  border-radius: 12px;
+  border-radius: 16px;
   border: 1px solid rgba(255, 215, 0, 0.15);
   backdrop-filter: blur(4px);
   transition: all 0.3s var(--ease);
@@ -500,15 +505,15 @@ body {
 }
 .sun-item svg {
   color: var(--accent);
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
 }
 
 .sun-item div {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
 }
 
 .sun-value {
@@ -520,7 +525,7 @@ body {
   font-size: 12px;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   font-weight: 600;
 }
 
@@ -529,12 +534,17 @@ body {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.2px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.hourly-forecast {
+  padding: 28px 28px;
 }
 
 .hourly-scroll {
   display: flex;
-  gap: 14px;
+  gap: 16px;
   overflow-x: auto;
   padding-bottom: 8px;
   scroll-snap-type: x mandatory;
@@ -565,16 +575,16 @@ body {
   flex-direction: column;
   flex: 0 0 31.2%;
   align-items: center;
-  min-width: 80px;
-  padding: 18px 12px;
+  min-width: 90px;
+  padding: 20px 14px;
   background: var(--card-bg);
   border: none;
-  border-radius: 16px;
+  border-radius: 20px;
   transition: all 0.3s var(--ease);
   scroll-snap-align: start;
-  gap: 6px;
+  gap: 8px;
   backdrop-filter: blur(6px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 }
 
 @media (hover: hover) {
@@ -591,8 +601,8 @@ body {
 }
 
 .hourly-card svg {
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
 }
 
 .hourly-time {
@@ -610,15 +620,15 @@ body {
 
 /* ===== DAILY FORECAST ===== */
 .daily-forecast {
-  padding: 24px 18px;
-  padding-right: 10px
+  padding: 28px 28px;
+  padding-right: 12px;
 }
 
 .daily-forecast h2 {
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.2px;
-  margin-bottom: 14px;
+  margin-bottom: 18px;
 }
 
 .daily-list {
@@ -635,12 +645,12 @@ body {
   display: grid;
   grid-template-columns: 1fr 1.6fr 0.8fr 1fr;
   align-items: center;
-  padding: 14px 12px;
+  padding: 18px 14px;
   border-bottom: 1px solid var(--border-color);
-  border-radius: 12px;
+  border-radius: 16px;
   transition: all 0.3s var(--ease);
-  margin-bottom: 6px;
-  gap: 4px;
+  margin-bottom: 8px;
+  gap: 6px;
   backdrop-filter: blur(4px);
 }
 
@@ -662,15 +672,15 @@ body {
 
 .precip-badge {
   display: inline-block;
-  padding: 3px 10px;
+  padding: 4px 12px;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 11px;
   font-weight: 700;
   color: var(--primary-light);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.4px;
 }
 
 .daily-day {
@@ -682,11 +692,13 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
 }
 
 .daily-condition svg {
   flex-shrink: 0;
+  width: 28px;
+  height: 28px;
 }
 
 .daily-condition-text {
