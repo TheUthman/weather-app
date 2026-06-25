@@ -241,8 +241,7 @@ body {
 @media (hover: hover) {
   .search-nav-btn:hover,
   .unit-toggle:hover,
-  .settings-btn:hover,
-  .icon-btn:hover {
+  .settings-btn:hover {
     color: var(--primary-color);
     transform: scale(1.1) ;
   }
