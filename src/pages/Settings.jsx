@@ -1,6 +1,4 @@
-/* eslint-disable no-unused-vars */
-// src/pages/Settings.jsx
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Toggle from "../components/Toggle";
 import CustomSelect from "../components/CustomSelect";
 import "../styles/Settings.css";
@@ -9,12 +7,12 @@ const Settings = ({ preferences, setPreferences }) => {
   const [localCity, setLocalCity] = useState(preferences.defaultCity);
 
   const unitOptions = [
-    { value: "imperial", label: "Fahrenheit (°F)" },
-    { value: "metric", label: "Celsius (°C)" },
+    { value: "imperial", label: "Fahrenheit (F)" },
+    { value: "metric", label: "Celsius (C)" },
   ];
 
   const themeOptions = [
-    { value: "system", label: "System Default" },
+    { value: "system", label: "System" },
     { value: "light", label: "Light" },
     { value: "dark", label: "Dark" },
   ];
@@ -24,8 +22,8 @@ const Settings = ({ preferences, setPreferences }) => {
     { value: "manual", label: "Manual" },
   ];
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
     updatePreference(name, type === "checkbox" ? checked : value);
   };
 
@@ -39,18 +37,17 @@ const Settings = ({ preferences, setPreferences }) => {
   return (
     <div className="settings-page page-container">
       <header className="settings-header">
+        <span>Preferences</span>
         <h1>Settings</h1>
       </header>
 
       <div className="settings-container">
         <section className="settings-group">
-          <h2>Unit Configuration</h2>
+          <h2>Display</h2>
           <div className="setting-row">
             <div className="setting-info">
-              <label htmlFor="units">Temperature Units</label>
-              <span className="setting-description">
-                Choose between Celsius and Fahrenheit for global display
-              </span>
+              <label htmlFor="units">Temperature units</label>
+              <span className="setting-description">Choose the unit used across forecasts.</span>
             </div>
             <div className="setting-control">
               <CustomSelect
@@ -61,16 +58,10 @@ const Settings = ({ preferences, setPreferences }) => {
               />
             </div>
           </div>
-        </section>
-
-        <section className="settings-group">
-          <h2>Appearance</h2>
           <div className="setting-row">
             <div className="setting-info">
-              <label htmlFor="theme">Application Theme</label>
-              <span className="setting-description">
-                Personalize your view with Light, Dark, or Adaptive modes
-              </span>
+              <label htmlFor="theme">Theme</label>
+              <span className="setting-description">Use your system theme or set one manually.</span>
             </div>
             <div className="setting-control">
               <CustomSelect
@@ -84,33 +75,11 @@ const Settings = ({ preferences, setPreferences }) => {
         </section>
 
         <section className="settings-group">
-          <h2>System</h2>
+          <h2>Location</h2>
           <div className="setting-row">
             <div className="setting-info">
-              <label>Push Notifications</label>
-              <span className="setting-description">
-                Receive real-time alerts for severe weather changes
-              </span>
-            </div>
-            <div className="setting-control">
-              <Toggle
-                isOn={preferences.notifications}
-                onClick={() =>
-                  updatePreference("notifications", !preferences.notifications)
-                }
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="settings-group">
-          <h2>Location Settings</h2>
-          <div className="setting-row">
-            <div className="setting-info">
-              <label htmlFor="location">Detection Mode</label>
-              <span className="setting-description">
-                Define how the app identifies your current geographical location
-              </span>
+              <label htmlFor="location">Detection mode</label>
+              <span className="setting-description">Let the browser detect your location or use a default city.</span>
             </div>
             <div className="setting-control">
               <CustomSelect
@@ -124,20 +93,39 @@ const Settings = ({ preferences, setPreferences }) => {
           {preferences.location === "manual" && (
             <div className="setting-row">
               <div className="setting-info">
-                <label htmlFor="defaultCity">Default City</label>
+                <label htmlFor="defaultCity">Default city</label>
               </div>
               <div className="setting-control">
                 <input
+                  id="defaultCity"
                   type="text"
                   value={localCity}
-                  onChange={(e) => setLocalCity(e.target.value)}
+                  onChange={(event) => setLocalCity(event.target.value)}
                   onBlur={() => updatePreference("defaultCity", localCity)}
-                  placeholder="e.g., New York"
+                  placeholder="e.g. New York"
                   className="city-input"
                 />
               </div>
             </div>
           )}
+        </section>
+
+        <section className="settings-group">
+          <h2>Alerts</h2>
+          <div className="setting-row">
+            <div className="setting-info">
+              <label>Push notifications</label>
+              <span className="setting-description">Receive alerts for major weather changes.</span>
+            </div>
+            <div className="setting-control">
+              <Toggle
+                isOn={preferences.notifications}
+                onClick={() =>
+                  updatePreference("notifications", !preferences.notifications)
+                }
+              />
+            </div>
+          </div>
         </section>
 
         <div className="about-section">
@@ -148,7 +136,7 @@ const Settings = ({ preferences, setPreferences }) => {
           />
           <h3 className="about-title">Weather Radar</h3>
           <p className="about-version">Version 1.0.0</p>
-          <p className="about-copyright">© 2026 Weather Radar Inc.</p>
+          <p className="about-copyright">Copyright 2026 Weather Radar Inc.</p>
         </div>
       </div>
     </div>

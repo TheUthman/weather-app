@@ -58,7 +58,7 @@ const App = () => {
       <main className="app-content">
         <Suspense fallback={<div className="page-loader" />}>
           <Routes>
-            <Route path="/" element={<Weather preferences={preferences} />} />
+            <Route path="/" element={<Weather preferences={preferences} setPreferences={setPreferences} />} />
             <Route path="/settings" element={<Settings preferences={preferences} setPreferences={setPreferences} />} />
             <Route path="/search" element={<Search />} />
           </Routes>

@@ -52,22 +52,25 @@ const Search = () => {
       </div>
 
       <form className="search-page-form" onSubmit={handleSearch}>
-        <div className="search-page-input-wrapper">
-          <FiSearch className="search-page-input-icon" size={20} />
-          <input
-            type="text"
-            className="search-page-input"
-            placeholder="Search city, state, or country..."
-            value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              if (error) setError("");
-            }}
-            autoFocus
-          />
+        <div className="search-field-group">
+          <div className="search-page-input-wrapper">
+            <FiSearch className="search-page-input-icon" size={20} />
+            <input
+              type="text"
+              className="search-page-input"
+              placeholder="Search city, state, or country"
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                if (error) setError("");
+              }}
+              aria-describedby={error ? "search-error" : undefined}
+              autoFocus
+            />
+          </div>
+          {error && <p className="search-page-error" id="search-error">{error}</p>}
         </div>
-        {error && <p className="search-page-error">{error}</p>}
-    
+
         <button
           type="submit"
           className="search-page-submit"

@@ -172,3 +172,87 @@
   color: var(--text-muted);
   margin: 0;
 }
+
+/* Minimal settings redesign */
+.settings-page {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.settings-header {
+  margin-bottom: 18px;
+}
+
+.settings-header span {
+  color: var(--soft-text);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.settings-header h1 {
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.settings-container {
+  gap: 12px;
+  margin-top: 0;
+}
+
+.settings-group,
+.about-section {
+  border-radius: 8px;
+  border-color: var(--line);
+  background: var(--surface);
+  box-shadow: none;
+  backdrop-filter: blur(18px);
+}
+
+.settings-group {
+  padding: 18px;
+}
+
+.settings-group:hover {
+  box-shadow: none;
+}
+
+.settings-group h2 {
+  margin-bottom: 8px;
+  color: var(--text-color);
+  font-size: 15px;
+}
+
+.setting-row {
+  border-bottom-color: var(--line);
+  padding: 14px 0;
+  gap: 18px;
+}
+
+.setting-info label {
+  font-size: 14px;
+}
+
+.setting-description {
+  color: var(--soft-text);
+  font-size: 13px;
+}
+
+.setting-control select,
+.setting-control .city-input {
+  min-width: 180px;
+  border-radius: 8px;
+  border-color: var(--line);
+  background: var(--surface-strong);
+}
+
+.about-section {
+  padding: 20px;
+}
+
+.about-logo {
+  width: 54px;
+  height: 54px;
+  border-radius: 8px;
+  box-shadow: none;
+}

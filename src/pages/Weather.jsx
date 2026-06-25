@@ -62,6 +62,12 @@ const getWindSpeed = (windObj) => {
   return Math.round(val);
 };
 
+const getWindDirection = (degrees) => {
+  if (degrees === undefined || degrees === null) return "";
+  const directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  return directions[Math.round(degrees / 45) % 8];
+};
+
 // Helper to parse pressure to inHg
 const getPressure = (pressureObj) => {
   if (!pressureObj) return 29.92;
@@ -173,7 +179,7 @@ const Weather = ({ preferences, setPreferences }) => {
       // Fallback if setter isn't provided
       setUnit(newUnit);
     }
-  }, []);
+  }, [setPreferences]);
 
   useEffect(() => {
     setUnit(preferences.units === "metric" ? "C" : "F");
@@ -293,7 +299,7 @@ const Weather = ({ preferences, setPreferences }) => {
     return () => {
       active = false;
     };
-  }, [preferences.location, preferences.defaultCity, location.state]);
+  }, [preferences.location, preferences.defaultCity, location.state, coords.lat]);
 
   // Update browser document title when active location changes
   useEffect(() => {
@@ -346,8 +352,16 @@ const Weather = ({ preferences, setPreferences }) => {
                 ? weather.relativeHumidity
                 : 0,
             windSpeed: getWindSpeed(weather.wind),
+            windDirection: getWindDirection(weather.wind?.direction),
             pressure: getPressure(weather.airPressure),
             uvIndex: weather.uvIndex !== undefined ? weather.uvIndex : 0,
+            precipitation: weather.precipitation ?? 0,
+            cloudCover: weather.cloudCover ?? 0,
+            visibility:
+              weather.visibility !== null && weather.visibility !== undefined
+                ? Math.round((weather.visibility / 1609.344) * 10) / 10
+                : null,
+            dewPoint: parseTemp(weather.dewPoint),
             sunrise: sunriseStr,
             sunset: sunsetStr,
           }
@@ -356,6 +370,7 @@ const Weather = ({ preferences, setPreferences }) => {
         time: formatHour(h.interval?.startTime, index),
         temp: parseTemp(h.temperature),
         icon: getIcon(h.weatherCondition?.iconBaseUri),
+        precip: h.precipitationProbability || 0,
       })),
       daily: (daily || []).map((d) => ({
         day: formatDayName(d.interval?.startTime),

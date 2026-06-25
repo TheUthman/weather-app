@@ -1,89 +1,25 @@
-import { memo, useMemo } from "react";
+import { memo } from "react";
+import { FiCloudRain } from "react-icons/fi";
 import WeatherIcon from "./WeatherIcon";
-import { getCloudColor } from "../utils/cloudLightning";
 
-const getTextColor = (type, progress) => {
-  if (type === "moon") return "rgba(230, 235, 255, 0.95)";
-  if (progress < 0.2) return "rgba(80, 30, 10, 0.95)";
-  if (progress < 0.6) return "rgba(10, 30, 50, 0.95)";
-  if (progress < 0.9) return "rgba(240, 220, 255, 0.95)";
-  return "rgba(200, 210, 230, 0.95)";
-};
-
-const getMutedTextColor = (type, progress) => {
-  if (type === "moon") return "rgba(180, 190, 220, 0.8)";
-  if (progress < 0.2) return "rgba(80, 30, 10, 0.7)";
-  if (progress < 0.6) return "rgba(10, 30, 50, 0.7)";
-  if (progress < 0.9) return "rgba(200, 180, 240, 0.8)";
-  return "rgba(160, 175, 200, 0.8)";
-};
-
-const getShadowColor = (type, progress) => {
-  if (type === "moon") return "rgba(0, 0, 20, 0.4)";
-  if (progress < 0.2) return "rgba(120, 40, 0, 0.3)";
-  if (progress < 0.6) return "rgba(0, 20, 40, 0.2)";
-  if (progress < 0.9) return "rgba(60, 0, 100, 0.35)";
-  return "rgba(0, 0, 20, 0.4)";
-};
-
-const HourlyForecast = ({ data, unit, loading, celestialType, celestialProgress }) => {
+const HourlyForecast = ({ data, unit, loading }) => {
   const convertTemp = (temp) => {
-    if (unit === "C") {
-      return Math.round(((temp - 32) * 5) / 9);
-    }
+    if (unit === "C") return Math.round(((temp - 32) * 5) / 9);
     return temp;
   };
 
-  const cloudColor = useMemo(
-    () => getCloudColor(celestialType, celestialProgress),
-    [celestialType, celestialProgress]
-  );
-
-  const textColor = useMemo(
-    () => getTextColor(celestialType, celestialProgress),
-    [celestialType, celestialProgress]
-  );
-
-  const mutedColor = useMemo(
-    () => getMutedTextColor(celestialType, celestialProgress),
-    [celestialType, celestialProgress]
-  );
-
-  const shadowColor = useMemo(
-    () => getShadowColor(celestialType, celestialProgress),
-    [celestialType, celestialProgress]
-  );
-
-  const sectionStyle = useMemo(
-    () => ({
-      background: cloudColor,
-      color: textColor,
-      boxShadow: `0 8px 32px ${shadowColor}`,
-    }),
-    [cloudColor, textColor, shadowColor]
-  );
-
-  const hourlyCardStyle = useMemo(
-    () => ({
-      background: cloudColor,
-      boxShadow: `0 4px 12px ${shadowColor}`,
-    }),
-    [cloudColor, shadowColor]
-  );
-
   if (loading || !data || data.length === 0) {
     return (
-      <section className="hourly-forecast skeleton-card" style={sectionStyle}>
-        <h2 style={{ color: textColor }}>Hourly Forecast</h2>
+      <section className="hourly-forecast forecast-panel">
+        <div className="section-heading">
+          <h2>Hourly</h2>
+        </div>
         <div className="hourly-scroll">
           {[...Array(12)].map((_, index) => (
             <div key={index} className="hourly-card-skeleton">
-              <div className="skeleton-line skeleton-time-lbl"></div>
-              <div
-                className="skeleton-circle-small"
-                style={{ margin: "8px 0" }}
-              ></div>
-              <div className="skeleton-line skeleton-temp-lbl"></div>
+              <div className="skeleton-line skeleton-time-lbl" />
+              <div className="skeleton-circle-small" />
+              <div className="skeleton-line skeleton-temp-lbl" />
             </div>
           ))}
         </div>
@@ -92,17 +28,25 @@ const HourlyForecast = ({ data, unit, loading, celestialType, celestialProgress 
   }
 
   return (
-    <section className="hourly-forecast" style={sectionStyle}>
-      <h2 style={{ color: textColor }}>Hourly Forecast</h2>
+    <section className="hourly-forecast forecast-panel" aria-label="Hourly forecast">
+      <div className="section-heading">
+        <h2>Hourly</h2>
+        <span>Next 12 hours</span>
+      </div>
       <div className="hourly-scroll">
-        {data &&
-          data.map((hour, index) => (
-            <div key={index} className="hourly-card" style={hourlyCardStyle}>
-              <span className="hourly-time" style={{ color: mutedColor }}>{hour.time}</span>
-              <WeatherIcon iconName={hour.icon} size={50} />
-              <span className="hourly-temp" style={{ color: textColor }}>{convertTemp(hour.temp)}°</span>
-            </div>
-          ))}
+        {data.map((hour, index) => (
+          <div key={`${hour.time}-${index}`} className="hourly-card">
+            <span className="hourly-time">{hour.time}</span>
+            <WeatherIcon iconName={hour.icon} size={34} />
+            <span className="hourly-temp">{convertTemp(hour.temp)}°</span>
+            {hour.precip > 0 && (
+              <span className="hourly-rain">
+                <FiCloudRain size={12} />
+                {hour.precip}%
+              </span>
+            )}
+          </div>
+        ))}
       </div>
     </section>
   );

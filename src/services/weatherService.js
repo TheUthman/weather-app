@@ -72,11 +72,19 @@ const transformCurrent = (current, daily) => {
     },
     wind: {
       speed: { value: current.wind_speed_10m, unit: "KM_PER_HOUR" },
+      direction: current.wind_direction_10m,
     },
     airPressure: {
       meanSeaLevelMillibars: current.pressure_msl,
     },
     uvIndex: current.uv_index ?? 0,
+    precipitation: current.precipitation ?? 0,
+    cloudCover: current.cloud_cover ?? 0,
+    visibility: current.visibility ?? null,
+    dewPoint: {
+      degrees: current.dew_point_2m ?? 0,
+      unit: "C",
+    },
     // Provide sunrise/sunset at the top level for use by Weather.jsx
     _sunrise: sunriseISO,
     _sunset: sunsetISO,
@@ -96,6 +104,7 @@ const transformHourly = (hourly) => {
     weatherCondition: {
       iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(hourly.weather_code[i])}`,
     },
+    precipitationProbability: hourly.precipitation_probability?.[i] ?? 0,
   }));
 };
 
@@ -103,7 +112,7 @@ export const fetchWeatherData = async (lat, lng) => {
   try {
     const response = await fetch(
       `${WEATHER_BASE}?latitude=${lat}&longitude=${lng}` +
-      "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,uv_index,pressure_msl" +
+      "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,uv_index,pressure_msl,precipitation,cloud_cover,visibility,dew_point_2m" +
       "&daily=sunrise,sunset" +
       "&timezone=auto"
     );
@@ -166,7 +175,7 @@ export const fetchHourlyWeather = async (lat, lng) => {
   try {
     const response = await fetch(
       `${WEATHER_BASE}?latitude=${lat}&longitude=${lng}` +
-      "&hourly=temperature_2m,weather_code" +
+      "&hourly=temperature_2m,weather_code,precipitation_probability" +
       "&forecast_hours=12" +
       "&timezone=auto"
     );
