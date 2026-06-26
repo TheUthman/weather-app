@@ -1,10 +1,8 @@
-import { FiNavigation, FiSearch, FiSettings } from "react-icons/fi";
+import { FiNavigation } from "react-icons/fi";
 
 const Header = ({
   unit,
   setUnit,
-  onOpenSearch,
-  onOpenSettings,
   onDetectLocation,
   isDetecting,
 }) => {
@@ -30,12 +28,6 @@ const Header = ({
           aria-label={`Switch to ${unit === "F" ? "Celsius" : "Fahrenheit"}`}
         >
           °{unit}
-        </button>
-        <button className="search-nav-btn" onClick={onOpenSearch} aria-label="Search location">
-          <FiSearch size={21} />
-        </button>
-        <button className="settings-btn" onClick={onOpenSettings} aria-label="Open settings">
-          <FiSettings size={22} />
         </button>
       </div>
     </header>

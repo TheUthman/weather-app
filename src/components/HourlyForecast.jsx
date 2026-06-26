@@ -37,8 +37,10 @@ const HourlyForecast = ({ data, unit, loading }) => {
         {data.map((hour, index) => (
           <div key={`${hour.time}-${index}`} className="hourly-card">
             <span className="hourly-time">{hour.time}</span>
-            <WeatherIcon iconName={hour.icon} size={34} />
-            <span className="hourly-temp">{convertTemp(hour.temp)}°</span>
+            <div className="hourly-mid">
+              <WeatherIcon iconName={hour.icon} size={34} />
+              <span className="hourly-temp">{convertTemp(hour.temp)}°</span>
+            </div>
             {hour.precip > 0 && (
               <span className="hourly-rain">
                 <FiCloudRain size={12} />
