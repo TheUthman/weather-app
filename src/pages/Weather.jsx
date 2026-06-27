@@ -19,6 +19,7 @@ import {
   fetchGeocodingData,
   fetchReverseGeocodingData,
 } from "../services/geocodingService";
+import { useToast } from "../context/ToastContext";
 
 // Helper parser to extract temperature values and convert Celsius to Fahrenheit
 const parseTemp = (tempObj) => {
@@ -145,6 +146,7 @@ const getIcon = (uri) => {
 const Weather = ({ preferences, setPreferences }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { addToast } = useToast();
 
   // Initialize with cached coordinates to trigger weather fetch immediately on load
   const [coords, setCoords] = useState(() => {
@@ -227,8 +229,10 @@ const Weather = ({ preferences, setPreferences }) => {
       const cityName = await fetchReverseGeocodingData(latitude, longitude);
       setActiveLocationName(cityName || "Detected Location");
       localStorage.setItem("last_weather_source", "auto");
+      addToast(`Location updated to ${cityName || "Detected Location"}`, "success");
     } catch (err) {
       console.error("Manual detection failed", err);
+      addToast("Location access denied. Using default city.", "error");
     } finally {
       setTimeout(() => setIsRefreshing(false), 600);
     }
@@ -260,6 +264,7 @@ const Weather = ({ preferences, setPreferences }) => {
           }
         } catch (err) {
           console.error("Failed to load default city location:", err);
+          addToast("Failed to find the default city. Check your settings.", "error");
         }
       };
 
@@ -284,6 +289,7 @@ const Weather = ({ preferences, setPreferences }) => {
           localStorage.setItem("last_weather_source", "auto");
         } catch (err) {
           console.error("Browser geolocation failed:", err);
+          addToast("Auto-detect failed. Falling back to default city.", "warning");
           await loadDefaultCity();
         }
       };

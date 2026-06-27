@@ -1,14 +1,14 @@
 import { useState } from "react";
 import Toggle from "../components/Toggle";
 import CustomSelect from "../components/CustomSelect";
+import { useToast } from "../context/ToastContext";
 import "../styles/Settings.css";
 
 const Settings = ({ preferences, setPreferences }) => {
   const [localCity, setLocalCity] = useState(preferences.defaultCity);
-
   const [loading, setLoading] = useState(false);
-
   const [clearInput, setClearInput] = useState(false);
+  const { addToast } = useToast();
 
   const unitOptions = [
     { value: "imperial", label: "Fahrenheit (F)" },
@@ -26,16 +26,54 @@ const Settings = ({ preferences, setPreferences }) => {
     { value: "manual", label: "Manual" },
   ];
 
-  const handleChange = (event) => {
-    const { name, value, type, checked } = event.target;
-    updatePreference(name, type === "checkbox" ? checked : value);
-  };
-
   const updatePreference = (name, value) => {
     setPreferences((prev) => ({
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    const newValue = type === "checkbox" ? checked : value;
+    updatePreference(name, newValue);
+
+    // Toast feedback per setting type
+    if (name === "units") {
+      const label = value === "metric" ? "Celsius (°C)" : "Fahrenheit (°F)";
+      addToast(`Temperature units switched to ${label}`, "info");
+    } else if (name === "theme") {
+      const label = value.charAt(0).toUpperCase() + value.slice(1);
+      addToast(`Theme set to ${label}`, "info");
+    } else if (name === "location") {
+      const label = value === "auto" ? "Auto-detect" : "Manual";
+      addToast(`Location mode: ${label}`, "info");
+    }
+  };
+
+  const handleSaveCity = () => {
+    const trimmed = localCity.trim();
+    if (!trimmed) {
+      addToast("Please enter a city name", "warning");
+      return;
+    }
+
+    updatePreference("defaultCity", trimmed);
+    setLoading(true);
+    addToast(`Default city updated to ${trimmed}`, "success");
+    setTimeout(() => {
+      setLoading(false);
+      setClearInput(true);
+    }, 1000);
+  };
+
+  const handleToggleNotifications = () => {
+    const next = !preferences.notifications;
+    updatePreference("notifications", next);
+    addToast(
+      next ? "Push notifications enabled" : "Push notifications disabled",
+      "info"
+    );
   };
 
   return (
@@ -105,8 +143,8 @@ const Settings = ({ preferences, setPreferences }) => {
                   type="text"
                   value={clearInput ? "" : localCity}
                   onChange={(event) => {
-                    setLocalCity(event.target.value)
-                    setClearInput(false)
+                    setLocalCity(event.target.value);
+                    setClearInput(false);
                   }}
                   placeholder="e.g. New York"
                   className="city-input"
@@ -114,14 +152,7 @@ const Settings = ({ preferences, setPreferences }) => {
                 <button
                   type="button"
                   className="city-save-btn"
-                  onClick={() => {
-                    updatePreference("defaultCity", localCity)
-                    setLoading(true)
-                    setTimeout(() => {
-                      setLoading(false)
-                      setClearInput(true)
-                    }, 1000)
-                  }}
+                  onClick={handleSaveCity}
                   disabled={loading}
                 >
                   {loading ? "Saving..." : "Save"}
@@ -141,9 +172,7 @@ const Settings = ({ preferences, setPreferences }) => {
             <div className="setting-control">
               <Toggle
                 isOn={preferences.notifications}
-                onClick={() =>
-                  updatePreference("notifications", !preferences.notifications)
-                }
+                onClick={handleToggleNotifications}
               />
             </div>
           </div>

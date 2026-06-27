@@ -2,6 +2,8 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import Weather from "./pages/Weather";
 import Sidebar from "./components/Sidebar";
+import ToastContainer from "./components/Toast";
+import { ToastProvider } from "./context/ToastContext";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Analytics } from "@vercel/analytics/react";
 import "./App.css";
@@ -53,20 +55,23 @@ const App = () => {
   }, [preferences.theme]);
 
   return (
-    <div className="app-layout">
-      <Sidebar />
-      <main className="app-content">
-        <Suspense fallback={<div className="page-loader" />}>
-          <Routes>
-            <Route path="/" element={<Weather preferences={preferences} setPreferences={setPreferences} />} />
-            <Route path="/settings" element={<Settings preferences={preferences} setPreferences={setPreferences} />} />
-            <Route path="/search" element={<Search />} />
-          </Routes>
-        </Suspense>
-      </main>
-      <SpeedInsights />
-      <Analytics />
-    </div>
+    <ToastProvider>
+      <div className="app-layout">
+        <Sidebar />
+        <main className="app-content">
+          <Suspense fallback={<div className="page-loader" />}>
+            <Routes>
+              <Route path="/" element={<Weather preferences={preferences} setPreferences={setPreferences} />} />
+              <Route path="/settings" element={<Settings preferences={preferences} setPreferences={setPreferences} />} />
+              <Route path="/search" element={<Search />} />
+            </Routes>
+          </Suspense>
+        </main>
+        <SpeedInsights />
+        <Analytics />
+      </div>
+      <ToastContainer />
+    </ToastProvider>
   );
 };
 
