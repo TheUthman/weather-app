@@ -432,6 +432,7 @@ const Weather = ({ preferences, setPreferences }) => {
 
       <Header
         unit={unit}
+        data={weatherData?.current?.condition}
         setUnit={handleUnitChange}
         onOpenSettings={() => navigate("/settings")}
         onOpenSearch={() => navigate("/search")}

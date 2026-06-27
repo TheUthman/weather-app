@@ -175,22 +175,6 @@ body {
   width: 100px;
   height: 50px;
 }
-/* ===== HEADER ===== */
-.weather-header {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  margin-bottom: 32px;
-  gap: 10px;
-  padding: 0 4px;
-}
-
-.header-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  margin-left: auto;
-}
 
 /* ===== DASHBOARD GRID ===== */
 .weather-dashboard {
@@ -1613,6 +1597,7 @@ body {
   display: flex;
   flex-direction: column;
   line-height: 1.1;
+  flex: 0 0 20%;
 }
 
 .header-copy span {
@@ -1627,11 +1612,35 @@ body {
   font-weight: 700;
 }
 
+.conditions-message{
+  flex: 0 0 70%;
+  background-color: var(--surface);
+  border-radius: var(--panel-radius);
+  padding: 10px;
+  height: 50px;
+  overflow: hidden;
+}
+
+.tips{
+  color: var(--primary);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 11px;
+}
+
+.message{
+  text-align: center;
+  font-size: 12px;
+  color: var(--soft-text);
+  transition: opacity 1s ease-in-out;
+}
+
 .header-actions {
   display: flex;
   gap: 8px;
   align-items: center;
   margin-left: 0;
+  flex: 0 0 10%;
 }
 
 .search-nav-btn,
