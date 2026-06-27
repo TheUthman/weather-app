@@ -6,6 +6,10 @@ import "../styles/Settings.css";
 const Settings = ({ preferences, setPreferences }) => {
   const [localCity, setLocalCity] = useState(preferences.defaultCity);
 
+  const [loading, setLoading] = useState(false);
+
+  const [clearInput, setClearInput] = useState(false);
+
   const unitOptions = [
     { value: "imperial", label: "Fahrenheit (F)" },
     { value: "metric", label: "Celsius (C)" },
@@ -99,12 +103,29 @@ const Settings = ({ preferences, setPreferences }) => {
                 <input
                   id="defaultCity"
                   type="text"
-                  value={localCity}
-                  onChange={(event) => setLocalCity(event.target.value)}
-                  onBlur={() => updatePreference("defaultCity", localCity)}
+                  value={clearInput ? "" : localCity}
+                  onChange={(event) => {
+                    setLocalCity(event.target.value)
+                    setClearInput(false)
+                  }}
                   placeholder="e.g. New York"
                   className="city-input"
                 />
+                <button
+                  type="button"
+                  className="city-save-btn"
+                  onClick={() => {
+                    updatePreference("defaultCity", localCity)
+                    setLoading(true)
+                    setTimeout(() => {
+                      setLoading(false)
+                      setClearInput(true)
+                    }, 1000)
+                  }}
+                  disabled={loading}
+                >
+                  {loading ? "Saving..." : "Save"}
+                </button>
               </div>
             </div>
           )}

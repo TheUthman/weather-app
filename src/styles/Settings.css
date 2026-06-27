@@ -74,7 +74,11 @@
   max-width: 380px;
   line-height: 1.5;
 }
-
+.setting-control{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
 .setting-control select,
 .setting-control .city-input {
   padding: 8px 12px;
@@ -245,7 +249,21 @@
   border-color: var(--line);
   background: var(--surface-strong);
 }
-
+.city-save-btn{
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--card-border);
+  background: var(--primary);
+  color: white;
+  font-family: inherit;
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s var(--ease);
+  cursor: pointer;
+}
+.city-save-btn:hover{
+  background: var(--primary-dark);
+}
 .about-section {
   padding: 20px;
 }

@@ -192,6 +192,7 @@ const Weather = ({ preferences, setPreferences }) => {
       startTransition(() => {
         setCoords(state.searchCoords);
         setActiveLocationName(state.searchQuery || "Searched Location");
+        localStorage.setItem("last_weather_source", "search");
       });
       // Clear the navigation state so it doesn't re-trigger
       window.history.replaceState({}, document.title);
@@ -225,6 +226,7 @@ const Weather = ({ preferences, setPreferences }) => {
       // Reverse geocode to get the city name
       const cityName = await fetchReverseGeocodingData(latitude, longitude);
       setActiveLocationName(cityName || "Detected Location");
+      localStorage.setItem("last_weather_source", "auto");
     } catch (err) {
       console.error("Manual detection failed", err);
     } finally {
@@ -233,73 +235,70 @@ const Weather = ({ preferences, setPreferences }) => {
   }, []);
 
   useEffect(() => {
-    // Don't auto-trigger if we have cached coords or a search result
-    if (location.state?.searchCoords || coords.lat) return;
+    // If there is an active incoming search transition, let the search useEffect handle it.
+    if (location.state?.searchCoords) return;
 
-    let active = true;
+    const cachedSource = localStorage.getItem("last_weather_source");
+    const cachedName = localStorage.getItem("last_weather_name");
 
-    const loadDefaultCity = async () => {
-      try {
-        const city = preferences.defaultCity || "San Francisco";
-        const result = await fetchGeocodingData(city);
-        if (!active) return;
-        if (result && result.lat && result.lng) {
-          setCoords((prev) => {
-            if (prev.lat === result.lat && prev.lng === result.lng) return prev;
-            return result;
-          });
-          setActiveLocationName((prev) => (prev === city ? prev : city));
+    const modeMismatch = preferences.location !== cachedSource;
+    const cityMismatch = preferences.location === "manual" && preferences.defaultCity !== cachedName;
+    const noCoords = !coords.lat || !coords.lng;
+
+    if (modeMismatch || cityMismatch || noCoords) {
+      let active = true;
+
+      const loadDefaultCity = async () => {
+        try {
+          const city = preferences.defaultCity || "San Francisco";
+          const result = await fetchGeocodingData(city);
+          if (!active) return;
+          if (result && result.lat && result.lng) {
+            setCoords(result);
+            setActiveLocationName(city);
+            localStorage.setItem("last_weather_source", "manual");
+          }
+        } catch (err) {
+          console.error("Failed to load default city location:", err);
         }
-      } catch (err) {
-        console.error("Failed to load default city location:", err);
-      }
-    };
+      };
 
-    const loadLocationByBrowser = async () => {
-      try {
-        const position = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: false,
-            timeout: 10000,
-            maximumAge: 300000, // Allow 5 min cache for initial load
+      const loadLocationByBrowser = async () => {
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: false,
+              timeout: 10000,
+              maximumAge: 300000,
+            });
           });
-        });
-        if (!active) return;
-        const { latitude, longitude } = position.coords;
-        const newLat = latitude;
-        const newLng = longitude;
-        const newName = await fetchReverseGeocodingData(latitude, longitude);
+          if (!active) return;
+          const { latitude, longitude } = position.coords;
+          const newLat = latitude;
+          const newLng = longitude;
+          const newName = await fetchReverseGeocodingData(latitude, longitude);
+          if (!active) return;
 
-        setCoords((prev) => {
-          if (prev.lat === newLat && prev.lng === newLng) return prev;
-          return { lat: newLat, lng: newLng };
-        });
-        setActiveLocationName((prev) => (prev === newName ? prev : newName));
-        console.log(`Browser location detected: ${newName}`);
-      } catch (err) {
-        console.error("Browser geolocation failed:", err);
-        await loadDefaultCity();
-      }
-    };
+          setCoords({ lat: newLat, lng: newLng });
+          setActiveLocationName(newName || "Detected Location");
+          localStorage.setItem("last_weather_source", "auto");
+        } catch (err) {
+          console.error("Browser geolocation failed:", err);
+          await loadDefaultCity();
+        }
+      };
 
-    const loadInitialLocation = async (force = false) => {
-      if (force) setIsRefreshing(true);
       if (preferences.location === "auto") {
-        await loadLocationByBrowser();
+        loadLocationByBrowser();
       } else {
-        await loadDefaultCity();
+        loadDefaultCity();
       }
-      if (force) {
-        setTimeout(() => setIsRefreshing(false), 800);
-      }
-    };
 
-    loadInitialLocation();
-
-    return () => {
-      active = false;
-    };
-  }, [preferences.location, preferences.defaultCity, location.state, coords.lat]);
+      return () => {
+        active = false;
+      };
+    }
+  }, [preferences.location, preferences.defaultCity, location.state, coords.lat, coords.lng]);
 
   // Update browser document title when active location changes
   useEffect(() => {
@@ -414,7 +413,7 @@ const Weather = ({ preferences, setPreferences }) => {
   return (
     <>
       <SkyLayer
-        daily={weatherData.daily}
+        daily={daily}
         condition={weatherData.current?.condition}
       />
     <div

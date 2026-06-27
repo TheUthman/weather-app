@@ -23,6 +23,10 @@ export function useCelestial(daily) {
     daily[1]?.sunEvents?.sunriseTime || today.sunEvents?.sunriseTime
   ).getTime();
 
+  if (isNaN(sunrise) || isNaN(sunset) || isNaN(tomorrowSunrise)) {
+    return { type: "sun", progress: 0.5 };
+  }
+
   const isDay = now >= sunrise && now <= sunset;
 
   // 🌞 DAY MODE
