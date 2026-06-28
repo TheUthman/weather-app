@@ -39,22 +39,18 @@ export default function SkyLayer({ daily, condition = "" }) {
       ? getSunGlow(celestial.progress)
       : {};
 
-  // 🌫 weather overlay (darkness layer)
   const overlayStyle = getWeatherOverlay(
     condition,
     celestial.progress
   );
 
-  // ☁️ cloud color based on time of day
   const cloudColor = getCloudColor(celestial.type, celestial.progress);
 
   return (
     <div className="sky-layer">
 
-      {/* 🌟 STARS */}
       <Stars opacity={starsOpacity} />
 
-      {/* ☀️ SUN */}
       {celestial.type === "sun" && (
         <div
           className="celestial sun"
@@ -65,7 +61,6 @@ export default function SkyLayer({ daily, condition = "" }) {
         />
       )}
 
-      {/* 🌙 MOON */}
       {celestial.type === "moon" && (
         <div
           className="celestial moon"
@@ -75,17 +70,15 @@ export default function SkyLayer({ daily, condition = "" }) {
         />
       )}
 
-      {/* ☁️ CLOUD LAYER */}
       <div
         className="cloud-layer"
         style={{ background: cloudColor }}
       />
 
-      {/* 🌫 WEATHER OVERLAY (IMPORTANT LAYER) */}
-      <div
+      {/* <div
         className="weather-overlay"
         style={overlayStyle}
-      />
+      /> */}
 
     </div>
   );

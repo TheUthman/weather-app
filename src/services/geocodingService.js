@@ -55,3 +55,15 @@ export const fetchReverseGeocodingData = async (lat, lng) => {
     return "Detected Location";
   }
 };
+export async function fetchGeocodingSuggestions(query, signal) {
+  const res = await fetch(
+    `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
+      query
+    )}&count=5&language=en&format=json`,
+    { signal }
+  );
+
+  const data = await res.json();
+
+  return data.results ?? [];
+}
