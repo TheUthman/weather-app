@@ -2473,7 +2473,9 @@ body.light .search-callout {
 .tips-content-wrapper {
   display: flex;
   gap: 12px;
-  align-items: flex-start;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .tips-animated-icon {
