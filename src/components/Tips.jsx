@@ -101,6 +101,28 @@ const colors = {
   }
 }
 
+const getTipCategory = (condition) => {
+  if (condition.includes("freezing drizzle") || condition.includes("freezing fog")) return "Safety";
+  if (condition.includes("snow")) return "Safety";
+  if (condition.includes("rain") || condition.includes("drizzle")) return "Safety";
+  if (condition.includes("wind")) return "Safety";
+  if (condition.includes("fog")) return "Safety";
+  if (condition.includes("thunderstorm")) return "Safety";
+  if (condition.includes("cloudy") || condition.includes("overcast")) return "Comfort";
+  if (condition.includes("sunny") || condition.includes("clear")) return "Health";
+  return "General";
+};
+
+const getCategoryColor = (category) => {
+  const categoryColors = {
+    Safety: { bg: "#FEE2E2", text: "#991B1B", icon: "⚠️" },
+    Health: { bg: "#DBEAFE", text: "#1E40AF", icon: "❤️" },
+    Comfort: { bg: "#F3E8FF", text: "#581C87", icon: "😊" },
+    General: { bg: "#F0FDF4", text: "#166534", icon: "💡" }
+  };
+  return categoryColors[category] || categoryColors.General;
+};
+
 const Tips = ({ data }) => {
   const [tipIndex, setTipIndex] = useState(0);
 
@@ -184,16 +206,30 @@ const Tips = ({ data }) => {
   }, [tips]);
 
   const message = tips[tipIndex % tips.length];
+  const category = getTipCategory(data?.toLowerCase() || "");
+  const categoryStyle = getCategoryColor(category);
 
   return (
     <div className="insight-card-minimalist tips-card" style={{ borderColor: tipColor.border }}>
-      <div className="insight-card-header">
-        <MdTipsAndUpdates size={24} color={tipColor.icon} />
-        <h3 className="insight-card-title">Tips</h3>
+      <div className="tips-header-row">
+        <div className="insight-card-header">
+          <MdTipsAndUpdates size={24} color={tipColor.icon} />
+          <h3 className="insight-card-title">Tips</h3>
+        </div>
+        <div className="tip-category-badge" style={{ backgroundColor: categoryStyle.bg, color: categoryStyle.text }}>
+          {category}
+        </div>
       </div>
-      <p className="insight-card-content" style={{ color: tipColor.text }}>
-        {message}
-      </p>
+      
+      <div className="tips-content-wrapper">
+        <div className="tips-animated-icon" style={{ animationDelay: `${tipIndex * 0.1}s` }}>
+          {categoryStyle.icon}
+        </div>
+        <p className="insight-card-content" style={{ color: tipColor.text }}>
+          {message}
+        </p>
+      </div>
+
       {tips.length > 1 && (
         <div className="insight-card-indicator">
           <span className="indicator-text">{tipIndex + 1} of {tips.length}</span>
