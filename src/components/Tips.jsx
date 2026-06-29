@@ -115,10 +115,34 @@ const getTipCategory = (condition) => {
 
 const getCategoryColor = (category) => {
   const categoryColors = {
-    Safety: { bg: "#FEE2E2", text: "#991B1B", icon: "⚠️" },
-    Health: { bg: "#DBEAFE", text: "#1E40AF", icon: "❤️" },
-    Comfort: { bg: "#F3E8FF", text: "#581C87", icon: "😊" },
-    General: { bg: "#F0FDF4", text: "#166534", icon: "💡" }
+    Safety: { 
+      bg: "#FEE2E2", 
+      text: "#991B1B", 
+      icon: "⚠️",
+      border: "#DC2626",
+      cardIcon: "#DC2626"
+    },
+    Health: { 
+      bg: "#DBEAFE", 
+      text: "#1E40AF", 
+      icon: "❤️",
+      border: "#0284C7",
+      cardIcon: "#0284C7"
+    },
+    Comfort: { 
+      bg: "#F3E8FF", 
+      text: "#581C87", 
+      icon: "😊",
+      border: "#9333EA",
+      cardIcon: "#9333EA"
+    },
+    General: { 
+      bg: "#F0FDF4", 
+      text: "#166534", 
+      icon: "💡",
+      border: "#16A34A",
+      cardIcon: "#16A34A"
+    }
   };
   return categoryColors[category] || categoryColors.General;
 };
@@ -210,10 +234,10 @@ const Tips = ({ data }) => {
   const categoryStyle = getCategoryColor(category);
 
   return (
-    <div className="insight-card-minimalist tips-card" style={{ borderColor: tipColor.border }}>
+    <div className="insight-card-minimalist tips-card" style={{ borderColor: categoryStyle.border }}>
       <div className="tips-header-row">
         <div className="insight-card-header">
-          <MdTipsAndUpdates size={24} color={tipColor.icon} />
+          <MdTipsAndUpdates size={24} color={categoryStyle.cardIcon} />
           <h3 className="insight-card-title">Tips</h3>
         </div>
         <div className="tip-category-badge" style={{ backgroundColor: categoryStyle.bg, color: categoryStyle.text }}>
@@ -225,7 +249,7 @@ const Tips = ({ data }) => {
         <div className="tips-animated-icon" style={{ animationDelay: `${tipIndex * 0.1}s` }}>
           {categoryStyle.icon}
         </div>
-        <p className="insight-card-content" style={{ color: tipColor.text }}>
+        <p className="insight-card-content" style={{ color: categoryStyle.text }}>
           {message}
         </p>
       </div>
