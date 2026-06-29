@@ -2441,10 +2441,64 @@ body.light .search-callout {
 }
 
 /* ===== TIPS CARD SPECIFIC ===== */
+.tips-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tips-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.tips-header-row .insight-card-header {
+  flex: 1;
+}
+
+.tip-category-badge {
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+  white-space: nowrap;
+  transition: all 0.3s var(--ease);
+}
+
+.tips-content-wrapper {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.tips-animated-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+  animation: tipPulse 2s ease-in-out infinite;
+  transform-origin: center;
+}
+
+@keyframes tipPulse {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+    opacity: 0.9;
+  }
+}
+
 .tips-card .insight-card-content {
   font-size: 14px;
   line-height: 1.5;
   color: var(--text-color);
+  flex: 1;
 }
 
 /* ===== OUTFITS CARD SPECIFIC ===== */
