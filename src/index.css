@@ -518,6 +518,7 @@ body {
   border: 1px solid var(--line);
   background: var(--surface-muted);
   box-shadow: none;
+  transition: all 0.3s var(--ease);
 }
 .hourly-card:first-child {
   border-color: var(--primary-color);
@@ -700,11 +701,11 @@ body {
 
   .daily-forecast {
     width: 100% !important;
-    order: -1;
+    order: 0;
   }
 
   .hourly-forecast {
-    order: 0;
+    order: -1;
     width: 100%;
   }
 
@@ -2294,13 +2295,17 @@ body.light .search-callout {
   flex-direction: column;
   gap: 16px;
   margin: 24px 0;
+  background-color: var(--surface);
+  padding: 18px;
+  border-radius: var(--panel-radius);
+  border: 1px solid var(--line);
+  box-shadow: none;
 }
 
 .insights-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
 }
 
 .insights-title {
@@ -2315,7 +2320,6 @@ body.light .search-callout {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0 12px;
 }
 
 .insights-scroll-container {
@@ -2332,7 +2336,7 @@ body.light .search-callout {
 }
 
 .insights-scroll-container::-webkit-scrollbar {
-  height: 4px;
+  height: 3px;
 }
 
 .insights-scroll-container::-webkit-scrollbar-track {
@@ -2346,6 +2350,7 @@ body.light .search-callout {
 }
 
 .insights-scroll-btn {
+  position: absolute;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -2360,7 +2365,12 @@ body.light .search-callout {
   transition: all 0.3s var(--ease);
   z-index: 10;
 }
-
+.insights-scroll-btn-left{
+  left: -10px;
+}
+.insights-scroll-btn-right{
+  right: -10px;
+}
 @media (hover: hover) {
   .insights-scroll-btn:hover {
     background: var(--card-bg-hover);

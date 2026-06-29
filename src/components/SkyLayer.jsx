@@ -75,11 +75,10 @@ export default function SkyLayer({ daily, condition = "" }) {
         style={{ background: cloudColor }}
       />
 
-      {/* <div
+      <div
         className="weather-overlay"
         style={overlayStyle}
-      /> */}
-
+      />
     </div>
   );
 }

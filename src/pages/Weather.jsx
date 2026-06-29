@@ -459,15 +459,6 @@ const Weather = ({ preferences, setPreferences }) => {
           pm10={25}
         />
         <div className="main-stats">
-          <DailyForecast
-            data={
-              weatherData.current ? weatherData.daily : cachedData?.daily || []
-            }
-            unit={unit}
-            loading={loadingDaily && !cachedData}
-            celestialType={celestial.type}
-            celestialProgress={celestial.progress}
-          />
           <HourlyForecast
             data={
               weatherData.current
@@ -476,6 +467,15 @@ const Weather = ({ preferences, setPreferences }) => {
             }
             unit={unit}
             loading={loadingHourly && !cachedData}
+            celestialType={celestial.type}
+            celestialProgress={celestial.progress}
+          />
+          <DailyForecast
+            data={
+              weatherData.current ? weatherData.daily : cachedData?.daily || []
+            }
+            unit={unit}
+            loading={loadingDaily && !cachedData}
             celestialType={celestial.type}
             celestialProgress={celestial.progress}
           />
