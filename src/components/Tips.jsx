@@ -172,7 +172,8 @@ const Tips = ({ data }) => {
     
     return colors.hot;
   })();
-useEffect(() => {
+
+  useEffect(() => {
     if (tips.length <= 1) return;
 
     const interval = setInterval(() => {
@@ -180,21 +181,26 @@ useEffect(() => {
     }, 10000);
 
     return () => clearInterval(interval);
-}, [tips]);
+  }, [tips]);
 
-const message = tips[tipIndex % tips.length];
+  const message = tips[tipIndex % tips.length];
+
   return (
-    <div className="insight-card" 
-            style={{borderColor:tipColor.border,backgroundColor:tipColor.background,color:tipColor.text}}>
-              <MdTipsAndUpdates size={20} color={tipColor.icon}/>
-              <p className="insight-message">
-                <span className="insight-tips" style={{color:tipColor.icon}}>
-                  Tips: 
-                </span>
-                {message}
-              </p>
+    <div className="insight-card-minimalist tips-card" style={{ borderColor: tipColor.border }}>
+      <div className="insight-card-header">
+        <MdTipsAndUpdates size={24} color={tipColor.icon} />
+        <h3 className="insight-card-title">Tips</h3>
+      </div>
+      <p className="insight-card-content" style={{ color: tipColor.text }}>
+        {message}
+      </p>
+      {tips.length > 1 && (
+        <div className="insight-card-indicator">
+          <span className="indicator-text">{tipIndex + 1} of {tips.length}</span>
+        </div>
+      )}
     </div>
-  )
+  );
 }
 
 export default Tips

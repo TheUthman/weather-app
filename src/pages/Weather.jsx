@@ -13,6 +13,7 @@ import CurrentWeather from "../components/CurrentWeather";
 import HourlyForecast from "../components/HourlyForecast";
 import DailyForecast from "../components/DailyForecast";
 import SkyLayer from "../components/SkyLayer";
+import InsightsCard from "../components/InsightsCard";
 import { useWeather } from "../hooks/useWeather";
 import { useCelestial } from "../hooks/useCelestial";
 import {
@@ -447,6 +448,15 @@ const Weather = ({ preferences, setPreferences }) => {
           loading={loadingCurrent && !cachedData}
           celestialType={celestial.type}
           celestialProgress={celestial.progress}
+        />
+        <InsightsCard
+          weatherCondition={weatherData.current?.condition || 'Sunny'}
+          temperature={weatherData.current?.temp || 70}
+          humidity={weatherData.current?.humidity || 50}
+          uvIndex={weatherData.current?.uvIndex || 5}
+          aqi={50}
+          pm25={15}
+          pm10={25}
         />
         <div className="main-stats">
           <HourlyForecast
