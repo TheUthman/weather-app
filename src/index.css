@@ -269,10 +269,6 @@ body {
   overflow: hidden;
 }
 
-/* ===== CURRENT WEATHER ===== */
-.current-weather {
-  padding: 28px 24px;
-}
 .location {
   display: flex;
   align-items: center;
@@ -294,33 +290,6 @@ body {
   flex-shrink: 0;
   width: 120px;
   height: 120px;
-}
-
-/* ===== WEATHER CARD THEMES ===== */
-.current-weather.weather-sunny,
-.current-weather.weather-partly-cloudy {
-  border-color: rgba(245, 158, 11, 0.3);
-}
-
-.current-weather.weather-rain {
-  border-color: rgba(6, 182, 212, 0.3);
-}
-
-.current-weather.weather-cloudy {
-  border-color: rgba(148, 163, 184, 0.3);
-}
-
-.current-weather.weather-thunderstorm {
-  border-color: rgba(99, 102, 241, 0.3);
-}
-
-.current-weather.weather-snow {
-  border-color: rgba(203, 213, 225, 0.2);
-}
-
-.current-weather.weather-night-clear,
-.current-weather.weather-night-cloudy {
-  border-color: rgba(99, 102, 241, 0.2);
 }
 
 .location h1 {
@@ -702,9 +671,6 @@ body {
   .current-weather,
   .hourly-forecast {
     padding: 24px;
-  }
-  .current-weather {
-    width: 100%;
   }
   .hourly-forecast {
     width: 50%;
@@ -1900,12 +1866,13 @@ body {
   padding-top: 0;
   border-top: none;
   display: grid;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  grid-column: 1/-1;
 }
 
 .sun-item,
-.sun-times .sun-item:nth-child(2) {
+.sun-item:nth-child(2) {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
