@@ -7,41 +7,61 @@ export const Outfits = ({data}) => {
     if (temperature >= 28) {
       return {
         type: "Lightweight & Breathable",
-        items: ["T-shirt", "Shorts", "Tank top"],
-        vibe: "☀️ Sunny & Relaxed"
+        items: ["T-shirt", "Shorts", "Sunglasses"],
+        tempColor: "#FFA500",
+        tempBg: "#FFF5E6",
+        vibe: "Sunny & Hot"
       };
     } else if (temperature >= 20) {
       return {
         type: "Smart Casual",
         items: ["Jeans", "T-shirt", "Light jacket"],
-        vibe: "🏙️ City Vibes"
+        tempColor: "#F59E0B",
+        tempBg: "#FEF3C7",
+        vibe: "Comfortable"
       };
     } else if (temperature >= 15) {
       return {
         type: "Comfortable & Cozy",
         items: ["Sweater", "Jeans", "Jacket"],
-        vibe: "☕ Warm & Snug"
+        tempColor: "#3B82F6",
+        tempBg: "#EFF6FF",
+        vibe: "Cool"
       };
     } else {
       return {
         type: "Warm & Protected",
         items: ["Winter jacket", "Scarf", "Gloves"],
-        vibe: "❄️ Cold & Windy"
+        tempColor: "#0EA5E9",
+        tempBg: "#E0F2FE",
+        vibe: "Cold"
       };
     }
   };
 
   const outfit = getOutfitRecommendation(data);
+
   return (
-    <div className='insight-card'>
-        <GiClothes size={20} color={"black"}/>
-        <p className='insight-message'>
-            <strong>
-                What to wear today?
-            </strong>
-            {outfit.items.join(", ")}
-            {outfit.vibe}
-        </p>
+    <div className="insight-card-minimalist outfits-card" style={{ borderColor: outfit.tempColor }}>
+      <div className="insight-card-header">
+        <GiClothes size={24} color={outfit.tempColor} />
+        <h3 className="insight-card-title">What to Wear</h3>
+      </div>
+      <div className="insight-card-content">
+        <div className="outfit-temp-badge" style={{ backgroundColor: outfit.tempBg, color: outfit.tempColor }}>
+          {data}°F
+        </div>
+        <div className="outfit-items">
+          {outfit.items.map((item, index) => (
+            <div key={index} className="outfit-item">
+              <span>•</span> {item}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="outfit-vibe" style={{ color: outfit.tempColor }}>
+        {outfit.vibe}
+      </div>
     </div>
-  )
+  );
 }
