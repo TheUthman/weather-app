@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   fetchWeatherData,
   fetchDaysWeather,
@@ -13,19 +13,27 @@ export const useWeather = (lat, lng) => {
   const [loadingHourly, setLoadingHourly] = useState(true);
   const [loadingDaily, setLoadingDaily] = useState(true);
   const [error, setError] = useState(null);
+  const generationRef = useRef(0);
 
   useEffect(() => {
+    const currentGen = ++generationRef.current;
+
     const fetchCurrent = async () => {
       try {
         setLoadingCurrent(true);
         setError(null);
         const current = await fetchWeatherData(lat, lng);
+        // Ignore stale responses from a previous generation
+        if (generationRef.current !== currentGen) return;
         setWeather(current);
       } catch (err) {
+        if (err.name === "AbortError") return;
         console.error(err);
         setError(err.message || "Failed to fetch weather data");
       } finally {
-        setLoadingCurrent(false);
+        if (generationRef.current === currentGen) {
+          setLoadingCurrent(false);
+        }
       }
     };
 
@@ -33,11 +41,15 @@ export const useWeather = (lat, lng) => {
       try {
         setLoadingHourly(true);
         const hours = await fetchHourlyWeather(lat, lng);
+        if (generationRef.current !== currentGen) return;
         setHourly(hours.forecastHours || []);
       } catch (err) {
+        if (err.name === "AbortError") return;
         console.error(err);
       } finally {
-        setLoadingHourly(false);
+        if (generationRef.current === currentGen) {
+          setLoadingHourly(false);
+        }
       }
     };
 
@@ -45,11 +57,15 @@ export const useWeather = (lat, lng) => {
       try {
         setLoadingDaily(true);
         const days = await fetchDaysWeather(lat, lng);
+        if (generationRef.current !== currentGen) return;
         setDaily(days.forecastDays || []);
       } catch (err) {
+        if (err.name === "AbortError") return;
         console.error(err);
       } finally {
-        setLoadingDaily(false);
+        if (generationRef.current === currentGen) {
+          setLoadingDaily(false);
+        }
       }
     };
 

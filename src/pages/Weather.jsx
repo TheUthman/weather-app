@@ -5,7 +5,6 @@ import {
   useEffect,
   useMemo,
   useCallback,
-  useTransition,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../components/Header";
@@ -168,8 +167,6 @@ const Weather = ({ preferences, setPreferences }) => {
     localStorage.getItem("last_weather_name") || "",
   );
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
-  // Transition for high-responsiveness
-  const [isPending, startTransition] = useTransition();
   const [pointer, setPointer] = useState({ x: 50, y: 35 });
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -192,11 +189,9 @@ const Weather = ({ preferences, setPreferences }) => {
   useEffect(() => {
     const state = location.state;
     if (state?.searchCoords) {
-      startTransition(() => {
-        setCoords(state.searchCoords);
-        setActiveLocationName(state.searchQuery || "Searched Location");
-        localStorage.setItem("last_weather_source", "search");
-      });
+      setCoords(state.searchCoords);
+      setActiveLocationName(state.searchQuery || "Searched Location");
+      localStorage.setItem("last_weather_source", "search");
       // Clear the navigation state so it doesn't re-trigger
       window.history.replaceState({}, document.title);
     }
@@ -328,6 +323,15 @@ const Weather = ({ preferences, setPreferences }) => {
 
   // Celestial data for sky-aware coloring of weather components
   const celestial = useCelestial(daily);
+
+  // Persist sunrise/sunset times for automatic theme switching
+  useEffect(() => {
+    const firstDay = daily?.[0];
+    if (firstDay?.sunEvents?.sunriseTime && firstDay?.sunEvents?.sunsetTime) {
+      localStorage.setItem("weather_sunrise", firstDay.sunEvents.sunriseTime);
+      localStorage.setItem("weather_sunset", firstDay.sunEvents.sunsetTime);
+    }
+  }, [daily]);
 
   // Mapped weather data memoized to prevent lag during scrolling and unrelated re-renders
   const weatherData = useMemo(() => {

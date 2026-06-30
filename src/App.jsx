@@ -1,4 +1,4 @@
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import Weather from "./pages/Weather";
 import Sidebar from "./components/Sidebar";
@@ -21,7 +21,7 @@ const App = () => {
         ? JSON.parse(storedPrefs)
         : {
             units: "imperial",
-            theme: "system", // "system", "light", "dark"
+            theme: "auto", // "system", "light", "dark", "auto"
             notifications: true,
             location: "auto",
             defaultCity: "San Francisco",
@@ -30,7 +30,7 @@ const App = () => {
       console.error("Failed to parse preferences from localStorage", error);
       return {
         units: "imperial",
-        theme: "system",
+        theme: "auto",
         notifications: true,
         location: "auto",
         defaultCity: "San Francisco",
@@ -43,16 +43,54 @@ const App = () => {
     localStorage.setItem("weatherAppPreferences", JSON.stringify(preferences));
   }, [preferences]);
 
+  // Determine if it's currently day or night using cached sunrise/sunset
+  const getAutoTheme = useCallback(() => {
+    const sunrise = localStorage.getItem("weather_sunrise");
+    const sunset = localStorage.getItem("weather_sunset");
+    if (!sunrise || !sunset) return "dark"; // Fallback to dark if no data
+
+    const now = new Date();
+    const sunriseTime = new Date(sunrise);
+    const sunsetTime = new Date(sunset);
+
+    if (isNaN(sunriseTime.getTime()) || isNaN(sunsetTime.getTime())) return "dark";
+
+    // Daytime: between sunrise and sunset
+    return now >= sunriseTime && now < sunsetTime ? "light" : "dark";
+  }, []);
+
   // Apply theme class to body
   useEffect(() => {
     const body = document.body;
-    body.classList.remove("light", "dark"); // Remove existing theme classes
+    body.classList.remove("light", "dark");
 
-    if (preferences.theme !== "system") {
-      // Only add class if not system default
-      body.classList.add(preferences.theme);
+    let themeClass;
+
+    if (preferences.theme === "auto") {
+      themeClass = getAutoTheme();
+    } else if (preferences.theme !== "system") {
+      themeClass = preferences.theme;
     }
-  }, [preferences.theme]);
+
+    if (themeClass) {
+      body.classList.add(themeClass);
+    }
+  }, [preferences.theme, getAutoTheme]);
+
+  // Poll for theme changes when in "auto" mode (check every 60s for sunrise/sunset transitions)
+  useEffect(() => {
+    if (preferences.theme !== "auto") return;
+
+    const checkTheme = () => {
+      const body = document.body;
+      const newTheme = getAutoTheme();
+      body.classList.remove("light", "dark");
+      body.classList.add(newTheme);
+    };
+
+    const interval = setInterval(checkTheme, 60_000);
+    return () => clearInterval(interval);
+  }, [preferences.theme, getAutoTheme]);
 
   return (
     <ToastProvider>

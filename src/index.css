@@ -1151,7 +1151,7 @@ body {
   width: 42px;
   height: 42px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--panel-radius);
   background: transparent;
   color: var(--text-color);
   cursor: pointer;
@@ -1222,7 +1222,13 @@ body {
 .search-page-input-wrapper:focus-within .search-page-input-icon {
   color: var(--primary-color);
 }
-
+.search-loading{
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 0 4px;
+}
 .search-page-error {
   font-size: 13px;
   color: var(--error);
@@ -1244,7 +1250,7 @@ body {
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: all 0.25s var(--ease);
+  transition: all 0.3s var(--ease);
 }
 @media (hover: hover) {
   .search-page-submit:hover {
@@ -1262,6 +1268,13 @@ body {
   cursor: not-allowed;
   transform: none;
 }
+.search-suggestions button{
+  border-radius: 0px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  border: none;
+}
 
 .search-page-hints {
   display: flex;
@@ -1273,13 +1286,41 @@ body {
   border-radius: 0px;
   color: var(--text-muted);
   font-size: 13px;
+  transition: all 0.3s var(--ease);
+}
+@media (hover: hover) {
+  .search-page-hints:hover {
+    background: var(--primary);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+}
+.search-page-hints:active {
+  transform: translateY(0);
 }
 
 .search-page-hints svg {
-  color: var(--secondary);
+  color: var(--primary-color);
   flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-bottom: 0px;
 }
-
+.search-page-hints:hover svg {
+  color: #fff;
+}
+.search-suggestions {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  border-radius: var(--panel-radius);
+  overflow: hidden;
+  background: var(--card-bg);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  border: 1px solid var(--card-border);
+}
 /* ===== SKELETON LOADER ANIMATIONS ===== */
 .skeleton-card {
   pointer-events: none;

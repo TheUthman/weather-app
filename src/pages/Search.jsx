@@ -155,16 +155,14 @@ const Search = () => {
     setQuery(`${location.name}, ${location.admin1}, ${location.country}`);
     setSuggestions([]);
 
-    startTransition(() => {
-      navigate("/", {
-        state: {
-          searchCoords: {
-            lat: location.lat,
-            lng: location.lng,
-          },
-          searchQuery: `${location.name}, ${location.admin1}, ${location.country}`,
+    navigate("/", {
+      state: {
+        searchCoords: {
+          lat: location.latitude,
+          lng: location.longitude,
         },
-      });
+        searchQuery: `${location.name}, ${location.admin1}, ${location.country}`,
+      },
     });
   };
 
@@ -176,7 +174,7 @@ const Search = () => {
           onClick={() => navigate("/")}
           aria-label="Go back"
         >
-          <FiArrowLeft size={27} />
+          <FiArrowLeft size={25} />
         </button>
 
         <h2 className="search-page-title">
@@ -233,7 +231,7 @@ const Search = () => {
             <div className="search-suggestions">
               {suggestions.map((location) => (
                 <button
-                  key={`${location.name}-${location.lat}-${location.lng}`}
+                  key={`${location.name}-${location.latitude}-${location.longitude}`}
                   type="button"
                   className="search-page-hints"
                   onClick={() =>

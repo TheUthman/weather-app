@@ -19,6 +19,7 @@ const Settings = ({ preferences, setPreferences }) => {
     { value: "system", label: "System" },
     { value: "light", label: "Light" },
     { value: "dark", label: "Dark" },
+    { value: "auto", label: "Auto (Day/Night)" },
   ];
 
   const locationOptions = [
@@ -103,7 +104,7 @@ const Settings = ({ preferences, setPreferences }) => {
           <div className="setting-row">
             <div className="setting-info">
               <label htmlFor="theme">Theme</label>
-              <span className="setting-description">Use your system theme or set one manually.</span>
+              <span className="setting-description">Use your system theme, set one manually, or follow sunrise/sunset times.</span>
             </div>
             <div className="setting-control">
               <CustomSelect
