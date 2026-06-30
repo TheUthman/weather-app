@@ -2369,15 +2369,12 @@ body.light .search-callout {
   overflow-x: auto;
   scroll-behavior: smooth;
   padding: 8px 0;
-  scrollbar-width: thin;
-  scrollbar-color: var(--text-muted) transparent;
-  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  scrollbar-color: transparent;
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior: smooth;
   flex: 1;
   min-width: 0;
-}
-
-.insights-scroll-container::-webkit-scrollbar {
-  height: 3px;
 }
 
 .insights-scroll-container::-webkit-scrollbar-track {
@@ -2385,9 +2382,7 @@ body.light .search-callout {
 }
 
 .insights-scroll-container::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 2px;
-  opacity: 0.3;
+  display: none;
 }
 
 .insights-scroll-btn {
