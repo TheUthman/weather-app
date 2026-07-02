@@ -285,7 +285,7 @@ const Search = () => {
           </div>
 
           <div className="search-quick-grid">
-            {["San Francisco", "London", "Tokyo", "Cape Town"].map((item) => (
+            {["London", "Tokyo", "Cape Town"].map((item) => (
               <button
                 key={item}
                 type="button"

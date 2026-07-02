@@ -5,7 +5,7 @@ const Header = ({ unit, setUnit, onDetectLocation, isDetecting }) => {
     <header className="weather-header">
       <div className="header-copy">
         <span>Weather Radar</span>
-        <strong>Atmospheric briefing</strong>
+        <strong>Live conditions</strong>
       </div>
       <div className="header-actions">
         <button

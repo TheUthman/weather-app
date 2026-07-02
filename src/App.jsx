@@ -13,19 +13,39 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Search = lazy(() => import("./pages/Search"));
 
 const App = () => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    try {
+      return JSON.parse(
+        localStorage.getItem("weatherAppSidebarCollapsed") ?? "false",
+      );
+    } catch {
+      return false;
+    }
+  });
+
   const [preferences, setPreferences] = useState(() => {
     // Initialize preferences from localStorage or default values
     try {
       const storedPrefs = localStorage.getItem("weatherAppPreferences");
-      return storedPrefs
-        ? JSON.parse(storedPrefs)
-        : {
-            units: "imperial",
-            theme: "auto", // "system", "light", "dark", "auto"
-            notifications: true,
-            location: "auto",
-            defaultCity: "San Francisco",
-          };
+      if (storedPrefs) {
+        const parsed = JSON.parse(storedPrefs);
+        return {
+          units: parsed.units || "imperial",
+          theme: "auto",
+          notifications:
+            parsed.notifications !== undefined ? parsed.notifications : true,
+          location: parsed.location || "auto",
+          defaultCity: parsed.defaultCity || "San Francisco",
+        };
+      }
+
+      return {
+        units: "imperial",
+        theme: "auto",
+        notifications: true,
+        location: "auto",
+        defaultCity: "San Francisco",
+      };
     } catch (error) {
       console.error("Failed to parse preferences from localStorage", error);
       return {
@@ -43,6 +63,13 @@ const App = () => {
     localStorage.setItem("weatherAppPreferences", JSON.stringify(preferences));
   }, [preferences]);
 
+  useEffect(() => {
+    localStorage.setItem(
+      "weatherAppSidebarCollapsed",
+      JSON.stringify(isSidebarCollapsed),
+    );
+  }, [isSidebarCollapsed]);
+
   // Determine if it's currently day or night using cached sunrise/sunset
   const getAutoTheme = useCallback(() => {
     const sunrise = localStorage.getItem("weather_sunrise");
@@ -53,34 +80,22 @@ const App = () => {
     const sunriseTime = new Date(sunrise);
     const sunsetTime = new Date(sunset);
 
-    if (isNaN(sunriseTime.getTime()) || isNaN(sunsetTime.getTime())) return "dark";
+    if (isNaN(sunriseTime.getTime()) || isNaN(sunsetTime.getTime()))
+      return "dark";
 
     // Daytime: between sunrise and sunset
     return now >= sunriseTime && now < sunsetTime ? "light" : "dark";
   }, []);
 
-  // Apply theme class to body
+  // Apply automatic day/night theme class to body
   useEffect(() => {
     const body = document.body;
     body.classList.remove("light", "dark");
+    body.classList.add(getAutoTheme());
+  }, [getAutoTheme]);
 
-    let themeClass;
-
-    if (preferences.theme === "auto") {
-      themeClass = getAutoTheme();
-    } else if (preferences.theme !== "system") {
-      themeClass = preferences.theme;
-    }
-
-    if (themeClass) {
-      body.classList.add(themeClass);
-    }
-  }, [preferences.theme, getAutoTheme]);
-
-  // Poll for theme changes when in "auto" mode (check every 60s for sunrise/sunset transitions)
+  // Poll for sunrise/sunset transitions every 60s
   useEffect(() => {
-    if (preferences.theme !== "auto") return;
-
     const checkTheme = () => {
       const body = document.body;
       const newTheme = getAutoTheme();
@@ -90,17 +105,38 @@ const App = () => {
 
     const interval = setInterval(checkTheme, 60_000);
     return () => clearInterval(interval);
-  }, [preferences.theme, getAutoTheme]);
+  }, [getAutoTheme]);
 
   return (
     <ToastProvider>
-      <div className="app-layout">
-        <Sidebar />
+      <div
+        className={`app-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
+      >
+        <Sidebar
+          collapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed((current) => !current)}
+        />
         <main className="app-content">
           <Suspense fallback={<div className="page-loader" />}>
             <Routes>
-              <Route path="/" element={<Weather preferences={preferences} setPreferences={setPreferences} />} />
-              <Route path="/settings" element={<Settings preferences={preferences} setPreferences={setPreferences} />} />
+              <Route
+                path="/"
+                element={
+                  <Weather
+                    preferences={preferences}
+                    setPreferences={setPreferences}
+                  />
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <Settings
+                    preferences={preferences}
+                    setPreferences={setPreferences}
+                  />
+                }
+              />
               <Route path="/search" element={<Search />} />
             </Routes>
           </Suspense>

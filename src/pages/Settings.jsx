@@ -15,13 +15,6 @@ const Settings = ({ preferences, setPreferences }) => {
     { value: "metric", label: "Celsius (C)" },
   ];
 
-  const themeOptions = [
-    { value: "system", label: "System" },
-    { value: "light", label: "Light" },
-    { value: "dark", label: "Dark" },
-    { value: "auto", label: "Auto (Day/Night)" },
-  ];
-
   const locationOptions = [
     { value: "auto", label: "Auto-detect" },
     { value: "manual", label: "Manual" },
@@ -31,11 +24,7 @@ const Settings = ({ preferences, setPreferences }) => {
     () => [
       {
         label: "Theme",
-        value:
-          preferences.theme === "auto"
-            ? "Auto sky"
-            : preferences.theme.charAt(0).toUpperCase() +
-              preferences.theme.slice(1),
+        value: "Auto day/night",
       },
       {
         label: "Units",
@@ -64,9 +53,6 @@ const Settings = ({ preferences, setPreferences }) => {
     if (name === "units") {
       const label = value === "metric" ? "Celsius (°C)" : "Fahrenheit (°F)";
       addToast(`Temperature units switched to ${label}`, "info");
-    } else if (name === "theme") {
-      const label = value.charAt(0).toUpperCase() + value.slice(1);
-      addToast(`Theme set to ${label}`, "info");
     } else if (name === "location") {
       const label = value === "auto" ? "Auto-detect" : "Manual";
       addToast(`Location mode: ${label}`, "info");
@@ -146,19 +132,14 @@ const Settings = ({ preferences, setPreferences }) => {
 
           <div className="setting-row">
             <div className="setting-info">
-              <label htmlFor="theme">Theme</label>
+              <label>Sky theme</label>
               <span className="setting-description">
-                Use your system theme, set one manually, or follow sunrise and
-                sunset.
+                The app now follows local sunrise and sunset automatically for a
+                continuous day-to-night experience.
               </span>
             </div>
             <div className="setting-control">
-              <CustomSelect
-                name="theme"
-                value={preferences.theme}
-                onChange={handleChange}
-                options={themeOptions}
-              />
+              <div className="settings-static-value">Auto day/night</div>
             </div>
           </div>
         </section>

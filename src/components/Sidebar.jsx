@@ -1,6 +1,12 @@
 import { memo } from "react";
 import { NavLink } from "react-router-dom";
-import { FiCloud, FiSearch, FiSettings } from "react-icons/fi";
+import {
+  FiChevronLeft,
+  FiChevronRight,
+  FiCloud,
+  FiSearch,
+  FiSettings,
+} from "react-icons/fi";
 import "../styles/Sidebar.css";
 
 const navItems = [
@@ -21,23 +27,43 @@ const navItems = [
   },
 ];
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed, onToggleCollapse }) => {
   return (
-    <aside className="sidebar" aria-label="Primary navigation">
+    <aside
+      className={`sidebar ${collapsed ? "sidebar-collapsed" : ""}`}
+      aria-label="Primary navigation"
+    >
       <div className="sidebar-inner">
-        <NavLink
-          to="/"
-          className="sidebar-brand"
-          aria-label="Go to weather dashboard"
-        >
-          <span className="sidebar-brand-mark">
-            <img src="/WRLogo.png" alt="Weather Radar Logo" />
-          </span>
-          <span className="sidebar-brand-copy">
-            <strong>Weather Radar</strong>
-            <small>Sky dashboard</small>
-          </span>
-        </NavLink>
+        <div className="sidebar-header">
+          <NavLink
+            to="/"
+            className="sidebar-brand"
+            aria-label="Go to weather dashboard"
+          >
+            <span className="sidebar-brand-mark">
+              <img src="/WRLogo.png" alt="Weather Radar Logo" />
+            </span>
+            <span className="sidebar-brand-copy">
+              <strong>Weather Radar</strong>
+              <small>Sky dashboard</small>
+            </span>
+          </NavLink>
+
+          <button
+            type="button"
+            className="sidebar-toggle"
+            onClick={onToggleCollapse}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-pressed={collapsed}
+            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          >
+            {collapsed ? (
+              <FiChevronRight size={18} />
+            ) : (
+              <FiChevronLeft size={18} />
+            )}
+          </button>
+        </div>
 
         <nav className="sidebar-nav">
           {navItems.map((item) => (
@@ -47,7 +73,8 @@ const Sidebar = () => {
               className={({ isActive }) =>
                 `nav-btn ${isActive ? "active" : ""}`
               }
-              title={item.label}
+              data-tooltip={item.label}
+              aria-label={collapsed ? item.label : undefined}
             >
               <span className="nav-icon">{item.icon}</span>
               <span className="nav-label">{item.label}</span>
@@ -57,7 +84,7 @@ const Sidebar = () => {
 
         <div className="sidebar-footer">
           <span className="sidebar-footer-dot" />
-          Live sky visuals
+          <span className="sidebar-footer-text">Live sky visuals</span>
         </div>
       </div>
     </aside>
