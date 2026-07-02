@@ -1,17 +1,11 @@
 import { FiNavigation } from "react-icons/fi";
 
-const Header = ({
-  unit,
-  setUnit,
-  onDetectLocation,
-  isDetecting,
-}) => {
-  
+const Header = ({ unit, setUnit, onDetectLocation, isDetecting }) => {
   return (
     <header className="weather-header">
       <div className="header-copy">
         <span>Weather Radar</span>
-        <strong>Live conditions</strong>
+        <strong>Atmospheric briefing</strong>
       </div>
       <div className="header-actions">
         <button

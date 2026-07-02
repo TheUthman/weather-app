@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { useState, useRef, useEffect } from "react";
 import { FiChevronDown } from "react-icons/fi";
 import "../styles/CustomSelect.css";

@@ -1,38 +1,65 @@
-/* eslint-disable no-unused-vars */
 import { memo } from "react";
 import { NavLink } from "react-router-dom";
-import { FiCloud, FiSearch, FiSettings, FiMap } from "react-icons/fi";
+import { FiCloud, FiSearch, FiSettings } from "react-icons/fi";
 import "../styles/Sidebar.css";
+
+const navItems = [
+  {
+    to: "/",
+    label: "Weather",
+    icon: <FiCloud size={20} />,
+  },
+  {
+    to: "/search",
+    label: "Search",
+    icon: <FiSearch size={20} />,
+  },
+  {
+    to: "/settings",
+    label: "Settings",
+    icon: <FiSettings size={20} />,
+  },
+];
 
 const Sidebar = () => {
   return (
-    <aside className="sidebar">
-      <div className="sidebar-logo">
-        <img src="/WRLogo.png" alt="Weather Radar Logo" />
-      </div>
-      <nav className="sidebar-nav">
+    <aside className="sidebar" aria-label="Primary navigation">
+      <div className="sidebar-inner">
         <NavLink
           to="/"
-          className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}
-          title="Weather"
+          className="sidebar-brand"
+          aria-label="Go to weather dashboard"
         >
-          <FiCloud size={22} />
+          <span className="sidebar-brand-mark">
+            <img src="/WRLogo.png" alt="Weather Radar Logo" />
+          </span>
+          <span className="sidebar-brand-copy">
+            <strong>Weather Radar</strong>
+            <small>Sky dashboard</small>
+          </span>
         </NavLink>
-        <NavLink
-          to="/search"
-          className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}
-          title="Search"
-        >
-          <FiSearch size={22} />
-        </NavLink>
-        <NavLink
-          to="/settings"
-          className={({ isActive }) => `nav-btn ${isActive ? "active" : ""}`}
-          title="Settings"
-        >
-          <FiSettings size={22} />
-        </NavLink>
-      </nav>
+
+        <nav className="sidebar-nav">
+          {navItems.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) =>
+                `nav-btn ${isActive ? "active" : ""}`
+              }
+              title={item.label}
+            >
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+            </NavLink>
+          ))}
+        </nav>
+
+        <div className="sidebar-footer">
+          <span className="sidebar-footer-dot" />
+          Live sky visuals
+        </div>
+      </div>
     </aside>
   );
 };

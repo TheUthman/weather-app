@@ -1,19 +1,19 @@
-import React, { useRef, useState } from 'react';
-import Tips from './Tips';
-import { Outfits } from './Outfits';
-import AirQualityIndex from './AirQualityIndex';
-import UVIndex from './UVIndex';
-import HealthWellness from './HealthWellness';
-import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import React, { useRef, useState } from "react";
+import Tips from "./Tips";
+import { Outfits } from "./Outfits";
+import AirQualityIndex from "./AirQualityIndex";
+import UVIndex from "./UVIndex";
+import HealthWellness from "./HealthWellness";
+import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
-const InsightsCard = ({ 
-  weatherCondition = 'Sunny', 
-  temperature = 70, 
+const InsightsCard = ({
+  weatherCondition = "Sunny",
+  temperature = 70,
   humidity = 50,
   uvIndex = 5,
   aqi = 50,
   pm25 = 15,
-  pm10 = 25
+  pm10 = 25,
 }) => {
   const scrollContainerRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -21,7 +21,8 @@ const InsightsCard = ({
 
   const checkScroll = () => {
     if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current;
       setCanScrollLeft(scrollLeft > 0);
       setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
     }
@@ -30,14 +31,14 @@ const InsightsCard = ({
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
       const scrollAmount = 350;
-      const newScrollLeft = 
-        direction === 'left' 
+      const newScrollLeft =
+        direction === "left"
           ? scrollContainerRef.current.scrollLeft - scrollAmount
           : scrollContainerRef.current.scrollLeft + scrollAmount;
 
       scrollContainerRef.current.scrollTo({
         left: newScrollLeft,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
 
       setTimeout(checkScroll, 300);
@@ -48,11 +49,11 @@ const InsightsCard = ({
     checkScroll();
     const container = scrollContainerRef.current;
     if (container) {
-      container.addEventListener('scroll', checkScroll);
-      window.addEventListener('resize', checkScroll);
+      container.addEventListener("scroll", checkScroll);
+      window.addEventListener("resize", checkScroll);
       return () => {
-        container.removeEventListener('scroll', checkScroll);
-        window.removeEventListener('resize', checkScroll);
+        container.removeEventListener("scroll", checkScroll);
+        window.removeEventListener("resize", checkScroll);
       };
     }
   }, []);
@@ -60,21 +61,22 @@ const InsightsCard = ({
   return (
     <div className="insights-container">
       <div className="insights-header">
-        <h2 className="insights-title">Daily Insights</h2>
+        <h2 className="insights-title">Daily briefing</h2>
+        <span className="insights-subtitle">Curated essentials</span>
       </div>
-      
+
       <div className="insights-scroll-wrapper">
         {canScrollLeft && (
-          <button 
+          <button
             className="insights-scroll-btn insights-scroll-btn-left"
-            onClick={() => scroll('left')}
+            onClick={() => scroll("left")}
             aria-label="Scroll left"
           >
             <FiChevronLeft size={20} />
           </button>
         )}
 
-        <div 
+        <div
           className="insights-scroll-container"
           ref={scrollContainerRef}
           onScroll={checkScroll}
@@ -87,9 +89,9 @@ const InsightsCard = ({
         </div>
 
         {canScrollRight && (
-          <button 
+          <button
             className="insights-scroll-btn insights-scroll-btn-right"
-            onClick={() => scroll('right')}
+            onClick={() => scroll("right")}
             aria-label="Scroll right"
           >
             <FiChevronRight size={20} />

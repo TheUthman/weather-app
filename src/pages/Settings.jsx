@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Toggle from "../components/Toggle";
 import CustomSelect from "../components/CustomSelect";
 import { useToast } from "../context/ToastContext";
@@ -27,6 +27,28 @@ const Settings = ({ preferences, setPreferences }) => {
     { value: "manual", label: "Manual" },
   ];
 
+  const summaryChips = useMemo(
+    () => [
+      {
+        label: "Theme",
+        value:
+          preferences.theme === "auto"
+            ? "Auto sky"
+            : preferences.theme.charAt(0).toUpperCase() +
+              preferences.theme.slice(1),
+      },
+      {
+        label: "Units",
+        value: preferences.units === "metric" ? "Celsius" : "Fahrenheit",
+      },
+      {
+        label: "Location",
+        value: preferences.location === "auto" ? "Auto-detect" : "Manual city",
+      },
+    ],
+    [preferences],
+  );
+
   const updatePreference = (name, value) => {
     setPreferences((prev) => ({
       ...prev,
@@ -39,7 +61,6 @@ const Settings = ({ preferences, setPreferences }) => {
     const newValue = type === "checkbox" ? checked : value;
     updatePreference(name, newValue);
 
-    // Toast feedback per setting type
     if (name === "units") {
       const label = value === "metric" ? "Celsius (°C)" : "Fahrenheit (°F)";
       addToast(`Temperature units switched to ${label}`, "info");
@@ -73,24 +94,45 @@ const Settings = ({ preferences, setPreferences }) => {
     updatePreference("notifications", next);
     addToast(
       next ? "Push notifications enabled" : "Push notifications disabled",
-      "info"
+      "info",
     );
   };
 
   return (
     <div className="settings-page page-container">
-      <header className="settings-header">
-        <span>Preferences</span>
-        <h1>Settings</h1>
+      <header className="settings-hero glass-page-hero">
+        <div className="settings-hero-copy">
+          <span className="page-eyebrow">Preferences</span>
+          <h1>Shape your weather experience</h1>
+          <p className="page-description">
+            Tune the app’s look, units, alerts, and default location without
+            changing any of the forecasting functionality.
+          </p>
+        </div>
+
+        <div className="settings-chip-grid">
+          {summaryChips.map((chip) => (
+            <div key={chip.label} className="settings-summary-chip">
+              <span>{chip.label}</span>
+              <strong>{chip.value}</strong>
+            </div>
+          ))}
+        </div>
       </header>
 
       <div className="settings-container">
         <section className="settings-group">
-          <h2>Display</h2>
+          <div className="settings-group-head">
+            <span className="settings-group-kicker">Display</span>
+            <h2>Visual preferences</h2>
+          </div>
+
           <div className="setting-row">
             <div className="setting-info">
               <label htmlFor="units">Temperature units</label>
-              <span className="setting-description">Choose the unit used across forecasts.</span>
+              <span className="setting-description">
+                Choose the unit used across current conditions and forecasts.
+              </span>
             </div>
             <div className="setting-control">
               <CustomSelect
@@ -101,10 +143,14 @@ const Settings = ({ preferences, setPreferences }) => {
               />
             </div>
           </div>
+
           <div className="setting-row">
             <div className="setting-info">
               <label htmlFor="theme">Theme</label>
-              <span className="setting-description">Use your system theme, set one manually, or follow sunrise/sunset times.</span>
+              <span className="setting-description">
+                Use your system theme, set one manually, or follow sunrise and
+                sunset.
+              </span>
             </div>
             <div className="setting-control">
               <CustomSelect
@@ -118,11 +164,17 @@ const Settings = ({ preferences, setPreferences }) => {
         </section>
 
         <section className="settings-group">
-          <h2>Location</h2>
+          <div className="settings-group-head">
+            <span className="settings-group-kicker">Location</span>
+            <h2>Forecast source</h2>
+          </div>
+
           <div className="setting-row">
             <div className="setting-info">
               <label htmlFor="location">Detection mode</label>
-              <span className="setting-description">Let the browser detect your location or use a default city.</span>
+              <span className="setting-description">
+                Let the browser detect your location or pin the app to one city.
+              </span>
             </div>
             <div className="setting-control">
               <CustomSelect
@@ -133,12 +185,16 @@ const Settings = ({ preferences, setPreferences }) => {
               />
             </div>
           </div>
+
           {preferences.location === "manual" && (
-            <div className="setting-row">
+            <div className="setting-row setting-row-manual">
               <div className="setting-info">
                 <label htmlFor="defaultCity">Default city</label>
+                <span className="setting-description">
+                  This city will load whenever manual location mode is active.
+                </span>
               </div>
-              <div className="setting-control">
+              <div className="setting-control setting-control-manual">
                 <input
                   id="defaultCity"
                   type="text"
@@ -156,7 +212,7 @@ const Settings = ({ preferences, setPreferences }) => {
                   onClick={handleSaveCity}
                   disabled={loading}
                 >
-                  {loading ? "Saving..." : "Save"}
+                  {loading ? "Saving..." : "Save city"}
                 </button>
               </div>
             </div>
@@ -164,11 +220,17 @@ const Settings = ({ preferences, setPreferences }) => {
         </section>
 
         <section className="settings-group">
-          <h2>Alerts</h2>
+          <div className="settings-group-head">
+            <span className="settings-group-kicker">Alerts</span>
+            <h2>Notifications</h2>
+          </div>
+
           <div className="setting-row">
             <div className="setting-info">
               <label>Push notifications</label>
-              <span className="setting-description">Receive alerts for major weather changes.</span>
+              <span className="setting-description">
+                Receive alerts for major weather changes and forecast shifts.
+              </span>
             </div>
             <div className="setting-control">
               <Toggle
@@ -179,16 +241,19 @@ const Settings = ({ preferences, setPreferences }) => {
           </div>
         </section>
 
-        <div className="about-section">
+        <section className="about-section">
           <img
             src="/WRLogo.png"
             alt="Weather Radar Logo"
             className="about-logo"
           />
-          <h3 className="about-title">Weather Radar</h3>
-          <p className="about-version">Version 1.0.0</p>
-          <p className="about-copyright">Copyright 2026 Weather Radar Inc.</p>
-        </div>
+          <div className="about-copy">
+            <span className="page-eyebrow">About</span>
+            <h3 className="about-title">Weather Radar</h3>
+            <p className="about-version">Version 1.0.0</p>
+            <p className="about-copyright">Copyright 2026 Weather Radar Inc.</p>
+          </div>
+        </section>
       </div>
     </div>
   );

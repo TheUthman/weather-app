@@ -1,97 +1,134 @@
 .custom-select-container {
-  position: relative;
-  min-width: 170px;
-  width: 100%;
+    position: relative;
+    min-width: 180px;
+    width: 100%;
 }
 
 .custom-select-trigger {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--card-border);
-  background: var(--input-bg);
-  color: var(--text-color);
-  font-family: inherit;
-  font-size: 0.85rem;
-  outline: none;
-  cursor: pointer;
-  transition: all 0.2s var(--ease);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.03) 100%
+    );
+    color: var(--text-color);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s var(--ease);
+    backdrop-filter: blur(14px);
 }
 
-.custom-select-trigger:hover {
-  background: var(--input-bg-focus);
-  border-color: var(--primary-color);
+body.light .custom-select-trigger {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.48) 0%,
+        rgba(255, 255, 255, 0.18) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+@media (hover: hover) {
+    .custom-select-trigger:hover {
+        border-color: rgba(56, 189, 248, 0.32);
+        transform: translateY(-1px);
+    }
 }
 
 .custom-select-trigger:focus,
 .custom-select-trigger.open {
-  border-color: var(--primary-color);
-  background: var(--input-bg-focus);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    border-color: rgba(56, 189, 248, 0.45);
+    box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12);
 }
 
 .chevron-icon {
-  color: var(--text-muted);
-  transition: transform 0.2s var(--ease);
+    color: var(--soft-text, var(--text-muted));
+    transition: transform 0.2s var(--ease);
+    flex-shrink: 0;
 }
 
 .custom-select-trigger.open .chevron-icon {
-  transform: rotate(180deg);
-  color: var(--primary-color);
+    transform: rotate(180deg);
+    color: var(--weather-accent, var(--primary-color));
 }
 
 .custom-select-options {
-  position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  width: 100%;
-  padding: 4px;
-  margin: 0;
-  list-style: none;
-  background: var(--sidebar-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  z-index: 1000;
-  animation: dropdown-fade-in 0.15s var(--ease);
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;
+    padding: 6px;
+    margin: 0;
+    list-style: none;
+    background: linear-gradient(
+        180deg,
+        rgba(15, 23, 42, 0.72) 0%,
+        rgba(15, 23, 42, 0.58) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18);
+    backdrop-filter: blur(24px);
+    z-index: 1000;
+    animation: dropdown-fade-in 0.18s var(--ease);
+}
+
+body.light .custom-select-options {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.82) 0%,
+        rgba(255, 255, 255, 0.68) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.34);
 }
 
 @keyframes dropdown-fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .custom-select-option {
-  padding: 8px 10px;
-  border-radius: 6px;
-  color: var(--text-color);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.15s var(--ease);
+    padding: 10px 12px;
+    border-radius: 12px;
+    color: var(--text-color);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s var(--ease);
 }
 
-.custom-select-option:hover {
-  background: var(--card-bg-hover);
-  color: var(--text-color);
+@media (hover: hover) {
+    .custom-select-option:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    body.light .custom-select-option:hover {
+        background: rgba(255, 255, 255, 0.4);
+    }
 }
 
 .custom-select-option.selected {
-  background: var(--primary);
-  color: #ffffff;
-  font-weight: 500;
+    background: rgba(56, 189, 248, 0.16);
+    color: var(--weather-accent, var(--primary-color));
 }
 
 @media (max-width: 576px) {
-  .custom-select-container {
-    width: 100%;
-  }
+    .custom-select-container {
+        width: 100%;
+    }
 }

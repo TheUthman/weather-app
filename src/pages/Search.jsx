@@ -1,16 +1,13 @@
 /* eslint-disable react-hooks/set-state-in-effect */
-import {
-  useState,
-  useTransition,
-  useEffect,
-  useRef,
-} from "react";
+import { useState, useTransition, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiSearch,
   FiArrowLeft,
   FiMapPin,
   FiAlertCircle,
+  FiGlobe,
+  FiNavigation,
 } from "react-icons/fi";
 import {
   fetchGeocodingData,
@@ -51,13 +48,14 @@ const Search = () => {
 
     if (cacheRef.current.has(trimmed)) {
       setSuggestions(cacheRef.current.get(trimmed));
+      setLoading(false);
       return;
     }
 
     try {
       const results = await fetchGeocodingSuggestions(
         trimmed,
-        controller.signal
+        controller.signal,
       );
       cacheRef.current.set(trimmed, results);
       setSuggestions(results ?? []);
@@ -93,21 +91,14 @@ const Search = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        searchRef.current &&
-        !searchRef.current.contains(event.target)
-      ) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
         setSuggestions([]);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
 
-    return () =>
-      document.removeEventListener(
-        "mousedown",
-        handleClickOutside
-      );
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSearch = async (e) => {
@@ -145,14 +136,14 @@ const Search = () => {
       }
     } catch (err) {
       console.error(err);
-
       setError("Failed to search. Please try again.");
       addToast("Search failed. Check your connection.", "error");
     }
   };
 
   const handleSuggestionClick = (location) => {
-    setQuery(`${location.name}, ${location.admin1}, ${location.country}`);
+    const searchQuery = `${location.name}, ${location.admin1}, ${location.country}`;
+    setQuery(searchQuery);
     setSuggestions([]);
 
     navigate("/", {
@@ -161,135 +152,158 @@ const Search = () => {
           lat: location.latitude,
           lng: location.longitude,
         },
-        searchQuery: `${location.name}, ${location.admin1}, ${location.country}`,
+        searchQuery,
       },
     });
   };
 
   return (
     <div className="search-page page-container">
-      <div className="search-page-header">
-        <button
-          className="search-back-btn"
-          onClick={() => navigate("/")}
-          aria-label="Go back"
-        >
-          <FiArrowLeft size={25} />
-        </button>
+      <section className="search-hero glass-page-hero">
+        <div className="search-hero-head">
+          <button
+            className="search-back-btn"
+            onClick={() => navigate("/")}
+            aria-label="Go back"
+          >
+            <FiArrowLeft size={22} />
+          </button>
 
-        <h2 className="search-page-title">
-          Search Location
-        </h2>
-      </div>
-
-      <form
-        className="search-page-form"
-        onSubmit={handleSearch}
-      >
-        <div
-          className="search-field-group"
-          ref={searchRef}
-        >
-          <div className="search-page-input-wrapper">
-            <FiSearch
-              className="search-page-input-icon"
-              size={20}
-            />
-
-            <input
-              type="text"
-              className="search-page-input"
-              placeholder="Search city, state, or country"
-              value={query}
-              autoFocus
-              aria-describedby={
-                error ? "search-error" : undefined
-              }
-              onChange={(e) => {
-                const value = e.target.value;
-
-                setQuery(value);
-
-                if (!value.trim()) {
-                  setSuggestions([]);
-                }
-
-                if (error) {
-                  setError("");
-                }
-              }}
-            />
+          <div className="search-hero-copy">
+            <span className="page-eyebrow">Find a forecast</span>
+            <h1 className="search-page-title">Search any location</h1>
+            <p className="page-description">
+              Jump anywhere in the world and keep the same immersive sky-driven
+              experience.
+            </p>
           </div>
-
-          {loading && (
-            <div className="search-loading">
-              Searching...
-            </div>
-          )}
-
-          {!loading && suggestions.length > 0 && (
-            <div className="search-suggestions">
-              {suggestions.map((location) => (
-                <button
-                  key={`${location.name}-${location.latitude}-${location.longitude}`}
-                  type="button"
-                  className="search-page-hints"
-                  onClick={() =>
-                    handleSuggestionClick(location)
-                    
-                  }
-                >
-                  <FiMapPin />
-
-                  <div>
-                    <strong>{location.name}&nbsp;</strong>
-
-                    <small>
-                      {[location.admin1, location.country]
-                        .filter(Boolean)
-                        .join(", ")}
-                    </small>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {error && (
-            <div
-              className="search-callout"
-              id="search-error"
-              role="alert"
-            >
-              <FiAlertCircle
-                className="search-callout-icon"
-                size={16}
-              />
-              <span>{error}</span>
-            </div>
-          )}
         </div>
 
-        <button
-          type="submit"
-          className="search-page-submit"
-          disabled={isPending}
-        >
-          <span className="submit-span">
-            {isPending
-              ? "Searching..."
-              : "Search"}
+        <div className="search-hero-meta">
+          <span className="hero-chip">
+            <FiGlobe size={14} /> Global coverage
           </span>
+          <span className="hero-chip">
+            <FiNavigation size={14} /> Fast location lookup
+          </span>
+        </div>
+      </section>
 
-          <FiSearch className="search-submit-icon" />
-        </button>
-      </form>
+      <div className="search-layout">
+        <form
+          className="search-page-form search-surface-card"
+          onSubmit={handleSearch}
+        >
+          <div className="search-form-header">
+            <h2>Location search</h2>
+            <span>City, state, or country</span>
+          </div>
 
-      <div className="search-page-hints">
-        <FiMapPin size={16} />
-        <span>
-          Try "San Francisco", "London", or "Tokyo"
-        </span>
+          <div className="search-field-group" ref={searchRef}>
+            <div className="search-page-input-wrapper">
+              <FiSearch className="search-page-input-icon" size={20} />
+
+              <input
+                type="text"
+                className="search-page-input"
+                placeholder="Search city, state, or country"
+                value={query}
+                autoFocus
+                aria-describedby={error ? "search-error" : undefined}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setQuery(value);
+
+                  if (!value.trim()) {
+                    setSuggestions([]);
+                  }
+
+                  if (error) {
+                    setError("");
+                  }
+                }}
+              />
+            </div>
+
+            {loading && (
+              <div className="search-loading">Searching locations...</div>
+            )}
+
+            {!loading && suggestions.length > 0 && (
+              <div className="search-suggestions">
+                {suggestions.map((location) => (
+                  <button
+                    key={`${location.name}-${location.latitude}-${location.longitude}`}
+                    type="button"
+                    className="search-suggestion-item"
+                    onClick={() => handleSuggestionClick(location)}
+                  >
+                    <FiMapPin />
+                    <div>
+                      <strong>{location.name}</strong>
+                      <small>
+                        {[location.admin1, location.country]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </small>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {error && (
+              <div className="search-callout" id="search-error" role="alert">
+                <FiAlertCircle className="search-callout-icon" size={16} />
+                <span>{error}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="search-form-actions">
+            <button
+              type="submit"
+              className="search-page-submit"
+              disabled={isPending}
+            >
+              <span className="submit-span">
+                {isPending ? "Searching..." : "Open forecast"}
+              </span>
+              <FiSearch className="search-submit-icon" />
+            </button>
+          </div>
+        </form>
+
+        <aside className="search-guide-card search-surface-card">
+          <div className="search-guide-copy">
+            <span className="page-eyebrow">Quick ideas</span>
+            <h2>Try these locations</h2>
+            <p>
+              Search for cities, regions, or countries to swap the live weather
+              view instantly.
+            </p>
+          </div>
+
+          <div className="search-quick-grid">
+            {["San Francisco", "London", "Tokyo", "Cape Town"].map((item) => (
+              <button
+                key={item}
+                type="button"
+                className="search-quick-pill"
+                onClick={() => setQuery(item)}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+
+          <div className="search-page-callout">
+            <FiMapPin size={16} />
+            <span>
+              Tip: choose a suggestion to open the forecast immediately.
+            </span>
+          </div>
+        </aside>
       </div>
     </div>
   );
