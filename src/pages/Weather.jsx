@@ -1,11 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-} from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
@@ -133,7 +128,13 @@ const getIcon = (uri) => {
   if (name.includes("thunderstorm")) return "thunderstorm";
   if (name.includes("snow")) return "snow";
   if (name.includes("rain") || name.includes("drizzle")) return "rain";
-  if (name.includes("fog") || name.includes("haz") || name.includes("mist") || name.includes("wind")) return "cloudy";
+  if (
+    name.includes("fog") ||
+    name.includes("haz") ||
+    name.includes("mist") ||
+    name.includes("wind")
+  )
+    return "cloudy";
   if (name.includes("cloudy")) {
     if (name.includes("mostly") || name.includes("overcast")) return "cloudy";
     return name.includes("night") ? "night-cloudy" : "partly-cloudy";
@@ -171,15 +172,18 @@ const Weather = ({ preferences, setPreferences }) => {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   // Wrapped unit toggle to improve INP
-  const handleUnitChange = useCallback((newUnit) => {
-    const newPreferenceUnit = newUnit === "C" ? "metric" : "imperial";
-    if (setPreferences) {
-      setPreferences((prev) => ({ ...prev, units: newPreferenceUnit }));
-    } else {
-      // Fallback if setter isn't provided
-      setUnit(newUnit);
-    }
-  }, [setPreferences]);
+  const handleUnitChange = useCallback(
+    (newUnit) => {
+      const newPreferenceUnit = newUnit === "C" ? "metric" : "imperial";
+      if (setPreferences) {
+        setPreferences((prev) => ({ ...prev, units: newPreferenceUnit }));
+      } else {
+        // Fallback if setter isn't provided
+        setUnit(newUnit);
+      }
+    },
+    [setPreferences],
+  );
 
   useEffect(() => {
     setUnit(preferences.units === "metric" ? "C" : "F");
@@ -225,7 +229,10 @@ const Weather = ({ preferences, setPreferences }) => {
       const cityName = await fetchReverseGeocodingData(latitude, longitude);
       setActiveLocationName(cityName || "Detected Location");
       localStorage.setItem("last_weather_source", "auto");
-      addToast(`Location updated to ${cityName || "Detected Location"}`, "success");
+      addToast(
+        `Location updated to ${cityName || "Detected Location"}`,
+        "success",
+      );
     } catch (err) {
       console.error("Manual detection failed", err);
       addToast("Location access denied. Using default city.", "error");
@@ -242,7 +249,9 @@ const Weather = ({ preferences, setPreferences }) => {
     const cachedName = localStorage.getItem("last_weather_name");
 
     const modeMismatch = preferences.location !== cachedSource;
-    const cityMismatch = preferences.location === "manual" && preferences.defaultCity !== cachedName;
+    const cityMismatch =
+      preferences.location === "manual" &&
+      preferences.defaultCity !== cachedName;
     const noCoords = !coords.lat || !coords.lng;
 
     if (modeMismatch || cityMismatch || noCoords) {
@@ -260,7 +269,10 @@ const Weather = ({ preferences, setPreferences }) => {
           }
         } catch (err) {
           console.error("Failed to load default city location:", err);
-          addToast("Failed to find the default city. Check your settings.", "error");
+          addToast(
+            "Failed to find the default city. Check your settings.",
+            "error",
+          );
         }
       };
 
@@ -285,7 +297,10 @@ const Weather = ({ preferences, setPreferences }) => {
           localStorage.setItem("last_weather_source", "auto");
         } catch (err) {
           console.error("Browser geolocation failed:", err);
-          addToast("Auto-detect failed. Falling back to default city.", "warning");
+          addToast(
+            "Auto-detect failed. Falling back to default city.",
+            "warning",
+          );
           await loadDefaultCity();
         }
       };
@@ -300,7 +315,13 @@ const Weather = ({ preferences, setPreferences }) => {
         active = false;
       };
     }
-  }, [preferences.location, preferences.defaultCity, location.state, coords.lat, coords.lng]);
+  }, [
+    preferences.location,
+    preferences.defaultCity,
+    location.state,
+    coords.lat,
+    coords.lng,
+  ]);
 
   // Update browser document title when active location changes
   useEffect(() => {
@@ -426,66 +447,70 @@ const Weather = ({ preferences, setPreferences }) => {
       <SkyLayer
         daily={daily}
         condition={weatherData.current?.condition}
+        cloudCover={weatherData.current?.cloudCover}
+        windSpeed={weatherData.current?.windSpeed}
+        precipitation={weatherData.current?.precipitation}
       />
-    <div
-      className="weather-page page-container"
-      style={{
-        "--pointer-x": `${pointer.x}%`,
-        "--pointer-y": `${pointer.y}%`,
-      }}
-    >
-
-      <Header
-        unit={unit}
-        data={weatherData?.current?.condition}
-        setUnit={handleUnitChange}
-        onOpenSettings={() => navigate("/settings")}
-        onOpenSearch={() => navigate("/search")}
-        onDetectLocation={handleManualDetect}
-        isDetecting={isRefreshing}
-      />
-
-      <div className="weather-dashboard">
-        <CurrentWeather
-          data={weatherData.current ? weatherData : cachedData}
+      <div
+        className="weather-page page-container"
+        style={{
+          "--pointer-x": `${pointer.x}%`,
+          "--pointer-y": `${pointer.y}%`,
+        }}
+      >
+        <Header
           unit={unit}
-          loading={loadingCurrent && !cachedData}
-          celestialType={celestial.type}
-          celestialProgress={celestial.progress}
+          data={weatherData?.current?.condition}
+          setUnit={handleUnitChange}
+          onOpenSettings={() => navigate("/settings")}
+          onOpenSearch={() => navigate("/search")}
+          onDetectLocation={handleManualDetect}
+          isDetecting={isRefreshing}
         />
-        <InsightsCard
-          weatherCondition={weatherData.current?.condition || 'Sunny'}
-          temperature={weatherData.current?.temp || 70}
-          humidity={weatherData.current?.humidity || 50}
-          uvIndex={weatherData.current?.uvIndex || 5}
-          aqi={50}
-          pm25={15}
-          pm10={25}
-        />
-        <div className="main-stats">
-          <HourlyForecast
-            data={
-              weatherData.current
-                ? weatherData.hourly
-                : cachedData?.hourly || []
-            }
+
+        <div className="weather-dashboard">
+          <CurrentWeather
+            data={weatherData.current ? weatherData : cachedData}
             unit={unit}
-            loading={loadingHourly && !cachedData}
+            loading={loadingCurrent && !cachedData}
             celestialType={celestial.type}
             celestialProgress={celestial.progress}
           />
-          <DailyForecast
-            data={
-              weatherData.current ? weatherData.daily : cachedData?.daily || []
-            }
-            unit={unit}
-            loading={loadingDaily && !cachedData}
-            celestialType={celestial.type}
-            celestialProgress={celestial.progress}
+          <InsightsCard
+            weatherCondition={weatherData.current?.condition || "Sunny"}
+            temperature={weatherData.current?.temp || 70}
+            humidity={weatherData.current?.humidity || 50}
+            uvIndex={weatherData.current?.uvIndex || 5}
+            aqi={50}
+            pm25={15}
+            pm10={25}
           />
+          <div className="main-stats">
+            <HourlyForecast
+              data={
+                weatherData.current
+                  ? weatherData.hourly
+                  : cachedData?.hourly || []
+              }
+              unit={unit}
+              loading={loadingHourly && !cachedData}
+              celestialType={celestial.type}
+              celestialProgress={celestial.progress}
+            />
+            <DailyForecast
+              data={
+                weatherData.current
+                  ? weatherData.daily
+                  : cachedData?.daily || []
+              }
+              unit={unit}
+              loading={loadingDaily && !cachedData}
+              celestialType={celestial.type}
+              celestialProgress={celestial.progress}
+            />
+          </div>
         </div>
       </div>
-    </div>
     </>
   );
 };

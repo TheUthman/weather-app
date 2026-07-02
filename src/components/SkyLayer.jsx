@@ -7,11 +7,17 @@ import { getSkyGradient } from "../utils/skyGradient";
 import { getSunGlow } from "../utils/sunGlow";
 import { getStarOpacity } from "../utils/stars";
 import { getWeatherOverlay } from "../utils/weatherEffect";
-import { getCloudColor } from "../utils/cloudLightning";
+import { getCloudColor, getCloudBands } from "../utils/cloudLightning";
 
 import Stars from "./Stars";
 
-export default function SkyLayer({ daily, condition = "" }) {
+export default function SkyLayer({
+  daily,
+  condition = "",
+  cloudCover = 0,
+  windSpeed = 0,
+  precipitation = 0,
+}) {
   // 🌞 celestial state (MUST come first)
   const celestial = useCelestial(daily);
 
@@ -22,33 +28,38 @@ export default function SkyLayer({ daily, condition = "" }) {
   const { x, y } = getArcPosition(celestial.progress, radius);
 
   // 🌈 sky background gradient
-  const skyStyle = getSkyGradient(
-    celestial.type,
-    celestial.progress
-  );
+  const skyStyle = getSkyGradient(celestial.type, celestial.progress);
 
   // 🌟 stars opacity
-  const starsOpacity = getStarOpacity(
-    celestial.type,
-    celestial.progress
-  );
+  const starsOpacity = getStarOpacity(celestial.type, celestial.progress);
 
   // ☀️ sun glow (only when sun is active)
   const sunGlow =
-    celestial.type === "sun"
-      ? getSunGlow(celestial.progress)
-      : {};
+    celestial.type === "sun" ? getSunGlow(celestial.progress) : {};
 
   const overlayStyle = getWeatherOverlay(
     condition,
-    celestial.progress
+    celestial.progress,
+    cloudCover,
+    precipitation,
   );
 
-  const cloudColor = getCloudColor(celestial.type, celestial.progress);
+  const cloudColor = getCloudColor(
+    condition || "clear",
+    celestial.type,
+    celestial.progress,
+    cloudCover,
+  );
+  const cloudBands = getCloudBands(
+    condition || "clear",
+    celestial.type,
+    celestial.progress,
+    cloudCover,
+    windSpeed,
+  );
 
   return (
-    <div className="sky-layer">
-
+    <div className="sky-layer" style={skyStyle}>
       <Stars opacity={starsOpacity} />
 
       {celestial.type === "sun" && (
@@ -70,15 +81,29 @@ export default function SkyLayer({ daily, condition = "" }) {
         />
       )}
 
-      <div
-        className="cloud-layer"
-        style={{ background: cloudColor }}
-      />
+      <div className="cloud-layer" style={{ background: cloudColor }}>
+        {cloudBands.map((band, bandIndex) => (
+          <div
+            key={bandIndex}
+            className="cloud-band"
+            style={{
+              top: band.top,
+              opacity: band.opacity,
+              height: band.height,
+              filter: band.blur ? `blur(${band.blur}px)` : undefined,
+              animationDuration: band.speed,
+              animationDirection:
+                band.direction === "reverse" ? "reverse" : "normal",
+            }}
+          >
+            {band.clouds.map((cloud, cloudIndex) => (
+              <div key={cloudIndex} className="cloud" style={cloud} />
+            ))}
+          </div>
+        ))}
+      </div>
 
-      <div
-        className="weather-overlay"
-        style={overlayStyle}
-      />
+      <div className="weather-overlay" style={overlayStyle} />
     </div>
   );
 }
