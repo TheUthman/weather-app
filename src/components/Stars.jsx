@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 
-function generateStars(count = 120) {
+function generateStars(count = 72) {
   return Array.from({ length: count }).map(() => ({
     left: Math.random() * 100,
     top: Math.random() * 60,
@@ -9,8 +9,11 @@ function generateStars(count = 120) {
   }));
 }
 
-export default function Stars({ opacity }) {
-  const stars = useMemo(() => generateStars(), []);
+function Stars({ opacity, reducedMotion = false, compact = false }) {
+  const stars = useMemo(() => {
+    const count = reducedMotion ? 18 : compact ? 28 : 40;
+    return generateStars(count);
+  }, [compact, reducedMotion]);
 
   return (
     <div className="stars" style={{ opacity }}>
@@ -30,3 +33,5 @@ export default function Stars({ opacity }) {
     </div>
   );
 }
+
+export default memo(Stars);

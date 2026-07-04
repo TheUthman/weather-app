@@ -4,9 +4,9 @@ import { clamp, getProgress } from "../utils/celestialMath";
 export function useCelestial(daily) {
   const [now, setNow] = useState(() => Date.now());
 
-  // live clock update (smooth movement)
+  // Update once per minute to avoid forcing frequent app-wide rerenders.
   useEffect(() => {
-    const id = setInterval(() => setNow(Date.now()), 1000);
+    const id = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(id);
   }, []);
 
@@ -20,7 +20,7 @@ export function useCelestial(daily) {
   const sunset = new Date(today.sunEvents?.sunsetTime).getTime();
 
   const tomorrowSunrise = new Date(
-    daily[1]?.sunEvents?.sunriseTime || today.sunEvents?.sunriseTime
+    daily[1]?.sunEvents?.sunriseTime || today.sunEvents?.sunriseTime,
   ).getTime();
 
   if (isNaN(sunrise) || isNaN(sunset) || isNaN(tomorrowSunrise)) {

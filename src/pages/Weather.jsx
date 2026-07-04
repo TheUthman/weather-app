@@ -1,15 +1,22 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useState, useEffect, useMemo, useCallback } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  lazy,
+  Suspense,
+} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
-import HourlyForecast from "../components/HourlyForecast";
-import DailyForecast from "../components/DailyForecast";
-import SkyLayer from "../components/SkyLayer";
-import InsightsCard from "../components/InsightsCard";
 import { useWeather } from "../hooks/useWeather";
-import { useCelestial } from "../hooks/useCelestial";
+
+const SkyLayer = lazy(() => import("../components/SkyLayer"));
+const InsightsCard = lazy(() => import("../components/InsightsCard"));
+const HourlyForecast = lazy(() => import("../components/HourlyForecast"));
+const DailyForecast = lazy(() => import("../components/DailyForecast"));
 import {
   fetchGeocodingData,
   fetchReverseGeocodingData,
@@ -148,14 +155,25 @@ const Weather = ({ preferences, setPreferences }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { addToast } = useToast();
+  const defaultCoords = useMemo(() => ({ lat: 37.7749, lng: -122.4194 }), []);
 
   // Initialize with cached coordinates to trigger weather fetch immediately on load
   const [coords, setCoords] = useState(() => {
+    if (location.state?.searchCoords) {
+      return location.state.searchCoords;
+    }
     const cached = localStorage.getItem("last_weather_coords");
     if (cached) {
-      return JSON.parse(cached);
+      try {
+        const parsed = JSON.parse(cached);
+        if (parsed?.lat != null && parsed?.lng != null) {
+          return parsed;
+        }
+      } catch {
+        // Fall back to the default city coordinates below.
+      }
     }
-    return { lat: null, lng: null };
+    return defaultCoords;
   });
 
   // UI Cache: Store weather object to render LCP content instantly before fetch completes
@@ -164,9 +182,12 @@ const Weather = ({ preferences, setPreferences }) => {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const [activeLocationName, setActiveLocationName] = useState(
-    localStorage.getItem("last_weather_name") || "",
-  );
+  const [activeLocationName, setActiveLocationName] = useState(() => {
+    if (location.state?.searchQuery) {
+      return location.state.searchQuery;
+    }
+    return localStorage.getItem("last_weather_name") || "";
+  });
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
   const [pointer, setPointer] = useState({ x: 50, y: 35 });
 
@@ -193,8 +214,6 @@ const Weather = ({ preferences, setPreferences }) => {
   useEffect(() => {
     const state = location.state;
     if (state?.searchCoords) {
-      setCoords(state.searchCoords);
-      setActiveLocationName(state.searchQuery || "Searched Location");
       localStorage.setItem("last_weather_source", "search");
       // Clear the navigation state so it doesn't re-trigger
       window.history.replaceState({}, document.title);
@@ -214,14 +233,34 @@ const Weather = ({ preferences, setPreferences }) => {
   // Manually trigger location detection using browser geolocation
   const handleManualDetect = useCallback(async () => {
     setIsRefreshing(true);
-    try {
-      const position = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        });
+
+    const getPosition = (options) =>
+      new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, options);
       });
+
+    try {
+      let position;
+      try {
+        // Try high-accuracy first with a generous timeout
+        position = await getPosition({
+          enableHighAccuracy: true,
+          timeout: 30000,
+          maximumAge: 60000,
+        });
+      } catch (highAccErr) {
+        // If high-accuracy times out (code 3), retry with low accuracy
+        if (highAccErr.code === 3) {
+          position = await getPosition({
+            enableHighAccuracy: false,
+            timeout: 15000,
+            maximumAge: 300000,
+          });
+        } else {
+          throw highAccErr;
+        }
+      }
+
       const { latitude, longitude } = position.coords;
       const result = { lat: latitude, lng: longitude };
       setCoords(result);
@@ -235,11 +274,17 @@ const Weather = ({ preferences, setPreferences }) => {
       );
     } catch (err) {
       console.error("Manual detection failed", err);
-      addToast("Location access denied. Using default city.", "error");
+      const message =
+        err.code === 1
+          ? "Location access denied. Check browser permissions."
+          : err.code === 3
+            ? "Location request timed out. Try again."
+            : "Could not detect location. Using default city.";
+      addToast(message, "error");
     } finally {
       setTimeout(() => setIsRefreshing(false), 600);
     }
-  }, []);
+  }, [addToast]);
 
   useEffect(() => {
     // If there is an active incoming search transition, let the search useEffect handle it.
@@ -255,64 +300,74 @@ const Weather = ({ preferences, setPreferences }) => {
     const noCoords = !coords.lat || !coords.lng;
 
     if (modeMismatch || cityMismatch || noCoords) {
-      let active = true;
+      let cleanup = () => {};
+      const timer = window.setTimeout(() => {
+        let active = true;
+        cleanup = () => {
+          active = false;
+        };
 
-      const loadDefaultCity = async () => {
-        try {
-          const city = preferences.defaultCity || "San Francisco";
-          const result = await fetchGeocodingData(city);
-          if (!active) return;
-          if (result && result.lat && result.lng) {
-            setCoords(result);
-            setActiveLocationName(city);
-            localStorage.setItem("last_weather_source", "manual");
+        const loadDefaultCity = async () => {
+          try {
+            const city = preferences.defaultCity || "San Francisco";
+            const result = await fetchGeocodingData(city);
+            if (!active) return;
+            if (result && result.lat && result.lng) {
+              setCoords(result);
+              setActiveLocationName(city);
+              localStorage.setItem("last_weather_source", "manual");
+            }
+          } catch (err) {
+            console.error("Failed to load default city location:", err);
+            addToast(
+              "Failed to find the default city. Check your settings.",
+              "error",
+            );
           }
-        } catch (err) {
-          console.error("Failed to load default city location:", err);
-          addToast(
-            "Failed to find the default city. Check your settings.",
-            "error",
-          );
-        }
-      };
+        };
 
-      const loadLocationByBrowser = async () => {
-        try {
-          const position = await new Promise((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, {
-              enableHighAccuracy: false,
-              timeout: 10000,
-              maximumAge: 300000,
+        const loadLocationByBrowser = async () => {
+          try {
+            const position = await new Promise((resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: false,
+                timeout: 10000,
+                maximumAge: 300000,
+              });
             });
-          });
-          if (!active) return;
-          const { latitude, longitude } = position.coords;
-          const newLat = latitude;
-          const newLng = longitude;
-          const newName = await fetchReverseGeocodingData(latitude, longitude);
-          if (!active) return;
+            if (!active) return;
+            const { latitude, longitude } = position.coords;
+            const newLat = latitude;
+            const newLng = longitude;
+            const newName = await fetchReverseGeocodingData(
+              latitude,
+              longitude,
+            );
+            if (!active) return;
 
-          setCoords({ lat: newLat, lng: newLng });
-          setActiveLocationName(newName || "Detected Location");
-          localStorage.setItem("last_weather_source", "auto");
-        } catch (err) {
-          console.error("Browser geolocation failed:", err);
-          addToast(
-            "Auto-detect failed. Falling back to default city.",
-            "warning",
-          );
-          await loadDefaultCity();
+            setCoords({ lat: newLat, lng: newLng });
+            setActiveLocationName(newName || "Detected Location");
+            localStorage.setItem("last_weather_source", "auto");
+          } catch (err) {
+            console.error("Browser geolocation failed:", err);
+            addToast(
+              "Auto-detect failed. Falling back to default city.",
+              "warning",
+            );
+            await loadDefaultCity();
+          }
+        };
+
+        if (preferences.location === "auto") {
+          loadLocationByBrowser();
+        } else {
+          loadDefaultCity();
         }
-      };
-
-      if (preferences.location === "auto") {
-        loadLocationByBrowser();
-      } else {
-        loadDefaultCity();
-      }
+      }, 180);
 
       return () => {
-        active = false;
+        cleanup();
+        window.clearTimeout(timer);
       };
     }
   }, [
@@ -321,6 +376,7 @@ const Weather = ({ preferences, setPreferences }) => {
     location.state,
     coords.lat,
     coords.lng,
+    addToast,
   ]);
 
   // Update browser document title when active location changes
@@ -341,9 +397,6 @@ const Weather = ({ preferences, setPreferences }) => {
     loadingHourly,
     loadingDaily,
   } = useWeather(coords.lat, coords.lng);
-
-  // Celestial data for sky-aware coloring of weather components
-  const celestial = useCelestial(daily);
 
   // Persist sunrise/sunset times for automatic theme switching
   useEffect(() => {
@@ -420,37 +473,17 @@ const Weather = ({ preferences, setPreferences }) => {
     }
   }, [weatherData, loadingCurrent]);
 
-  // Show a loading screen only when we do not have coordinates yet (initial loading)
-  if (coords.lat === null || coords.lng === null) {
-    return (
-      <div
-        className="weather-page page-container"
-        style={{
-          "--pointer-x": `${pointer.x}%`,
-          "--pointer-y": `${pointer.y}%`,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          height: "80vh",
-        }}
-      >
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p className="loading-text">Locating weather station...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <>
-      <SkyLayer
-        daily={daily}
-        condition={weatherData.current?.condition}
-        cloudCover={weatherData.current?.cloudCover}
-        windSpeed={weatherData.current?.windSpeed}
-        precipitation={weatherData.current?.precipitation}
-      />
+      <Suspense fallback={null}>
+        <SkyLayer
+          daily={daily}
+          condition={weatherData.current?.condition}
+          cloudCover={weatherData.current?.cloudCover}
+          windSpeed={weatherData.current?.windSpeed}
+          precipitation={weatherData.current?.precipitation}
+        />
+      </Suspense>
       <div
         className="weather-page page-container"
         style={{
@@ -473,41 +506,71 @@ const Weather = ({ preferences, setPreferences }) => {
             data={weatherData.current ? weatherData : cachedData}
             unit={unit}
             loading={loadingCurrent && !cachedData}
-            celestialType={celestial.type}
-            celestialProgress={celestial.progress}
           />
-          <InsightsCard
-            weatherCondition={weatherData.current?.condition || "Sunny"}
-            temperature={weatherData.current?.temp || 70}
-            humidity={weatherData.current?.humidity || 50}
-            uvIndex={weatherData.current?.uvIndex || 5}
-            aqi={50}
-            pm25={15}
-            pm10={25}
-          />
+          <Suspense
+            fallback={
+              <div
+                style={{
+                  minHeight: 220,
+                  borderRadius: 20,
+                  background: "var(--card-bg)",
+                }}
+              />
+            }
+          >
+            <InsightsCard
+              weatherCondition={weatherData.current?.condition || "Sunny"}
+              temperature={weatherData.current?.temp || 70}
+              humidity={weatherData.current?.humidity || 50}
+              uvIndex={weatherData.current?.uvIndex || 5}
+              aqi={50}
+              pm25={15}
+              pm10={25}
+            />
+          </Suspense>
           <div className="main-stats">
-            <HourlyForecast
-              data={
-                weatherData.current
-                  ? weatherData.hourly
-                  : cachedData?.hourly || []
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    minHeight: 260,
+                    borderRadius: 20,
+                    background: "var(--card-bg)",
+                  }}
+                />
               }
-              unit={unit}
-              loading={loadingHourly && !cachedData}
-              celestialType={celestial.type}
-              celestialProgress={celestial.progress}
-            />
-            <DailyForecast
-              data={
-                weatherData.current
-                  ? weatherData.daily
-                  : cachedData?.daily || []
+            >
+              <HourlyForecast
+                data={
+                  weatherData.current
+                    ? weatherData.hourly
+                    : cachedData?.hourly || []
+                }
+                unit={unit}
+                loading={loadingHourly && !cachedData}
+              />
+            </Suspense>
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    minHeight: 260,
+                    borderRadius: 20,
+                    background: "var(--card-bg)",
+                  }}
+                />
               }
-              unit={unit}
-              loading={loadingDaily && !cachedData}
-              celestialType={celestial.type}
-              celestialProgress={celestial.progress}
-            />
+            >
+              <DailyForecast
+                data={
+                  weatherData.current
+                    ? weatherData.daily
+                    : cachedData?.daily || []
+                }
+                unit={unit}
+                loading={loadingDaily && !cachedData}
+              />
+            </Suspense>
           </div>
         </div>
       </div>

@@ -15,7 +15,16 @@ const WeatherIcon = ({ iconName, size = 48 }) => {
   const file = iconMap[iconName] || "cloudy";
   return (
     <span className={`animated-weather-icon-wrapper icon-${iconName}`}>
-      <img src={`/icons/meteocons/${file}.svg`} alt={iconName} width={size} height={size} />
+      <img
+        src={`/icons/meteocons/${file}.svg`}
+        alt={iconName}
+        width={size}
+        height={size}
+        decoding="async"
+        loading={size >= 100 ? "eager" : "lazy"}
+        fetchPriority={size >= 100 ? "high" : "auto"}
+        style={{ aspectRatio: "1 / 1", objectFit: "contain" }}
+      />
     </span>
   );
 };

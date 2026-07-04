@@ -520,6 +520,12 @@ function getProfileKey(condition = "") {
   return "clear";
 }
 
+function getViewportScale(viewportWidth = 1440) {
+  if (viewportWidth < 480) return 0.72;
+  if (viewportWidth < 768) return 0.86;
+  return 1;
+}
+
 function getPhasePalette(type, progress, profile) {
   const isNight = type === "moon";
   const cloudBase = isNight ? profile.nightColor : profile.dayColor;
@@ -597,12 +603,15 @@ export function getCloudBands(
   progress = 0.5,
   cloudCover = 0,
   windSpeed = 0,
+  options = {},
 ) {
   const profile =
     cloudProfiles[getProfileKey(condition)] || cloudProfiles.clear;
   const palette = getPhasePalette(type, progress, profile);
   const coverage = resolveCoverage(profile, cloudCover);
   const windFactor = clamp((Number(windSpeed) || 0) / 35, 0, 1.35);
+  const viewportScale = getViewportScale(options.viewportWidth);
+  const reducedMotion = Boolean(options.reducedMotion);
 
   return profile.layers
     .filter(
@@ -615,14 +624,22 @@ export function getCloudBands(
         0.28,
         1,
       );
+      const maxClouds = reducedMotion
+        ? 3
+        : Math.min(6, Math.round(4 * viewportScale));
       const count = Math.max(
         1,
-        Math.round(lerp(layer.count[0], layer.count[1], density)),
+        Math.min(
+          maxClouds,
+          Math.round(
+            lerp(layer.count[0], layer.count[1], density) * viewportScale,
+          ),
+        ),
       );
       const duration = clamp(
         layer.duration - windFactor * layer.windInfluence,
-        22,
-        150,
+        reducedMotion ? 90 : 22,
+        reducedMotion ? 140 : 150,
       );
       const bandOpacity = clamp(
         lerp(layer.opacity[0], layer.opacity[1], density) +
@@ -646,7 +663,8 @@ export function getCloudBands(
             (bandIndex + 1) * 97 + (cloudIndex + 1) * 31 + coverage * 100;
           const spread = (cloudIndex + 0.5) / count;
           const jitter = noise(seed);
-          const width = lerp(layer.width[0], layer.width[1], jitter);
+          const width =
+            lerp(layer.width[0], layer.width[1], jitter) * viewportScale;
           const heightRatio = lerp(0.68, 1.08, noise(seed + 2));
           const left = -8 + spread * 116 + (jitter - 0.5) * 10;
           const translateY = (noise(seed + 3) - 0.5) * 20;
@@ -657,9 +675,9 @@ export function getCloudBands(
             0.08,
             0.88,
           );
-          const shadowAlpha = clamp(0.08 + layer.depth * 0.14, 0.08, 0.22);
-          const glowAlpha = clamp(cloudOpacity * 0.24, 0.05, 0.2);
-          const edgeLightAlpha = clamp(cloudOpacity * 0.36, 0.08, 0.28);
+          const shadowAlpha = clamp(0.06 + layer.depth * 0.1, 0.06, 0.16);
+          const glowAlpha = clamp(cloudOpacity * 0.14, 0.04, 0.14);
+          const edgeLightAlpha = clamp(cloudOpacity * 0.24, 0.06, 0.2);
 
           return {
             left: `${left}%`,
@@ -667,8 +685,10 @@ export function getCloudBands(
             height: `${heightRatio * 100}%`,
             opacity: cloudOpacity,
             transform: `translateY(${translateY}%) scale(${scaleX}, ${scaleY})`,
-            background: `radial-gradient(circle at 28% 30%, ${toRgba(palette.highlight, edgeLightAlpha)} 0%, transparent 42%), linear-gradient(180deg, ${toRgba(palette.highlight, Math.min(cloudOpacity + 0.08, 0.96))} 0%, ${toRgba(palette.midtone, cloudOpacity)} 56%, ${toRgba(palette.base, cloudOpacity * 0.88)} 100%)`,
-            boxShadow: `0 ${14 + bandIndex * 6}px ${30 + bandIndex * 12}px ${toRgba(palette.shadow, shadowAlpha)}, 0 0 ${22 + bandIndex * 12}px ${toRgba(palette.highlight, glowAlpha)}`,
+            background: `linear-gradient(180deg, ${toRgba(palette.highlight, Math.min(cloudOpacity + 0.08, 0.9))} 0%, ${toRgba(palette.midtone, cloudOpacity)} 64%, ${toRgba(palette.base, cloudOpacity * 0.82)} 100%)`,
+            boxShadow: reducedMotion
+              ? "none"
+              : `0 ${8 + bandIndex * 4}px ${16 + bandIndex * 8}px ${toRgba(palette.shadow, shadowAlpha)}`,
             borderRadius: `${56 + noise(seed + 6) * 10}% ${48 + noise(seed + 7) * 12}% ${52 + noise(seed + 8) * 10}% ${46 + noise(seed + 9) * 12}% / ${58 + noise(seed + 10) * 8}% ${46 + noise(seed + 11) * 10}% ${54 + noise(seed + 12) * 8}% ${42 + noise(seed + 13) * 12}%`,
           };
         }),

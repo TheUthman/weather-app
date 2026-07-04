@@ -41,7 +41,13 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
             aria-label="Go to weather dashboard"
           >
             <span className="sidebar-brand-mark">
-              <img src="/WRLogo.png" alt="Weather Radar Logo" />
+              <img
+                src="/favicon.svg"
+                alt="Weather Radar Logo"
+                width="26"
+                height="26"
+                decoding="async"
+              />
             </span>
             <span className="sidebar-brand-copy">
               <strong>Weather Radar</strong>

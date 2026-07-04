@@ -4,13 +4,51 @@ import Weather from "./pages/Weather";
 import Sidebar from "./components/Sidebar";
 import ToastContainer from "./components/Toast";
 import { ToastProvider } from "./context/ToastContext";
-import { SpeedInsights } from "@vercel/speed-insights/react";
-import { Analytics } from "@vercel/analytics/react";
 import "./App.css";
 
 // Lazy load non-critical pages to improve LCP of the main dashboard
 const Settings = lazy(() => import("./pages/Settings"));
 const Search = lazy(() => import("./pages/Search"));
+const SpeedInsights = lazy(() =>
+  import("@vercel/speed-insights/react").then((mod) => ({
+    default: mod.SpeedInsights,
+  })),
+);
+const Analytics = lazy(() =>
+  import("@vercel/analytics/react").then((mod) => ({
+    default: mod.Analytics,
+  })),
+);
+
+const AnalyticsAndInsights = () => {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!import.meta.env.PROD) return;
+
+    const run = () => setReady(true);
+    if (typeof window.requestIdleCallback === "function") {
+      const id = window.requestIdleCallback(run);
+      return () => window.cancelIdleCallback?.(id);
+    }
+
+    const id = window.setTimeout(run, 1200);
+    return () => window.clearTimeout(id);
+  }, []);
+
+  if (!ready) return null;
+
+  return (
+    <>
+      <Suspense fallback={null}>
+        <SpeedInsights />
+      </Suspense>
+      <Suspense fallback={null}>
+        <Analytics />
+      </Suspense>
+    </>
+  );
+};
 
 const App = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
@@ -141,8 +179,7 @@ const App = () => {
             </Routes>
           </Suspense>
         </main>
-        <SpeedInsights />
-        <Analytics />
+        <AnalyticsAndInsights />
       </div>
       <ToastContainer />
     </ToastProvider>

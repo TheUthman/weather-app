@@ -1,4 +1,3 @@
-import React from 'react';
 import { FaWind } from 'react-icons/fa';
 
 const AirQualityIndex = ({ aqi = 50, pm25 = 15, pm10 = 25 }) => {

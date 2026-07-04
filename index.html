@@ -2,10 +2,52 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="./WRLogo.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Fraunces:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://api.open-meteo.com" />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media = 'all'"
+    />
+    <script>
+      try {
+        const saved = localStorage.getItem("last_weather_ui_data");
+        if (saved) {
+          const data = JSON.parse(saved);
+          const icon = data?.current?.icon;
+          if (icon) {
+            const iconMap = {
+              sunny: "clear-day",
+              "night-clear": "clear-night",
+              "partly-cloudy": "partly-cloudy-day",
+              "night-cloudy": "partly-cloudy-night",
+              cloudy: "cloudy",
+              rain: "rain",
+              snow: "snow",
+              thunderstorm: "thunderstorms",
+            };
+            const file = iconMap[icon] || "cloudy";
+            const link = document.createElement("link");
+            link.rel = "preload";
+            link.as = "image";
+            link.href = "/icons/meteocons/" + file + ".svg";
+            link.type = "image/svg+xml";
+            link.fetchPriority = "high";
+            document.head.appendChild(link);
+          }
+        }
+      } catch (e) {
+        console.warn("Failed to inject dynamic LCP preload:", e);
+      }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Weather Radar</title>
   </head>

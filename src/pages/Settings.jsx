@@ -224,9 +224,13 @@ const Settings = ({ preferences, setPreferences }) => {
 
         <section className="about-section">
           <img
-            src="/WRLogo.png"
+            src="/favicon.svg"
             alt="Weather Radar Logo"
             className="about-logo"
+            width="72"
+            height="72"
+            decoding="async"
+            loading="lazy"
           />
           <div className="about-copy">
             <span className="page-eyebrow">About</span>

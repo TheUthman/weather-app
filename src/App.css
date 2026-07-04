@@ -9,7 +9,7 @@
 }
 
 .app-layout.sidebar-collapsed {
-    --sidebar-offset: 136px;
+    --sidebar-offset: 106px;
 }
 
 .app-layout::before,
@@ -79,6 +79,28 @@ body.light .app-layout::after {
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
+}
+
+.page-loader {
+    width: 100%;
+    min-height: 60vh;
+    border-radius: 28px;
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.08) 0%,
+        rgba(255, 255, 255, 0.03) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(8px);
+}
+
+body.light .page-loader {
+    background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.42) 0%,
+        rgba(255, 255, 255, 0.16) 100%
+    );
+    border-color: rgba(255, 255, 255, 0.28);
 }
 
 .app-content::-webkit-scrollbar {

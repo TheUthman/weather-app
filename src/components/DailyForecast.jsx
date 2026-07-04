@@ -26,7 +26,7 @@ const DailyForecast = ({ data, unit, loading }) => {
           <h2>10 Day</h2>
         </div>
         <div className="daily-list">
-          {[...Array(7)].map((_, index) => (
+          {[...Array(10)].map((_, index) => (
             <div key={index} className="daily-row-skeleton">
               <div className="skeleton-line skeleton-day" />
               <div className="skeleton-line skeleton-icon-text" />

@@ -1,9 +1,5 @@
-import { useEffect, useState, useRef } from "react";
-import {
-  fetchWeatherData,
-  fetchDaysWeather,
-  fetchHourlyWeather
-} from "../services/weatherService";
+import { useEffect, useRef, useState } from "react";
+import { fetchForecastBundle } from "../services/weatherService";
 
 export const useWeather = (lat, lng) => {
   const [weather, setWeather] = useState(null);
@@ -18,14 +14,20 @@ export const useWeather = (lat, lng) => {
   useEffect(() => {
     const currentGen = ++generationRef.current;
 
-    const fetchCurrent = async () => {
+    const fetchForecast = async () => {
       try {
         setLoadingCurrent(true);
+        setLoadingHourly(true);
+        setLoadingDaily(true);
         setError(null);
-        const current = await fetchWeatherData(lat, lng);
-        // Ignore stale responses from a previous generation
+
+        const forecast = await fetchForecastBundle(lat, lng);
+
         if (generationRef.current !== currentGen) return;
-        setWeather(current);
+
+        setWeather(forecast.current);
+        setHourly(forecast.hourly || []);
+        setDaily(forecast.daily || []);
       } catch (err) {
         if (err.name === "AbortError") return;
         console.error(err);
@@ -33,46 +35,38 @@ export const useWeather = (lat, lng) => {
       } finally {
         if (generationRef.current === currentGen) {
           setLoadingCurrent(false);
-        }
-      }
-    };
-
-    const fetchHourly = async () => {
-      try {
-        setLoadingHourly(true);
-        const hours = await fetchHourlyWeather(lat, lng);
-        if (generationRef.current !== currentGen) return;
-        setHourly(hours.forecastHours || []);
-      } catch (err) {
-        if (err.name === "AbortError") return;
-        console.error(err);
-      } finally {
-        if (generationRef.current === currentGen) {
           setLoadingHourly(false);
-        }
-      }
-    };
-
-    const fetchDaily = async () => {
-      try {
-        setLoadingDaily(true);
-        const days = await fetchDaysWeather(lat, lng);
-        if (generationRef.current !== currentGen) return;
-        setDaily(days.forecastDays || []);
-      } catch (err) {
-        if (err.name === "AbortError") return;
-        console.error(err);
-      } finally {
-        if (generationRef.current === currentGen) {
           setLoadingDaily(false);
         }
       }
     };
 
     if (lat && lng) {
-      fetchCurrent();
-      fetchHourly();
-      fetchDaily();
+      const startFetch = () => {
+        if (generationRef.current === currentGen) {
+          void fetchForecast();
+        }
+      };
+
+      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+        const id = window.requestIdleCallback(startFetch, { timeout: 1000 });
+        const currentGeneration = currentGen;
+        return () => {
+          window.cancelIdleCallback?.(id);
+          if (generationRef.current === currentGeneration) {
+            generationRef.current++;
+          }
+        };
+      }
+
+      const id = window.setTimeout(startFetch, 180);
+      const currentGeneration = currentGen;
+      return () => {
+        window.clearTimeout(id);
+        if (generationRef.current === currentGeneration) {
+          generationRef.current++;
+        }
+      };
     }
   }, [lat, lng]);
 
@@ -84,6 +78,6 @@ export const useWeather = (lat, lng) => {
     loadingHourly,
     loadingDaily,
     error,
-    loading: loadingCurrent && loadingHourly && loadingDaily
+    loading: loadingCurrent && loadingHourly && loadingDaily,
   };
 };

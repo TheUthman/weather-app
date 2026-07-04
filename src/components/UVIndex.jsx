@@ -1,4 +1,3 @@
-import React from 'react';
 import { MdWbSunny } from 'react-icons/md';
 
 const UVIndex = ({ uvIndex = 5 }) => {

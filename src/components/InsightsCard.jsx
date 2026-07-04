@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { memo, useRef, useState } from "react";
 import Tips from "./Tips";
 import { Outfits } from "./Outfits";
 import AirQualityIndex from "./AirQualityIndex";
@@ -16,17 +16,32 @@ const InsightsCard = ({
   pm10 = 25,
 }) => {
   const scrollContainerRef = useRef(null);
+  const frameRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
-  const checkScroll = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        scrollContainerRef.current;
-      setCanScrollLeft(scrollLeft > 0);
-      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
-    }
-  };
+  const checkScroll = React.useCallback(() => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
+    const { scrollLeft, scrollWidth, clientWidth } = container;
+    const nextLeft = scrollLeft > 0;
+    const nextRight = scrollLeft < scrollWidth - clientWidth - 10;
+
+    setCanScrollLeft((current) => (current === nextLeft ? current : nextLeft));
+    setCanScrollRight((current) =>
+      current === nextRight ? current : nextRight,
+    );
+  }, []);
+
+  const scheduleScrollCheck = React.useCallback(() => {
+    if (frameRef.current !== null) return;
+
+    frameRef.current = window.requestAnimationFrame(() => {
+      frameRef.current = null;
+      checkScroll();
+    });
+  }, [checkScroll]);
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
@@ -41,22 +56,28 @@ const InsightsCard = ({
         behavior: "smooth",
       });
 
-      setTimeout(checkScroll, 300);
+      window.setTimeout(scheduleScrollCheck, 320);
     }
   };
 
   React.useEffect(() => {
     checkScroll();
     const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener("scroll", checkScroll);
-      window.addEventListener("resize", checkScroll);
-      return () => {
-        container.removeEventListener("scroll", checkScroll);
-        window.removeEventListener("resize", checkScroll);
-      };
-    }
-  }, []);
+    if (!container) return undefined;
+
+    container.addEventListener("scroll", scheduleScrollCheck, {
+      passive: true,
+    });
+    window.addEventListener("resize", scheduleScrollCheck);
+
+    return () => {
+      container.removeEventListener("scroll", scheduleScrollCheck);
+      window.removeEventListener("resize", scheduleScrollCheck);
+      if (frameRef.current !== null) {
+        window.cancelAnimationFrame(frameRef.current);
+      }
+    };
+  }, [checkScroll, scheduleScrollCheck]);
 
   return (
     <div className="insights-container">
@@ -76,11 +97,7 @@ const InsightsCard = ({
           </button>
         )}
 
-        <div
-          className="insights-scroll-container"
-          ref={scrollContainerRef}
-          onScroll={checkScroll}
-        >
+        <div className="insights-scroll-container" ref={scrollContainerRef}>
           <Tips data={weatherCondition} />
           <Outfits data={temperature} />
           <AirQualityIndex aqi={aqi} pm25={pm25} pm10={pm10} />
@@ -102,4 +119,4 @@ const InsightsCard = ({
   );
 };
 
-export default InsightsCard;
+export default memo(InsightsCard);
