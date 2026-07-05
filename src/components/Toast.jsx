@@ -1,19 +1,13 @@
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { useToast } from "../context/ToastContext";
-import {
-  FiCheck,
-  FiAlertTriangle,
-  FiAlertCircle,
-  FiInfo,
-  FiX,
-} from "react-icons/fi";
+import Icon from "./Icon";
 import "../styles/Toast.css";
 
 const ICON_MAP = {
-  success: <FiCheck />,
-  warning: <FiAlertTriangle />,
-  error: <FiAlertCircle />,
-  info: <FiInfo />,
+  success: <Icon name="check" />,
+  warning: <Icon name="alertTriangle" />,
+  error: <Icon name="alertCircle" />,
+  info: <Icon name="info" />,
 };
 
 function ToastItem({ toast, onRemove }) {
@@ -30,7 +24,7 @@ function ToastItem({ toast, onRemove }) {
         {toast.message}
       </ToastPrimitive.Description>
       <ToastPrimitive.Close className="toast-close" aria-label="Dismiss">
-        <FiX size={14} />
+        <Icon name="x" size={14} />
       </ToastPrimitive.Close>
     </ToastPrimitive.Root>
   );

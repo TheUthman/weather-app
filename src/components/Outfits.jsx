@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React from 'react'
-import { GiClothes } from "react-icons/gi";
+import Icon from "./Icon";
 
 export const Outfits = ({data}) => {
   const getOutfitRecommendation = (temperature) => {
@@ -44,7 +44,7 @@ export const Outfits = ({data}) => {
   return (
     <div className="insight-card-minimalist outfits-card" style={{ borderColor: outfit.tempColor }}>
       <div className="insight-card-header">
-        <GiClothes size={24} color={outfit.tempColor} />
+        <Icon name="shirt" size={24} style={{ color: outfit.tempColor }} />
         <h3 className="insight-card-title">What to Wear</h3>
       </div>
       <div className="insight-card-content">

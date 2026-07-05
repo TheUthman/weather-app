@@ -4,7 +4,7 @@ import { Outfits } from "./Outfits";
 import AirQualityIndex from "./AirQualityIndex";
 import UVIndex from "./UVIndex";
 import HealthWellness from "./HealthWellness";
-import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import Icon from "./Icon";
 
 const InsightsCard = ({
   weatherCondition = "Sunny",
@@ -93,7 +93,7 @@ const InsightsCard = ({
             onClick={() => scroll("left")}
             aria-label="Scroll left"
           >
-            <FiChevronLeft size={20} />
+            <Icon name="chevronLeft" size={20} />
           </button>
         )}
 
@@ -111,7 +111,7 @@ const InsightsCard = ({
             onClick={() => scroll("right")}
             aria-label="Scroll right"
           >
-            <FiChevronRight size={20} />
+            <Icon name="chevronRight" size={20} />
           </button>
         )}
       </div>

@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import React from 'react';
-import { MdFavoriteBorder } from 'react-icons/md';
+import Icon from "./Icon";
 
 const HealthWellness = ({ temperature = 70, humidity = 50 }) => {
   const getHealthTips = (temp, hum) => {
@@ -66,7 +66,7 @@ const HealthWellness = ({ temperature = 70, humidity = 50 }) => {
   return (
     <div className="insight-card-minimalist wellness-card" style={{ borderColor: color }}>
       <div className="insight-card-header">
-        <MdFavoriteBorder size={24} color={color} />
+        <Icon name="heart" size={24} style={{ color }} />
         <h3 className="insight-card-title">Health Tips</h3>
       </div>
       <div className="insight-card-content wellness-tips">

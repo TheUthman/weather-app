@@ -1,29 +1,23 @@
 import { memo } from "react";
 import { NavLink } from "react-router-dom";
-import {
-  FiChevronLeft,
-  FiChevronRight,
-  FiCloud,
-  FiSearch,
-  FiSettings,
-} from "react-icons/fi";
+import Icon from "./Icon";
 import "../styles/Sidebar.css";
 
 const navItems = [
   {
     to: "/",
     label: "Weather",
-    icon: <FiCloud size={20} />,
+    icon: <Icon name="cloud" size={20} />,
   },
   {
     to: "/search",
     label: "Search",
-    icon: <FiSearch size={20} />,
+    icon: <Icon name="search" size={20} />,
   },
   {
     to: "/settings",
     label: "Settings",
-    icon: <FiSettings size={20} />,
+    icon: <Icon name="settings" size={20} />,
   },
 ];
 
@@ -64,9 +58,9 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? (
-              <FiChevronRight size={18} />
+              <Icon name="chevronRight" size={18} />
             ) : (
-              <FiChevronLeft size={18} />
+              <Icon name="chevronLeft" size={18} />
             )}
           </button>
         </div>

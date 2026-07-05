@@ -1,4 +1,4 @@
-import { FaWind } from 'react-icons/fa';
+import Icon from "./Icon";
 
 const AirQualityIndex = ({ aqi = 50, pm25 = 15, pm10 = 25 }) => {
   const getAQILevel = (value) => {
@@ -15,7 +15,7 @@ const AirQualityIndex = ({ aqi = 50, pm25 = 15, pm10 = 25 }) => {
   return (
     <div className="insight-card-minimalist aqi-card" style={{ borderColor: aqiInfo.color }}>
       <div className="insight-card-header">
-        <FaWind size={24} color={aqiInfo.color} />
+        <Icon name="wind" size={24} style={{ color: aqiInfo.color }} />
         <h3 className="insight-card-title">Air Quality</h3>
       </div>
       <div className="insight-card-content">

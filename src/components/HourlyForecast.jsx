@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { FiCloudRain } from "react-icons/fi";
+import Icon from "./Icon";
 import WeatherIcon from "./WeatherIcon";
 
 const HourlyForecast = ({ data, unit, loading }) => {
@@ -43,7 +43,7 @@ const HourlyForecast = ({ data, unit, loading }) => {
             </div>
             {hour.precip > 0 && (
               <span className="hourly-rain">
-                <FiCloudRain size={12} />
+                <Icon name="cloudRain" size={12} />
                 {hour.precip}%
               </span>
             )}

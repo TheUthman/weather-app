@@ -141,9 +141,11 @@ const buildForecastUrl = (lat, lng) =>
   "&forecast_days=10" +
   "&timezone=auto";
 
-export const fetchForecastBundle = async (lat, lng) => {
+export const fetchForecastBundle = async (lat, lng, options = {}) => {
   try {
-    const response = await fetch(buildForecastUrl(lat, lng));
+    const response = await fetch(buildForecastUrl(lat, lng), {
+      signal: options.signal,
+    });
 
     if (!response.ok) {
       throw new Error(
@@ -159,7 +161,9 @@ export const fetchForecastBundle = async (lat, lng) => {
       daily: transformDaily(data.daily),
     };
   } catch (error) {
-    console.error("Error fetching bundled weather data:", error);
+    if (error.name !== "AbortError") {
+      console.error("Error fetching bundled weather data:", error);
+    }
     throw error;
   }
 };

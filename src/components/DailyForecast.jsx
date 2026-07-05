@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { FiCloudRain } from "react-icons/fi";
+import Icon from "./Icon";
 import WeatherIcon from "./WeatherIcon";
 
 const DailyForecast = ({ data, unit, loading }) => {
@@ -62,7 +62,7 @@ const DailyForecast = ({ data, unit, loading }) => {
               <div className="daily-precip">
                 {day.precip > 0 ? (
                   <span className="precip-badge">
-                    <FiCloudRain size={12} />
+                    <Icon name="cloudRain" size={12} />
                     {day.precip}%
                   </span>
                 ) : (

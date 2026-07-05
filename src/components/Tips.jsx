@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react'
-import { MdTipsAndUpdates } from "react-icons/md";
-import { IoWarningOutline } from "react-icons/io5";
-import { TbHealthRecognition } from "react-icons/tb";
-import { IoHappyOutline } from "react-icons/io5";
-import { IoMdInformationCircleOutline } from "react-icons/io";
+import Icon from "./Icon";
 
 const tipsMap = {
   "freezing drizzle and freezing fog": [
@@ -122,28 +118,28 @@ const getCategoryColor = (category) => {
     Safety: { 
       bg: "#FEE2E2", 
       text: "#991B1B", 
-      icon: <IoWarningOutline size={50} color={"#DC2626"}/>,
+      icon: <Icon name="alertTriangle" size={50} style={{ color: "#DC2626" }} />,
       border: "#DC2626",
       cardIcon: "#DC2626"
     },
     Health: { 
       bg: "#DBEAFE", 
       text: "#1E40AF", 
-      icon: <TbHealthRecognition size={50} color={"#0284C7"}/>,
+      icon: <Icon name="heart" size={50} style={{ color: "#0284C7" }} />,
       border: "#0284C7",
       cardIcon: "#0284C7"
     },
     Comfort: { 
       bg: "#F3E8FF", 
       text: "#581C87", 
-      icon: <IoHappyOutline size={50} color={"#9333EA"}/>,
+      icon: <Icon name="smile" size={50} style={{ color: "#9333EA" }} />,
       border: "#9333EA",
       cardIcon: "#9333EA"
     },
     General: { 
       bg: "#F0FDF4", 
       text: "#166534", 
-      icon: <IoMdInformationCircleOutline size={50} color={"#16A34A"}/>,
+      icon: <Icon name="info" size={50} style={{ color: "#16A34A" }} />,
       border: "#16A34A",
       cardIcon: "#16A34A"
     }
@@ -241,7 +237,7 @@ const Tips = ({ data }) => {
     <div className="insight-card-minimalist tips-card" style={{ borderColor: categoryStyle.border }}>
       <div className="tips-header-row">
         <div className="insight-card-header">
-          <MdTipsAndUpdates size={24} color={categoryStyle.cardIcon} />
+          <Icon name="lightbulb" size={24} style={{ color: categoryStyle.cardIcon }} />
           <h3 className="insight-card-title">Tips</h3>
         </div>
         <div className="tip-category-badge" style={{ backgroundColor: categoryStyle.bg, color: categoryStyle.text }}>

@@ -1,4 +1,4 @@
-import { MdWbSunny } from 'react-icons/md';
+import Icon from "./Icon";
 
 const UVIndex = ({ uvIndex = 5 }) => {
   const getUVInfo = (value) => {
@@ -44,7 +44,7 @@ const UVIndex = ({ uvIndex = 5 }) => {
   return (
     <div className="insight-card-minimalist uv-card" style={{ borderColor: uvInfo.color }}>
       <div className="insight-card-header">
-        <MdWbSunny size={24} color={uvInfo.color} />
+        <Icon name="sun" size={24} style={{ color: uvInfo.color }} />
         <h3 className="insight-card-title">UV Index</h3>
       </div>
       <div className="insight-card-content">

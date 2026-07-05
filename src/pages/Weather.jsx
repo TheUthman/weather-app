@@ -176,10 +176,14 @@ const Weather = ({ preferences, setPreferences }) => {
     return defaultCoords;
   });
 
-  // UI Cache: Store weather object to render LCP content instantly before fetch completes
+  // UI cache is only a fallback when the live request fails.
   const [cachedData, setCachedData] = useState(() => {
-    const saved = localStorage.getItem("last_weather_ui_data");
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem("last_weather_ui_data");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
 
   const [activeLocationName, setActiveLocationName] = useState(() => {
@@ -190,6 +194,7 @@ const Weather = ({ preferences, setPreferences }) => {
   });
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
   const [pointer, setPointer] = useState({ x: 50, y: 35 });
+  const [showSkyLayer, setShowSkyLayer] = useState(false);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   // Wrapped unit toggle to improve INP
@@ -209,6 +214,12 @@ const Weather = ({ preferences, setPreferences }) => {
   useEffect(() => {
     setUnit(preferences.units === "metric" ? "C" : "F");
   }, [preferences.units]);
+
+  useEffect(() => {
+    const revealSky = () => setShowSkyLayer(true);
+    const id = window.setTimeout(revealSky, 250);
+    return () => window.clearTimeout(id);
+  }, []);
 
   // Handle navigation state from Search page (incoming search results)
   useEffect(() => {
@@ -396,6 +407,7 @@ const Weather = ({ preferences, setPreferences }) => {
     loadingCurrent,
     loadingHourly,
     loadingDaily,
+    error: weatherError,
   } = useWeather(coords.lat, coords.lng);
 
   // Persist sunrise/sunset times for automatic theme switching
@@ -473,17 +485,38 @@ const Weather = ({ preferences, setPreferences }) => {
     }
   }, [weatherData, loadingCurrent]);
 
+  const shouldUseCachedFallback =
+    Boolean(weatherError) && !weatherData.current && Boolean(cachedData);
+  const displayData = weatherData.current
+    ? weatherData
+    : shouldUseCachedFallback
+      ? cachedData
+      : null;
+  const displayHourly = weatherData.current
+    ? weatherData.hourly
+    : shouldUseCachedFallback
+      ? cachedData?.hourly || []
+      : [];
+  const displayDaily = weatherData.current
+    ? weatherData.daily
+    : shouldUseCachedFallback
+      ? cachedData?.daily || []
+      : [];
+  const isWaitingForLiveData = !weatherData.current && !weatherError;
+
   return (
     <>
-      <Suspense fallback={null}>
-        <SkyLayer
-          daily={daily}
-          condition={weatherData.current?.condition}
-          cloudCover={weatherData.current?.cloudCover}
-          windSpeed={weatherData.current?.windSpeed}
-          precipitation={weatherData.current?.precipitation}
-        />
-      </Suspense>
+      {showSkyLayer && (
+        <Suspense fallback={null}>
+          <SkyLayer
+            daily={daily}
+            condition={weatherData.current?.condition}
+            cloudCover={weatherData.current?.cloudCover}
+            windSpeed={weatherData.current?.windSpeed}
+            precipitation={weatherData.current?.precipitation}
+          />
+        </Suspense>
+      )}
       <div
         className="weather-page page-container"
         style={{
@@ -503,31 +536,41 @@ const Weather = ({ preferences, setPreferences }) => {
 
         <div className="weather-dashboard">
           <CurrentWeather
-            data={weatherData.current ? weatherData : cachedData}
+            data={displayData}
             unit={unit}
-            loading={loadingCurrent && !cachedData}
+            loading={loadingCurrent || isWaitingForLiveData}
           />
-          <Suspense
-            fallback={
-              <div
-                style={{
-                  minHeight: 220,
-                  borderRadius: 20,
-                  background: "var(--card-bg)",
-                }}
+          {displayData?.current ? (
+            <Suspense
+              fallback={
+                <div
+                  style={{
+                    minHeight: 220,
+                    borderRadius: 20,
+                    background: "var(--card-bg)",
+                  }}
+                />
+              }
+            >
+              <InsightsCard
+                weatherCondition={displayData.current.condition}
+                temperature={displayData.current.temp}
+                humidity={displayData.current.humidity}
+                uvIndex={displayData.current.uvIndex}
+                aqi={50}
+                pm25={15}
+                pm10={25}
               />
-            }
-          >
-            <InsightsCard
-              weatherCondition={weatherData.current?.condition || "Sunny"}
-              temperature={weatherData.current?.temp || 70}
-              humidity={weatherData.current?.humidity || 50}
-              uvIndex={weatherData.current?.uvIndex || 5}
-              aqi={50}
-              pm25={15}
-              pm10={25}
+            </Suspense>
+          ) : (
+            <div
+              style={{
+                minHeight: 220,
+                borderRadius: 20,
+                background: "var(--card-bg)",
+              }}
             />
-          </Suspense>
+          )}
           <div className="main-stats">
             <Suspense
               fallback={
@@ -541,13 +584,9 @@ const Weather = ({ preferences, setPreferences }) => {
               }
             >
               <HourlyForecast
-                data={
-                  weatherData.current
-                    ? weatherData.hourly
-                    : cachedData?.hourly || []
-                }
+                data={displayHourly}
                 unit={unit}
-                loading={loadingHourly && !cachedData}
+                loading={loadingHourly || isWaitingForLiveData}
               />
             </Suspense>
             <Suspense
@@ -562,13 +601,9 @@ const Weather = ({ preferences, setPreferences }) => {
               }
             >
               <DailyForecast
-                data={
-                  weatherData.current
-                    ? weatherData.daily
-                    : cachedData?.daily || []
-                }
+                data={displayDaily}
                 unit={unit}
-                loading={loadingDaily && !cachedData}
+                loading={loadingDaily || isWaitingForLiveData}
               />
             </Suspense>
           </div>

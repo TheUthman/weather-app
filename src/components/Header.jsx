@@ -1,4 +1,4 @@
-import { FiNavigation } from "react-icons/fi";
+import Icon from "./Icon";
 
 const Header = ({ unit, setUnit, onDetectLocation, isDetecting }) => {
   return (
@@ -15,7 +15,7 @@ const Header = ({ unit, setUnit, onDetectLocation, isDetecting }) => {
           aria-label="Detect my location"
           disabled={isDetecting}
         >
-          <FiNavigation size={20} />
+          <Icon name="navigation" size={20} />
         </button>
         <button
           className="unit-toggle"

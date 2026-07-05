@@ -676,8 +676,6 @@ export function getCloudBands(
             0.88,
           );
           const shadowAlpha = clamp(0.06 + layer.depth * 0.1, 0.06, 0.16);
-          const glowAlpha = clamp(cloudOpacity * 0.14, 0.04, 0.14);
-          const edgeLightAlpha = clamp(cloudOpacity * 0.24, 0.06, 0.2);
 
           return {
             left: `${left}%`,

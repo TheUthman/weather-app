@@ -1,16 +1,5 @@
 import { memo, useEffect, useState } from "react";
-import {
-  FiCloud,
-  FiCloudRain,
-  FiCompass,
-  FiDroplet,
-  FiEye,
-  FiMapPin,
-  FiSun,
-  FiWind,
-} from "react-icons/fi";
-import { IoMdTime } from "react-icons/io";
-import { WiBarometer, WiSunrise, WiSunset } from "react-icons/wi";
+import Icon from "./Icon";
 import WeatherIcon from "./WeatherIcon";
 
 const convertTemp = (temp, unit) => {
@@ -131,11 +120,11 @@ const CurrentWeather = ({ data, unit, loading }) => {
       <div className="current-summary">
         <div className="location">
           <div className="location-header">
-            <FiMapPin size={16} />
+            <Icon name="mapPin" size={16} />
             <h1>{data.location || "Current Location"}</h1>
           </div>
           <div className="location-header">
-            <IoMdTime size={16} />
+            <Icon name="time" size={16} />
             <LocalTime />
           </div>
         </div>
@@ -156,43 +145,43 @@ const CurrentWeather = ({ data, unit, loading }) => {
 
       <div className="weather-metrics" aria-label="Weather details">
         <Metric
-          icon={<FiDroplet />}
+          icon={<Icon name="droplet" />}
           label="Humidity"
           value={`${current.humidity}%`}
         />
-        <Metric icon={<FiWind />} label="Wind" value={wind} />
+        <Metric icon={<Icon name="wind" />} label="Wind" value={wind} />
         <Metric
-          icon={<WiBarometer />}
+          icon={<Icon name="barometer" />}
           label="Pressure"
           value={`${current.pressure} in`}
         />
-        <Metric icon={<FiSun />} label="UV Index" value={current.uvIndex} />
+        <Metric icon={<Icon name="sun" />} label="UV Index" value={current.uvIndex} />
         <Metric
-          icon={<FiCloudRain />}
+          icon={<Icon name="cloudRain" />}
           label="Rain"
           value={formatRain(current.precipitation)}
         />
         <Metric
-          icon={<FiCloud />}
+          icon={<Icon name="cloud" />}
           label="Clouds"
           value={`${current.cloudCover}%`}
         />
         <Metric
-          icon={<FiEye />}
+          icon={<Icon name="eye" />}
           label="Visibility"
           value={current.visibility ? `${current.visibility} mi` : "N/A"}
         />
-        <Metric icon={<FiCompass />} label="Dew Point" value={`${dewPoint}°`} />
+        <Metric icon={<Icon name="compass" />} label="Dew Point" value={`${dewPoint}°`} />
       </div>
 
       <div className="sun-times" aria-label="Sun times">
         <div className="sun-item">
-          <WiSunrise size={34} />
+          <Icon name="sunrise" size={34} />
           <span className="sun-label">Sunrise</span>
           <span className="sun-value">{current.sunrise}</span>
         </div>
         <div className="sun-item">
-          <WiSunset size={34} />
+          <Icon name="sunset" size={34} />
           <span className="sun-label">Sunset</span>
           <span className="sun-value">{current.sunset}</span>
         </div>

@@ -13,6 +13,7 @@ export const useWeather = (lat, lng) => {
 
   useEffect(() => {
     const currentGen = ++generationRef.current;
+    const controller = new AbortController();
 
     const fetchForecast = async () => {
       try {
@@ -21,7 +22,9 @@ export const useWeather = (lat, lng) => {
         setLoadingDaily(true);
         setError(null);
 
-        const forecast = await fetchForecastBundle(lat, lng);
+        const forecast = await fetchForecastBundle(lat, lng, {
+          signal: controller.signal,
+        });
 
         if (generationRef.current !== currentGen) return;
 
@@ -42,30 +45,11 @@ export const useWeather = (lat, lng) => {
     };
 
     if (lat && lng) {
-      const startFetch = () => {
-        if (generationRef.current === currentGen) {
-          void fetchForecast();
-        }
-      };
+      void fetchForecast();
 
-      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-        const id = window.requestIdleCallback(startFetch, { timeout: 1000 });
-        const currentGeneration = currentGen;
-        return () => {
-          window.cancelIdleCallback?.(id);
-          if (generationRef.current === currentGeneration) {
-            generationRef.current++;
-          }
-        };
-      }
-
-      const id = window.setTimeout(startFetch, 180);
-      const currentGeneration = currentGen;
       return () => {
-        window.clearTimeout(id);
-        if (generationRef.current === currentGeneration) {
-          generationRef.current++;
-        }
+        controller.abort();
+        generationRef.current = currentGen + 1;
       };
     }
   }, [lat, lng]);
