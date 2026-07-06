@@ -23,6 +23,10 @@ import {
 } from "../services/geocodingService";
 import { useToast } from "../context/ToastContext";
 
+const FAVORITES_STORAGE_KEY = "weatherAppFavoriteLocations";
+
+const getFavoriteId = (coords) => `${coords.lat}-${coords.lng}`;
+
 // Helper parser to extract temperature values and convert Celsius to Fahrenheit
 const parseTemp = (tempObj) => {
   if (tempObj === undefined || tempObj === null) return 0;
@@ -195,6 +199,15 @@ const Weather = ({ preferences, setPreferences }) => {
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
   const [pointer, setPointer] = useState({ x: 50, y: 35 });
   const [showSkyLayer, setShowSkyLayer] = useState(false);
+  const [favorites, setFavorites] = useState(() => {
+    try {
+      const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
+      const parsed = stored ? JSON.parse(stored) : [];
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  });
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   // Wrapped unit toggle to improve INP
@@ -214,6 +227,10 @@ const Weather = ({ preferences, setPreferences }) => {
   useEffect(() => {
     setUnit(preferences.units === "metric" ? "C" : "F");
   }, [preferences.units]);
+
+  useEffect(() => {
+    localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
+  }, [favorites]);
 
   useEffect(() => {
     const revealSky = () => setShowSkyLayer(true);
@@ -503,6 +520,49 @@ const Weather = ({ preferences, setPreferences }) => {
       ? cachedData?.daily || []
       : [];
   const isWaitingForLiveData = !weatherData.current && !weatherError;
+  const currentFavoriteId =
+    coords.lat && coords.lng ? getFavoriteId(coords) : "";
+  const isCurrentFavorite =
+    Boolean(currentFavoriteId) &&
+    favorites.some((favorite) => favorite.id === currentFavoriteId);
+  const canFavoriteCurrent = Boolean(
+    currentFavoriteId && activeLocationName && displayData?.current,
+  );
+
+  const handleToggleFavorite = useCallback(() => {
+    if (!canFavoriteCurrent) {
+      addToast("Load a location before saving it.", "warning");
+      return;
+    }
+
+    const favorite = {
+      id: currentFavoriteId,
+      name: activeLocationName,
+      admin1: "",
+      country: "",
+      latitude: coords.lat,
+      longitude: coords.lng,
+    };
+
+    if (isCurrentFavorite) {
+      setFavorites((current) =>
+        current.filter((item) => item.id !== currentFavoriteId),
+      );
+      addToast(`${activeLocationName} removed from favorites`, "info");
+      return;
+    }
+
+    setFavorites((current) => [favorite, ...current].slice(0, 8));
+    addToast(`${activeLocationName} added to favorites`, "success");
+  }, [
+    activeLocationName,
+    addToast,
+    canFavoriteCurrent,
+    coords.lat,
+    coords.lng,
+    currentFavoriteId,
+    isCurrentFavorite,
+  ]);
 
   return (
     <>
@@ -532,6 +592,9 @@ const Weather = ({ preferences, setPreferences }) => {
           onOpenSearch={() => navigate("/search")}
           onDetectLocation={handleManualDetect}
           isDetecting={isRefreshing}
+          onToggleFavorite={handleToggleFavorite}
+          isFavorite={isCurrentFavorite}
+          canFavorite={canFavoriteCurrent}
         />
 
         <div className="weather-dashboard">

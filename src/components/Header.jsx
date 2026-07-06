@@ -1,6 +1,15 @@
 import Icon from "./Icon";
+import { FiStar } from "react-icons/fi";
 
-const Header = ({ unit, setUnit, onDetectLocation, isDetecting }) => {
+const Header = ({
+  unit,
+  setUnit,
+  onDetectLocation,
+  isDetecting,
+  onToggleFavorite,
+  isFavorite,
+  canFavorite,
+}) => {
   return (
     <header className="weather-header">
       <div className="header-copy">
@@ -8,6 +17,17 @@ const Header = ({ unit, setUnit, onDetectLocation, isDetecting }) => {
         <strong>Live conditions</strong>
       </div>
       <div className="header-actions">
+        <button
+          className={`icon-btn favorite-btn ${isFavorite ? "favorite-active" : ""}`}
+          onClick={onToggleFavorite}
+          title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+          aria-label={
+            isFavorite ? "Remove current location from favorites" : "Add current location to favorites"
+          }
+          disabled={!canFavorite}
+        >
+          <FiStar size={19} />
+        </button>
         <button
           className={`icon-btn ${isDetecting ? "detecting" : ""}`}
           onClick={onDetectLocation}
