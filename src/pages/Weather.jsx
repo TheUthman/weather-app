@@ -13,7 +13,6 @@ import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
 import { useWeather } from "../hooks/useWeather";
 
-const SkyLayer = lazy(() => import("../components/SkyLayer"));
 const InsightsCard = lazy(() => import("../components/InsightsCard"));
 const HourlyForecast = lazy(() => import("../components/HourlyForecast"));
 const DailyForecast = lazy(() => import("../components/DailyForecast"));
@@ -155,7 +154,7 @@ const getIcon = (uri) => {
   return "cloudy";
 };
 
-const Weather = ({ preferences, setPreferences }) => {
+const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { addToast } = useToast();
@@ -198,7 +197,6 @@ const Weather = ({ preferences, setPreferences }) => {
   });
   const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
   const [pointer, setPointer] = useState({ x: 50, y: 35 });
-  const [showSkyLayer, setShowSkyLayer] = useState(false);
   const [favorites, setFavorites] = useState(() => {
     try {
       const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
@@ -231,12 +229,6 @@ const Weather = ({ preferences, setPreferences }) => {
   useEffect(() => {
     localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
   }, [favorites]);
-
-  useEffect(() => {
-    const revealSky = () => setShowSkyLayer(true);
-    const id = window.setTimeout(revealSky, 250);
-    return () => window.clearTimeout(id);
-  }, []);
 
   // Handle navigation state from Search page (incoming search results)
   useEffect(() => {
@@ -528,6 +520,20 @@ const Weather = ({ preferences, setPreferences }) => {
   const canFavoriteCurrent = Boolean(
     currentFavoriteId && activeLocationName && displayData?.current,
   );
+  const backgroundCurrent = displayData?.current;
+
+  useEffect(() => {
+    if (!backgroundCurrent) return;
+
+    onBackgroundWeather?.({
+      daily,
+      condition: backgroundCurrent.condition || "Clear",
+      icon: backgroundCurrent.icon || "sunny",
+      cloudCover: backgroundCurrent.cloudCover || 0,
+      windSpeed: backgroundCurrent.windSpeed || 0,
+      precipitation: backgroundCurrent.precipitation || 0,
+    });
+  }, [backgroundCurrent, daily, onBackgroundWeather]);
 
   const handleToggleFavorite = useCallback(() => {
     if (!canFavoriteCurrent) {
@@ -566,17 +572,6 @@ const Weather = ({ preferences, setPreferences }) => {
 
   return (
     <>
-      {showSkyLayer && (
-        <Suspense fallback={null}>
-          <SkyLayer
-            daily={daily}
-            condition={weatherData.current?.condition}
-            cloudCover={weatherData.current?.cloudCover}
-            windSpeed={weatherData.current?.windSpeed}
-            precipitation={weatherData.current?.precipitation}
-          />
-        </Suspense>
-      )}
       <div
         className="weather-page page-container"
         style={{

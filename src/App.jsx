@@ -4,11 +4,14 @@ import Weather from "./pages/Weather";
 import Sidebar from "./components/Sidebar";
 import ToastContainer from "./components/Toast";
 import { ToastProvider } from "./context/ToastContext";
-import "./App.css";
 
 // Lazy load non-critical pages to improve LCP of the main dashboard
 const Settings = lazy(() => import("./pages/Settings"));
 const Search = lazy(() => import("./pages/Search"));
+const SkyLayer = lazy(() => import("./components/SkyLayer"));
+const WeatherVideoBackground = lazy(
+  () => import("./components/WeatherVideoBackground"),
+);
 const SpeedInsights = lazy(() =>
   import("@vercel/speed-insights/react").then((mod) => ({
     default: mod.SpeedInsights,
@@ -51,6 +54,14 @@ const AnalyticsAndInsights = () => {
 };
 
 const App = () => {
+  const [backgroundWeather, setBackgroundWeather] = useState({
+    daily: [],
+    condition: "Clear",
+    icon: "sunny",
+    cloudCover: 0,
+    windSpeed: 0,
+    precipitation: 0,
+  });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
       return JSON.parse(
@@ -69,7 +80,11 @@ const App = () => {
         const parsed = JSON.parse(storedPrefs);
         return {
           units: parsed.units || "imperial",
-          theme: "auto",
+          theme: ["light", "dark", "auto"].includes(parsed.theme)
+            ? parsed.theme
+            : "auto",
+          visualStyle:
+            parsed.visualStyle === "minimal" ? "minimal" : "classic",
           notifications:
             parsed.notifications !== undefined ? parsed.notifications : true,
           location: parsed.location || "auto",
@@ -80,6 +95,7 @@ const App = () => {
       return {
         units: "imperial",
         theme: "auto",
+        visualStyle: "classic",
         notifications: true,
         location: "auto",
         defaultCity: "San Francisco",
@@ -89,6 +105,7 @@ const App = () => {
       return {
         units: "imperial",
         theme: "auto",
+        visualStyle: "classic",
         notifications: true,
         location: "auto",
         defaultCity: "San Francisco",
@@ -125,16 +142,32 @@ const App = () => {
     return now >= sunriseTime && now < sunsetTime ? "light" : "dark";
   }, []);
 
-  // Apply automatic day/night theme class to body
+  // Apply the selected visual style and light/dark color mode to the document.
   useEffect(() => {
     const body = document.body;
-    body.classList.remove("light", "dark");
-    body.classList.add(getAutoTheme());
-  }, [getAutoTheme]);
+    const colorMode =
+      preferences.theme === "auto" ? getAutoTheme() : preferences.theme;
+
+    body.classList.remove(
+      "light",
+      "dark",
+      "theme-style-classic",
+      "theme-style-minimal",
+    );
+    body.classList.add(colorMode, `theme-style-${preferences.visualStyle}`);
+
+    return () => {
+      body.classList.remove(
+        "theme-style-classic",
+        "theme-style-minimal",
+      );
+    };
+  }, [getAutoTheme, preferences.theme, preferences.visualStyle]);
 
   // Poll for sunrise/sunset transitions every 60s
   useEffect(() => {
     const checkTheme = () => {
+      if (preferences.theme !== "auto") return;
       const body = document.body;
       const newTheme = getAutoTheme();
       body.classList.remove("light", "dark");
@@ -143,15 +176,36 @@ const App = () => {
 
     const interval = setInterval(checkTheme, 60_000);
     return () => clearInterval(interval);
-  }, [getAutoTheme]);
+  }, [getAutoTheme, preferences.theme]);
+
+  const handleBackgroundWeather = useCallback((nextWeather) => {
+    setBackgroundWeather(nextWeather);
+  }, []);
 
   return (
     <ToastProvider>
       <div
         className={`app-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
       >
+        <Suspense fallback={null}>
+          {preferences.visualStyle === "minimal" ? (
+            <WeatherVideoBackground
+              condition={backgroundWeather.condition}
+              icon={backgroundWeather.icon}
+            />
+          ) : (
+            <SkyLayer
+              daily={backgroundWeather.daily}
+              condition={backgroundWeather.condition}
+              cloudCover={backgroundWeather.cloudCover}
+              windSpeed={backgroundWeather.windSpeed}
+              precipitation={backgroundWeather.precipitation}
+            />
+          )}
+        </Suspense>
         <Sidebar
           collapsed={isSidebarCollapsed}
+          visualStyle={preferences.visualStyle}
           onToggleCollapse={() => setIsSidebarCollapsed((current) => !current)}
         />
         <main className="app-content">
@@ -163,6 +217,7 @@ const App = () => {
                   <Weather
                     preferences={preferences}
                     setPreferences={setPreferences}
+                    onBackgroundWeather={handleBackgroundWeather}
                   />
                 }
               />

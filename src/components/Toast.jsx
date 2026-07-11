@@ -1,7 +1,6 @@
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import { useToast } from "../context/ToastContext";
 import Icon from "./Icon";
-import "../styles/Toast.css";
 
 const ICON_MAP = {
   success: <Icon name="check" />,

@@ -1,7 +1,6 @@
 import { memo } from "react";
 import { NavLink } from "react-router-dom";
 import Icon from "./Icon";
-import "../styles/Sidebar.css";
 
 const navItems = [
   {
@@ -21,7 +20,7 @@ const navItems = [
   },
 ];
 
-const Sidebar = ({ collapsed, onToggleCollapse }) => {
+const Sidebar = ({ collapsed, visualStyle, onToggleCollapse }) => {
   return (
     <aside
       className={`sidebar ${collapsed ? "sidebar-collapsed" : ""}`}
@@ -84,7 +83,11 @@ const Sidebar = ({ collapsed, onToggleCollapse }) => {
 
         <div className="sidebar-footer">
           <span className="sidebar-footer-dot" />
-          <span className="sidebar-footer-text">Live sky visuals</span>
+          <span className="sidebar-footer-text">
+            {visualStyle === "minimal"
+              ? "Weather film active"
+              : "Animated sky active"}
+          </span>
         </div>
       </div>
     </aside>

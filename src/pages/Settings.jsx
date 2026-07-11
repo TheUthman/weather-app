@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import Toggle from "../components/Toggle";
 import CustomSelect from "../components/CustomSelect";
 import { useToast } from "../context/ToastContext";
-import "../styles/Settings.css";
 
 const Settings = ({ preferences, setPreferences }) => {
   const [localCity, setLocalCity] = useState(preferences.defaultCity);
@@ -20,11 +19,23 @@ const Settings = ({ preferences, setPreferences }) => {
     { value: "manual", label: "Manual" },
   ];
 
+  const visualStyleOptions = [
+    { value: "classic", label: "Original sky" },
+    { value: "minimal", label: "Minimal film" },
+  ];
+
+  const themeOptions = [
+    { value: "auto", label: "Auto day / night" },
+    { value: "light", label: "Light" },
+    { value: "dark", label: "Dark" },
+  ];
+
   const summaryChips = useMemo(
     () => [
       {
         label: "Theme",
-        value: "Auto day/night",
+        value:
+          preferences.visualStyle === "minimal" ? "Minimal film" : "Original sky",
       },
       {
         label: "Units",
@@ -56,6 +67,14 @@ const Settings = ({ preferences, setPreferences }) => {
     } else if (name === "location") {
       const label = value === "auto" ? "Auto-detect" : "Manual";
       addToast(`Location mode: ${label}`, "info");
+    } else if (name === "visualStyle") {
+      addToast(
+        value === "minimal" ? "Minimal theme enabled" : "Original theme restored",
+        "success",
+      );
+    } else if (name === "theme") {
+      const label = value === "auto" ? "Auto day / night" : value;
+      addToast(`Color mode: ${label}`, "info");
     }
   };
 
@@ -132,14 +151,36 @@ const Settings = ({ preferences, setPreferences }) => {
 
           <div className="setting-row">
             <div className="setting-info">
-              <label>Sky theme</label>
+              <label htmlFor="visualStyle">Visual style</label>
               <span className="setting-description">
-                The app now follows local sunrise and sunset automatically for a
-                continuous day-to-night experience.
+                Keep the original animated sky or switch to a calm, cinematic
+                weather backdrop.
               </span>
             </div>
             <div className="setting-control">
-              <div className="settings-static-value">Auto day/night</div>
+              <CustomSelect
+                name="visualStyle"
+                value={preferences.visualStyle}
+                onChange={handleChange}
+                options={visualStyleOptions}
+              />
+            </div>
+          </div>
+
+          <div className="setting-row">
+            <div className="setting-info">
+              <label htmlFor="theme">Color mode</label>
+              <span className="setting-description">
+                Choose a light or dark canvas, or follow local sunrise and sunset.
+              </span>
+            </div>
+            <div className="setting-control">
+              <CustomSelect
+                name="theme"
+                value={preferences.theme}
+                onChange={handleChange}
+                options={themeOptions}
+              />
             </div>
           </div>
         </section>
@@ -237,6 +278,14 @@ const Settings = ({ preferences, setPreferences }) => {
             <h3 className="about-title">Weather Radar</h3>
             <p className="about-version">Version 1.0.0</p>
             <p className="about-copyright">Copyright 2026 Weather Radar Inc.</p>
+            <a
+              className="weather-film-credit"
+              href="https://coverr.co/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Minimal theme films by Coverr
+            </a>
           </div>
         </section>
       </div>

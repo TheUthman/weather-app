@@ -3,6 +3,7 @@ import { FiStar } from "react-icons/fi";
 
 const Header = ({
   unit,
+  data,
   setUnit,
   onDetectLocation,
   isDetecting,
@@ -13,7 +14,10 @@ const Header = ({
   return (
     <header className="weather-header">
       <div className="header-copy">
-        <span>Weather Radar</span>
+        <div className="header-kicker-row">
+          <span>Weather Radar</span>
+          <span className="weather-status-pill">{data || "Live weather"}</span>
+        </div>
         <strong>Live conditions</strong>
       </div>
       <div className="header-actions">

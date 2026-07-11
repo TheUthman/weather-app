@@ -1,4 +1,3 @@
-import "../styles/Toggle.css";
 
 const Toggle = ({ isOn, onClick }) => {
   return (
