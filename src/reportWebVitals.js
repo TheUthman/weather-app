@@ -25,7 +25,9 @@ const publishMetric = (metric) => {
 };
 
 export default function reportWebVitals() {
-  onLCP(publishMetric, { reportAllChanges: true });
-  onCLS(publishMetric, { reportAllChanges: true });
-  onINP(publishMetric, { reportAllChanges: true });
+  // Publish settled values instead of logging every intermediate candidate.
+  // The final values remain available at window.__weatherVitals.
+  onLCP(publishMetric);
+  onCLS(publishMetric);
+  onINP(publishMetric);
 }

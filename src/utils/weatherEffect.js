@@ -35,8 +35,8 @@ export function getWeatherOverlay(
 
   if (hasAny(normalized, ["rain", "drizzle", "shower"])) {
     tint = [24, 41, 68];
-    topDarkness += 0.12;
-    bottomDarkness += 0.14;
+    topDarkness += 0.2;
+    bottomDarkness += 0.22;
   }
 
   if (hasAny(normalized, ["snow", "sleet", "ice", "freezing"])) {
@@ -47,8 +47,8 @@ export function getWeatherOverlay(
 
   if (hasAny(normalized, ["thunder", "storm", "squall", "hail"])) {
     tint = [8, 12, 22];
-    topDarkness += 0.22;
-    bottomDarkness += 0.18;
+    topDarkness += 0.3;
+    bottomDarkness += 0.26;
   }
 
   topDarkness += coverFactor * 0.12 + precipitationFactor * 0.08;

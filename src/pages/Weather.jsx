@@ -494,8 +494,11 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     }
   }, [weatherData, loadingCurrent]);
 
-  const shouldUseCachedFallback =
-    Boolean(weatherError) && !weatherData.current && Boolean(cachedData);
+  // Render the last successful forecast immediately while the fresh request is
+  // in flight. Coordinates and cached UI data are persisted together, so this
+  // avoids holding the LCP card behind network latency without showing another
+  // location's forecast.
+  const shouldUseCachedFallback = !weatherData.current && Boolean(cachedData);
   const displayData = weatherData.current
     ? weatherData
     : shouldUseCachedFallback
@@ -511,7 +514,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     : shouldUseCachedFallback
       ? cachedData?.daily || []
       : [];
-  const isWaitingForLiveData = !weatherData.current && !weatherError;
+  const isWaitingForLiveData = !weatherData.current && !cachedData && !weatherError;
   const currentFavoriteId =
     coords.lat && coords.lng ? getFavoriteId(coords) : "";
   const isCurrentFavorite =
@@ -596,7 +599,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
           <CurrentWeather
             data={displayData}
             unit={unit}
-            loading={loadingCurrent || isWaitingForLiveData}
+            loading={!displayData?.current && (loadingCurrent || isWaitingForLiveData)}
           />
           {displayData?.current ? (
             <Suspense
@@ -644,7 +647,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
               <HourlyForecast
                 data={displayHourly}
                 unit={unit}
-                loading={loadingHourly || isWaitingForLiveData}
+                loading={!displayHourly.length && (loadingHourly || isWaitingForLiveData)}
               />
             </Suspense>
             <Suspense
@@ -661,7 +664,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
               <DailyForecast
                 data={displayDaily}
                 unit={unit}
-                loading={loadingDaily || isWaitingForLiveData}
+                loading={!displayDaily.length && (loadingDaily || isWaitingForLiveData)}
               />
             </Suspense>
           </div>

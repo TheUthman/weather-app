@@ -20,7 +20,7 @@ const WeatherIcon = ({ iconName, size = 48 }) => {
         alt={iconName}
         width={size}
         height={size}
-        decoding="async"
+        decoding={size >= 100 ? "sync" : "async"}
         loading={size >= 100 ? "eager" : "lazy"}
         fetchPriority={size >= 100 ? "high" : "auto"}
         style={{ aspectRatio: "1 / 1", objectFit: "contain" }}

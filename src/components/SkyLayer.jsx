@@ -10,6 +10,17 @@ import { getCloudColor, getCloudBands } from "../utils/cloudLightning";
 
 import Stars from "./Stars";
 
+const getConditionType = (condition = "") => {
+  const value = condition.toLowerCase();
+  if (/thunder|storm|squall|hail/.test(value)) return "storm";
+  if (/snow|sleet|ice|freezing/.test(value)) return "snow";
+  if (/rain|drizzle|shower/.test(value)) return "rain";
+  if (/fog|mist|haze|smoke/.test(value)) return "fog";
+  if (/overcast/.test(value)) return "overcast";
+  if (/cloud/.test(value)) return "cloudy";
+  return "clear";
+};
+
 function SkyLayer({
   daily,
   condition = "",
@@ -19,6 +30,15 @@ function SkyLayer({
 }) {
   // 🌞 celestial state (MUST come first)
   const celestial = useCelestial(daily);
+  const conditionType = getConditionType(condition);
+  const phase =
+    celestial.type === "moon"
+      ? "night"
+      : celestial.progress < 0.16
+        ? "dawn"
+        : celestial.progress > 0.78
+          ? "dusk"
+          : "day";
 
   const reducedMotion = useMemo(() => {
     if (typeof window === "undefined") return false;
@@ -104,7 +124,12 @@ function SkyLayer({
     : [];
 
   return (
-    <div className="sky-layer" style={skyStyle}>
+    <div
+      className={`sky-layer sky-${phase} weather-${conditionType}`}
+      style={skyStyle}
+      aria-hidden="true"
+    >
+      <div className="sky-atmosphere" />
       {shouldRenderDetailedEffects && (
         <Stars
           opacity={starsOpacity}
@@ -157,6 +182,27 @@ function SkyLayer({
       )}
 
       <div className="weather-overlay" style={overlayStyle} />
+      <div className="weather-phenomena">
+        {(conditionType === "rain" || conditionType === "storm") && (
+          <>
+            <div className="rain-field rain-field-far" />
+            <div className="rain-field rain-field-near" />
+          </>
+        )}
+        {conditionType === "snow" && (
+          <>
+            <div className="snow-field snow-field-far" />
+            <div className="snow-field snow-field-near" />
+          </>
+        )}
+        {conditionType === "fog" && (
+          <>
+            <div className="fog-bank fog-bank-one" />
+            <div className="fog-bank fog-bank-two" />
+          </>
+        )}
+        {conditionType === "storm" && <div className="storm-flash" />}
+      </div>
     </div>
   );
 }

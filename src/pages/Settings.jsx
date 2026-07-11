@@ -3,39 +3,41 @@ import Toggle from "../components/Toggle";
 import CustomSelect from "../components/CustomSelect";
 import { useToast } from "../context/ToastContext";
 
+const UNIT_OPTIONS = [
+  { value: "imperial", label: "Fahrenheit (F)" },
+  { value: "metric", label: "Celsius (C)" },
+];
+
+const LOCATION_OPTIONS = [
+  { value: "auto", label: "Auto-detect" },
+  { value: "manual", label: "Manual" },
+];
+
+const VISUAL_STYLE_OPTIONS = [
+  { value: "classic", label: "Animated sky" },
+  { value: "minimal", label: "Weather video" },
+];
+
+const THEME_OPTIONS = [
+  { value: "auto", label: "Auto day / night" },
+  { value: "light", label: "Light mode" },
+  { value: "dark", label: "Dark mode" },
+];
+
 const Settings = ({ preferences, setPreferences }) => {
   const [localCity, setLocalCity] = useState(preferences.defaultCity);
   const [loading, setLoading] = useState(false);
   const [clearInput, setClearInput] = useState(false);
   const { addToast } = useToast();
 
-  const unitOptions = [
-    { value: "imperial", label: "Fahrenheit (F)" },
-    { value: "metric", label: "Celsius (C)" },
-  ];
-
-  const locationOptions = [
-    { value: "auto", label: "Auto-detect" },
-    { value: "manual", label: "Manual" },
-  ];
-
-  const visualStyleOptions = [
-    { value: "classic", label: "Original sky" },
-    { value: "minimal", label: "Minimal film" },
-  ];
-
-  const themeOptions = [
-    { value: "auto", label: "Auto day / night" },
-    { value: "light", label: "Light" },
-    { value: "dark", label: "Dark" },
-  ];
-
   const summaryChips = useMemo(
     () => [
       {
         label: "Theme",
         value:
-          preferences.visualStyle === "minimal" ? "Minimal film" : "Original sky",
+          preferences.visualStyle === "minimal"
+            ? "Weather video"
+            : "Animated sky",
       },
       {
         label: "Units",
@@ -144,7 +146,7 @@ const Settings = ({ preferences, setPreferences }) => {
                 name="units"
                 value={preferences.units}
                 onChange={handleChange}
-                options={unitOptions}
+                options={UNIT_OPTIONS}
               />
             </div>
           </div>
@@ -162,7 +164,7 @@ const Settings = ({ preferences, setPreferences }) => {
                 name="visualStyle"
                 value={preferences.visualStyle}
                 onChange={handleChange}
-                options={visualStyleOptions}
+                options={VISUAL_STYLE_OPTIONS}
               />
             </div>
           </div>
@@ -179,7 +181,7 @@ const Settings = ({ preferences, setPreferences }) => {
                 name="theme"
                 value={preferences.theme}
                 onChange={handleChange}
-                options={themeOptions}
+                options={THEME_OPTIONS}
               />
             </div>
           </div>
@@ -203,7 +205,7 @@ const Settings = ({ preferences, setPreferences }) => {
                 name="location"
                 value={preferences.location}
                 onChange={handleChange}
-                options={locationOptions}
+                options={LOCATION_OPTIONS}
               />
             </div>
           </div>

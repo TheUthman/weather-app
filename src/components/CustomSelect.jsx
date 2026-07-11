@@ -124,6 +124,7 @@ const CustomSelect = ({ value, onChange, options, name }) => {
   return (
     <div
       className={`custom-select-container ${isOpen ? "open" : ""}`}
+      data-select-name={name}
       ref={dropdownRef}
     >
       <button

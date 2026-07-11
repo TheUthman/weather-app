@@ -20,7 +20,7 @@ export function useCelestial(daily) {
   const sunset = new Date(today.sunEvents?.sunsetTime).getTime();
 
   const tomorrowSunrise = new Date(
-    daily[1]?.sunEvents?.sunriseTime || today.sunEvents?.sunriseTime,
+    daily[1]?.sunEvents?.sunriseTime || sunrise + 24 * 60 * 60 * 1000,
   ).getTime();
 
   if (isNaN(sunrise) || isNaN(sunset) || isNaN(tomorrowSunrise)) {
@@ -38,8 +38,11 @@ export function useCelestial(daily) {
   }
 
   // 🌙 NIGHT MODE (moon = inverse sun cycle)
+  const nightStart = now < sunrise ? sunset - 24 * 60 * 60 * 1000 : sunset;
+  const nightEnd = now < sunrise ? sunrise : tomorrowSunrise;
+
   return {
     type: "moon",
-    progress: clamp(getProgress(sunset, tomorrowSunrise, now)),
+    progress: clamp(getProgress(nightStart, nightEnd, now)),
   };
 }

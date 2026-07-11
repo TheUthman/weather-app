@@ -7,6 +7,6 @@ export function getSunGlow(progress) {
       0 0 ${72 + intensity * 96}px rgba(255, 196, 92, 0.38),
       0 0 ${120 + intensity * 120}px rgba(255, 182, 72, 0.16)
     `,
-    transform: `scale(${1 + intensity * 0.24})`,
+    "--celestial-scale": 1 + intensity * 0.16,
   };
 }

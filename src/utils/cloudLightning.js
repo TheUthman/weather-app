@@ -502,19 +502,19 @@ function getProfileKey(condition = "") {
   }
 
   if (
-    normalized.includes("mostly cloudy") ||
-    normalized.includes("cloudy") ||
-    normalized.includes("cloud")
-  ) {
-    return "cloudy";
-  }
-
-  if (
     normalized.includes("partly") ||
     normalized.includes("interval") ||
     normalized.includes("mostly sunny")
   ) {
     return "partlyCloudy";
+  }
+
+  if (
+    normalized.includes("mostly cloudy") ||
+    normalized.includes("cloudy") ||
+    normalized.includes("cloud")
+  ) {
+    return "cloudy";
   }
 
   return "clear";
