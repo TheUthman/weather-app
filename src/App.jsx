@@ -53,15 +53,53 @@ const AnalyticsAndInsights = () => {
   );
 };
 
-const App = () => {
-  const [backgroundWeather, setBackgroundWeather] = useState({
+const getInitialBackgroundWeather = () => {
+  const fallback = {
     daily: [],
     condition: "Clear",
     icon: "sunny",
     cloudCover: 0,
     windSpeed: 0,
     precipitation: 0,
-  });
+  };
+
+  try {
+    const cached = JSON.parse(localStorage.getItem("last_weather_ui_data") || "null");
+    const sunrise = localStorage.getItem("weather_sunrise");
+    const sunset = localStorage.getItem("weather_sunset");
+    const sunriseTime = sunrise ? new Date(sunrise).getTime() : Number.NaN;
+    const solarDays =
+      sunrise && sunset && Number.isFinite(sunriseTime)
+        ? [
+            { sunEvents: { sunriseTime: sunrise, sunsetTime: sunset } },
+            {
+              sunEvents: {
+                sunriseTime: new Date(
+                  sunriseTime + 24 * 60 * 60 * 1000,
+                ).toISOString(),
+              },
+            },
+          ]
+        : [];
+
+    return {
+      ...fallback,
+      daily: solarDays,
+      condition: cached?.current?.condition || fallback.condition,
+      icon: cached?.current?.icon || fallback.icon,
+      cloudCover: cached?.current?.cloudCover || 0,
+      windSpeed: cached?.current?.windSpeed || 0,
+      precipitation: cached?.current?.precipitation || 0,
+    };
+  } catch {
+    return fallback;
+  }
+};
+
+const App = () => {
+  const [backgroundWeather, setBackgroundWeather] = useState(
+    getInitialBackgroundWeather,
+  );
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
     try {
       return JSON.parse(
@@ -187,9 +225,17 @@ const App = () => {
       <div
         className={`app-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
       >
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <div
+              className={`weather-background-fallback ${getAutoTheme() === "light" ? "fallback-day" : "fallback-night"}`}
+              aria-hidden="true"
+            />
+          }
+        >
           {preferences.visualStyle === "minimal" ? (
             <WeatherVideoBackground
+              daily={backgroundWeather.daily}
               condition={backgroundWeather.condition}
               icon={backgroundWeather.icon}
             />
