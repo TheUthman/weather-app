@@ -4,6 +4,7 @@ import { Outfits } from "./Outfits";
 import AirQualityIndex from "./AirQualityIndex";
 import UVIndex from "./UVIndex";
 import HealthWellness from "./HealthWellness";
+import WeatherExplained from "./WeatherExplained";
 import Icon from "./Icon";
 
 const InsightsCard = ({
@@ -103,6 +104,7 @@ const InsightsCard = ({
           <AirQualityIndex aqi={aqi} pm25={pm25} pm10={pm10} />
           <UVIndex uvIndex={uvIndex} />
           <HealthWellness temperature={temperature} humidity={humidity} />
+          <WeatherExplained />
         </div>
 
         {canScrollRight && (

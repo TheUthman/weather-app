@@ -8,6 +8,7 @@ import { ToastProvider } from "./context/ToastContext";
 // Lazy load non-critical pages to improve LCP of the main dashboard
 const Settings = lazy(() => import("./pages/Settings"));
 const Search = lazy(() => import("./pages/Search"));
+const HelpSupport = lazy(() => import("./pages/HelpSupport"));
 const SkyLayer = lazy(() => import("./components/SkyLayer"));
 const WeatherVideoBackground = lazy(
   () => import("./components/WeatherVideoBackground"),
@@ -123,6 +124,11 @@ const App = () => {
             : "auto",
           visualStyle:
             parsed.visualStyle === "minimal" ? "minimal" : "classic",
+          componentTransparency: Number.isFinite(
+            Number(parsed.componentTransparency),
+          )
+            ? Math.min(100, Math.max(0, Number(parsed.componentTransparency)))
+            : 0,
           notifications:
             parsed.notifications !== undefined ? parsed.notifications : true,
           location: parsed.location || "auto",
@@ -134,6 +140,7 @@ const App = () => {
         units: "imperial",
         theme: "auto",
         visualStyle: "classic",
+        componentTransparency: 0,
         notifications: true,
         location: "auto",
         defaultCity: "San Francisco",
@@ -144,6 +151,7 @@ const App = () => {
         units: "imperial",
         theme: "auto",
         visualStyle: "classic",
+        componentTransparency: 0,
         notifications: true,
         location: "auto",
         defaultCity: "San Francisco",
@@ -224,6 +232,10 @@ const App = () => {
     <ToastProvider>
       <div
         className={`app-layout ${isSidebarCollapsed ? "sidebar-collapsed" : ""}`}
+        style={{
+          "--component-opacity":
+            1 - (preferences.componentTransparency || 0) / 100,
+        }}
       >
         <Suspense
           fallback={
@@ -277,6 +289,7 @@ const App = () => {
                 }
               />
               <Route path="/search" element={<Search />} />
+              <Route path="/help" element={<HelpSupport />} />
             </Routes>
           </Suspense>
         </main>

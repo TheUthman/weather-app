@@ -86,7 +86,7 @@ const CurrentWeather = ({ data, unit, loading }) => {
             </div>
           ))}
         </div>
-
+        
         <div className="sun-times">
           <div className="sun-item" style={{ height: "66px" }}>
             <div className="skeleton-circle-small" style={{ width: "34px", height: "34px", marginLeft: "12px", borderRadius: "50%", flexShrink: 0 }} />

@@ -48,11 +48,17 @@ const UVIndex = ({ uvIndex = 5 }) => {
         <h3 className="insight-card-title">UV Index</h3>
       </div>
       <div className="insight-card-content">
-        <div className="uv-badge" style={{ backgroundColor: uvInfo.bg, color: uvInfo.color }}>
+        <div
+          className="uv-badge"
+          style={{ "--badge-bg": uvInfo.bg, color: uvInfo.color }}
+        >
           <div className="uv-number">{uvIndex}</div>
           <div className="uv-label">{uvInfo.level}</div>
         </div>
-        <div className="uv-spf" style={{ backgroundColor: uvInfo.bg, color: uvInfo.color }}>
+        <div
+          className="uv-spf"
+          style={{ "--badge-bg": uvInfo.bg, color: uvInfo.color }}
+        >
           Recommended: {uvInfo.spf}
         </div>
       </div>

@@ -48,7 +48,10 @@ export const Outfits = ({data}) => {
         <h3 className="insight-card-title">What to Wear</h3>
       </div>
       <div className="insight-card-content">
-        <div className="outfit-temp-badge" style={{ backgroundColor: outfit.tempBg, color: outfit.tempColor }}>
+        <div
+          className="outfit-temp-badge"
+          style={{ "--badge-bg": outfit.tempBg, color: outfit.tempColor }}
+        >
           {data}°F
         </div>
         <div className="outfit-items">

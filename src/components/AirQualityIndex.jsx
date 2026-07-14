@@ -19,7 +19,10 @@ const AirQualityIndex = ({ aqi = 50, pm25 = 15, pm10 = 25 }) => {
         <h3 className="insight-card-title">Air Quality</h3>
       </div>
       <div className="insight-card-content">
-        <div className="aqi-badge" style={{ backgroundColor: aqiInfo.bg, color: aqiInfo.color }}>
+        <div
+          className="aqi-badge"
+          style={{ "--badge-bg": aqiInfo.bg, color: aqiInfo.color }}
+        >
           <div className="aqi-number">{aqi}</div>
           <div className="aqi-label">{aqiInfo.level}</div>
         </div>

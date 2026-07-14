@@ -240,7 +240,10 @@ const Tips = ({ data }) => {
           <Icon name="lightbulb" size={24} style={{ color: categoryStyle.cardIcon }} />
           <h3 className="insight-card-title">Tips</h3>
         </div>
-        <div className="tip-category-badge" style={{ backgroundColor: categoryStyle.bg, color: categoryStyle.text }}>
+        <div
+          className="tip-category-badge"
+          style={{ "--badge-bg": categoryStyle.bg, color: categoryStyle.text }}
+        >
           {category}
         </div>
       </div>

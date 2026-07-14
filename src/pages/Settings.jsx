@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import Toggle from "../components/Toggle";
 import CustomSelect from "../components/CustomSelect";
+import Icon from "../components/Icon";
 import { useToast } from "../context/ToastContext";
 
 const UNIT_OPTIONS = [
@@ -185,6 +187,40 @@ const Settings = ({ preferences, setPreferences }) => {
               />
             </div>
           </div>
+
+          <div className="setting-row">
+            <div className="setting-info">
+              <label htmlFor="componentTransparency">Component opacity</label>
+              <span className="setting-description">
+                Control how much of the weather background shows through cards,
+                panels, and controls.
+              </span>
+            </div>
+            <div className="setting-control opacity-control">
+              <div className="opacity-value-row">
+                <span>Opaque</span>
+                <strong>{100 - (preferences.componentTransparency || 0)}%</strong>
+                <span>Transparent</span>
+              </div>
+              <input
+                id="componentTransparency"
+                name="componentTransparency"
+                className="opacity-range"
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={preferences.componentTransparency || 0}
+                onChange={(event) =>
+                  updatePreference(
+                    "componentTransparency",
+                    Number(event.target.value),
+                  )
+                }
+                aria-valuetext={`${100 - (preferences.componentTransparency || 0)}% opaque`}
+              />
+            </div>
+          </div>
         </section>
 
         <section className="settings-group">
@@ -288,6 +324,9 @@ const Settings = ({ preferences, setPreferences }) => {
             >
               Minimal theme films by Coverr
             </a>
+            <Link className="settings-help-link" to="/help">
+              Help &amp; support <Icon name="chevronRight" size={16} />
+            </Link>
           </div>
         </section>
       </div>
