@@ -66,12 +66,14 @@ const transformCurrent = (current, daily) => {
       unit: "C",
     },
     relativeHumidity: current.relative_humidity_2m,
+    weatherCode: current.weather_code,
     weatherCondition: {
       text: weatherCodeToCondition(current.weather_code),
       iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(current.weather_code)}`,
     },
     wind: {
       speed: { value: current.wind_speed_10m, unit: "KM_PER_HOUR" },
+      gust: { value: current.wind_gusts_10m ?? 0, unit: "KM_PER_HOUR" },
       direction: current.wind_direction_10m,
     },
     airPressure: {
@@ -101,9 +103,16 @@ const transformHourly = (hourly) => {
       unit: "C",
     },
     weatherCondition: {
+      text: weatherCodeToCondition(hourly.weather_code[i]),
       iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(hourly.weather_code[i])}`,
     },
+    weatherCode: hourly.weather_code[i],
     precipitationProbability: hourly.precipitation_probability?.[i] ?? 0,
+    precipitation: hourly.precipitation?.[i] ?? 0,
+    relativeHumidity: hourly.relative_humidity_2m?.[i] ?? null,
+    windSpeed: hourly.wind_speed_10m?.[i] ?? 0,
+    windGust: hourly.wind_gusts_10m?.[i] ?? 0,
+    uvIndex: hourly.uv_index?.[i] ?? 0,
   }));
 };
 
@@ -124,20 +133,126 @@ const transformDaily = (daily) => {
       text: weatherCodeToCondition(daily.weather_code[i]),
       iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(daily.weather_code[i])}`,
     },
+    weatherCode: daily.weather_code[i],
     sunEvents: {
       sunriseTime: daily.sunrise[i],
       sunsetTime: daily.sunset[i],
     },
     precipitationProbability: daily.precipitation_probability_max[i] ?? 0,
+    precipitationSum: daily.precipitation_sum?.[i] ?? 0,
+    windGustMax: daily.wind_gusts_10m_max?.[i] ?? 0,
+    uvIndexMax: daily.uv_index_max?.[i] ?? 0,
   }));
+};
+
+const buildNextHourRain = (hourly) => {
+  if (!hourly?.length) return [];
+
+  const currentHour = hourly[0];
+  const nextHour = hourly[1] || currentHour;
+
+  return [0, 15, 30, 45].map((minutes, index) => {
+    const progress = index / 4;
+    const probability = Math.round(
+      currentHour.precipitationProbability +
+        (nextHour.precipitationProbability -
+          currentHour.precipitationProbability) *
+          progress,
+    );
+    const amount = Number(
+      (
+        (currentHour.precipitation +
+          (nextHour.precipitation - currentHour.precipitation) * progress) /
+        4
+      ).toFixed(2),
+    );
+
+    return {
+      label: minutes === 0 ? "Now" : `+${minutes} min`,
+      minutes,
+      probability,
+      amount,
+    };
+  });
+};
+
+const buildForecastAlerts = (current, hourly, daily) => {
+  const alerts = [];
+  const nextHours = hourly.slice(0, 12);
+  const today = daily[0];
+  const expiresAt = nextHours.at(-1)?.interval?.startTime || null;
+
+  if (
+    current?.weatherCode >= 95 ||
+    nextHours.some((hour) => hour.weatherCode >= 95)
+  ) {
+    alerts.push({
+      id: "thunderstorm-risk",
+      severity: "severe",
+      title: "Thunderstorm risk",
+      summary: "Thunderstorms may bring lightning, sudden heavy rain, and gusty winds.",
+      guidance: "Move indoors when thunder is heard and avoid exposed areas.",
+      expiresAt,
+      source: "Forecast signal",
+    });
+  }
+
+  const strongestGust = Math.max(
+    current?.wind?.gust?.value || 0,
+    ...nextHours.map((hour) => hour.windGust || 0),
+    today?.windGustMax || 0,
+  );
+  if (strongestGust >= 60) {
+    alerts.push({
+      id: "strong-wind-risk",
+      severity: strongestGust >= 80 ? "severe" : "moderate",
+      title: "Strong wind possible",
+      summary: `Wind gusts may reach ${Math.round(strongestGust)} km/h.`,
+      guidance: "Secure loose outdoor items and take care around trees and power lines.",
+      expiresAt,
+      source: "Forecast signal",
+    });
+  }
+
+  if (
+    (today?.precipitationSum || 0) >= 25 ||
+    nextHours.some(
+      (hour) =>
+        hour.precipitationProbability >= 85 && hour.precipitation >= 8,
+    )
+  ) {
+    alerts.push({
+      id: "heavy-rain-risk",
+      severity: "moderate",
+      title: "Heavy rain possible",
+      summary: `Around ${Math.round(today?.precipitationSum || 0)} mm of rain may fall today.`,
+      guidance: "Allow extra travel time and avoid moving through flooded roads.",
+      expiresAt,
+      source: "Forecast signal",
+    });
+  }
+
+  if ((today?.temperatureMax?.degrees || 0) >= 40) {
+    alerts.push({
+      id: "extreme-heat-risk",
+      severity: "severe",
+      title: "Extreme heat risk",
+      summary: `Temperatures may reach ${Math.round(today.temperatureMax.degrees)}°C.`,
+      guidance: "Limit strenuous activity, drink water often, and seek shade.",
+      expiresAt,
+      source: "Forecast signal",
+    });
+  }
+
+  return alerts.slice(0, 3);
 };
 
 const buildForecastUrl = (lat, lng) =>
   `${WEATHER_BASE}?latitude=${lat}&longitude=${lng}` +
-  "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,uv_index,pressure_msl,precipitation,cloud_cover,visibility,dew_point_2m" +
-  "&hourly=temperature_2m,weather_code,precipitation_probability" +
+  "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index,pressure_msl,precipitation,cloud_cover,visibility,dew_point_2m" +
+  "&hourly=temperature_2m,relative_humidity_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,uv_index" +
   "&forecast_hours=12" +
-  "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset" +
+  "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max,uv_index_max,sunrise,sunset" +
   "&forecast_days=10" +
   "&timezone=auto";
 
@@ -155,10 +270,16 @@ export const fetchForecastBundle = async (lat, lng, options = {}) => {
 
     const data = await response.json();
 
+    const current = transformCurrent(data.current, data.daily);
+    const hourly = transformHourly(data.hourly);
+    const daily = transformDaily(data.daily);
+
     return {
-      current: transformCurrent(data.current, data.daily),
-      hourly: transformHourly(data.hourly),
-      daily: transformDaily(data.daily),
+      current,
+      hourly,
+      daily,
+      nextHourRain: buildNextHourRain(hourly),
+      alerts: buildForecastAlerts(current, hourly, daily),
     };
   } catch (error) {
     if (error.name !== "AbortError") {
@@ -166,6 +287,66 @@ export const fetchForecastBundle = async (lat, lng, options = {}) => {
     }
     throw error;
   }
+};
+
+const formatDate = (date) => date.toISOString().slice(0, 10);
+
+const average = (values) => {
+  const valid = values.filter((value) => Number.isFinite(value));
+  if (!valid.length) return null;
+  return valid.reduce((sum, value) => sum + value, 0) / valid.length;
+};
+
+export const fetchHistoricalComparison = async (lat, lng, options = {}) => {
+  const today = new Date();
+  const targetMonth = today.getMonth();
+  const targetDay = today.getDate();
+  const start = new Date(Date.UTC(today.getFullYear() - 3, targetMonth, targetDay - 3));
+  const end = new Date(Date.UTC(today.getFullYear() - 1, targetMonth, targetDay + 3));
+  const url =
+    `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}` +
+    `&start_date=${formatDate(start)}&end_date=${formatDate(end)}` +
+    "&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum" +
+    "&timezone=auto";
+
+  const response = await fetch(url, { signal: options.signal });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch historical comparison: status ${response.status}`);
+  }
+
+  const data = await response.json();
+  const daily = data.daily;
+  if (!daily?.time?.length) return null;
+
+  const matchingIndexes = daily.time.reduce((indexes, time, index) => {
+    const date = new Date(`${time}T12:00:00Z`);
+    const comparison = new Date(Date.UTC(2000, date.getUTCMonth(), date.getUTCDate()));
+    const target = new Date(Date.UTC(2000, targetMonth, targetDay));
+    const distance = Math.abs(comparison - target) / 86_400_000;
+    if (distance <= 3) indexes.push(index);
+    return indexes;
+  }, []);
+
+  const years = new Set(
+    matchingIndexes.map((index) => daily.time[index].slice(0, 4)),
+  ).size;
+
+  return {
+    years,
+    sampleDays: matchingIndexes.length,
+    averageTemperature: average(
+      matchingIndexes.map((index) => daily.temperature_2m_mean?.[index]),
+    ),
+    averageHigh: average(
+      matchingIndexes.map((index) => daily.temperature_2m_max?.[index]),
+    ),
+    averageLow: average(
+      matchingIndexes.map((index) => daily.temperature_2m_min?.[index]),
+    ),
+    averagePrecipitation: average(
+      matchingIndexes.map((index) => daily.precipitation_sum?.[index]),
+    ),
+  };
 };
 
 export const fetchWeatherData = async (lat, lng) => {

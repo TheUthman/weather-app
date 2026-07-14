@@ -1,5 +1,5 @@
 import { memo } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import Icon from "./Icon";
 
 const navItems = [
@@ -21,6 +21,8 @@ const navItems = [
 ];
 
 const Sidebar = ({ collapsed, visualStyle, onToggleCollapse }) => {
+  const { pathname } = useLocation();
+
   return (
     <aside
       className={`sidebar ${collapsed ? "sidebar-collapsed" : ""}`}
@@ -69,9 +71,11 @@ const Sidebar = ({ collapsed, visualStyle, onToggleCollapse }) => {
             <NavLink
               key={item.to}
               to={item.to}
-              className={({ isActive }) =>
-                `nav-btn ${isActive ? "active" : ""}`
-              }
+              className={({ isActive }) => {
+                const isSettingsSection =
+                  item.to === "/settings" && pathname === "/help";
+                return `nav-btn ${isActive || isSettingsSection ? "active" : ""}`;
+              }}
               data-tooltip={item.label}
               aria-label={collapsed ? item.label : undefined}
             >

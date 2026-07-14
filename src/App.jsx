@@ -235,6 +235,10 @@ const App = () => {
         style={{
           "--component-opacity":
             1 - (preferences.componentTransparency || 0) / 100,
+          "--contrast-shadow-alpha":
+            ((preferences.componentTransparency || 0) / 100) * 0.9,
+          "--contrast-glow-alpha":
+            ((preferences.componentTransparency || 0) / 100) * 0.38,
         }}
       >
         <Suspense

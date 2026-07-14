@@ -31,12 +31,17 @@ const HelpSupport = () => (
     <section className="help-section" aria-labelledby="forecast-guide-title">
       <div className="help-section-heading">
         <span className="settings-group-kicker">Using the forecast</span>
-        <h2 id="forecast-guide-title">Hourly and daily views</h2>
+        <h2 id="forecast-guide-title">Forecast tools</h2>
       </div>
       <div className="help-guide-grid">
         <article><Icon name="time" size={24} /><h3>Hourly forecast</h3><p>Plan the next few hours and see when conditions may change.</p></article>
         <article><Icon name="sunrise" size={24} /><h3>Daily forecast</h3><p>See the overall outlook, including each day’s low and high temperature.</p></article>
         <article><Icon name="lightbulb" size={24} /><h3>Daily briefing</h3><p>Find quick tips, health guidance, air quality, UV information, and weather explanations.</p></article>
+        <article><Icon name="alertTriangle" size={24} /><h3>Forecast alerts</h3><p>See forecast-based signals for severe heat, rain, wind, or thunderstorms. These are not official warnings.</p></article>
+        <article><Icon name="time" size={24} /><h3>Weather timeline</h3><p>See the most important changes expected during the next 12 hours.</p></article>
+        <article><Icon name="compass" size={24} /><h3>Activity planner</h3><p>Find the best forecast hour for outdoor plans, running, cycling, or laundry.</p></article>
+        <article><Icon name="cloudRain" size={24} /><h3>Next-hour rain</h3><p>Check the estimated rain chance in four simple 15-minute steps.</p></article>
+        <article><Icon name="barometer" size={24} /><h3>Historical comparison</h3><p>Compare today with the same time of year across recent years.</p></article>
       </div>
     </section>
 
@@ -52,4 +57,3 @@ const HelpSupport = () => (
 );
 
 export default HelpSupport;
-

@@ -14,6 +14,9 @@ import CurrentWeather from "../components/CurrentWeather";
 import { useWeather } from "../hooks/useWeather";
 
 const InsightsCard = lazy(() => import("../components/InsightsCard"));
+const WeatherIntelligence = lazy(
+  () => import("../components/WeatherIntelligence"),
+);
 const HourlyForecast = lazy(() => import("../components/HourlyForecast"));
 const DailyForecast = lazy(() => import("../components/DailyForecast"));
 import {
@@ -413,9 +416,13 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     weather,
     hourly,
     daily,
+    alerts,
+    nextHourRain,
+    historicalComparison,
     loadingCurrent,
     loadingHourly,
     loadingDaily,
+    loadingHistorical,
     error: weatherError,
   } = useWeather(coords.lat, coords.lng);
 
@@ -474,19 +481,42 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
       hourly: (hourly || []).slice(0, 12).map((h, index) => ({
         time: formatHour(h.interval?.startTime, index),
         temp: parseTemp(h.temperature),
+        rawTempC: h.temperature?.degrees ?? 0,
         icon: getIcon(h.weatherCondition?.iconBaseUri),
+        condition: h.weatherCondition?.text || "Unknown",
         precip: h.precipitationProbability || 0,
+        precipAmount: h.precipitation || 0,
+        humidity: h.relativeHumidity,
+        windSpeedKmh: h.windSpeed || 0,
+        windGustKmh: h.windGust || 0,
+        uvIndex: h.uvIndex || 0,
       })),
       daily: (daily || []).map((d) => ({
         day: formatDayName(d.interval?.startTime),
         high: parseTemp(d.temperatureMax),
         low: parseTemp(d.temperatureMin),
+        highC: d.temperatureMax?.degrees ?? 0,
+        lowC: d.temperatureMin?.degrees ?? 0,
         icon: getIcon(d.weatherCondition?.iconBaseUri),
         condition: d.weatherCondition?.text || "Unknown",
         precip: d.precipitationProbability || 0,
+        precipitationSum: d.precipitationSum || 0,
+        windGustMax: d.windGustMax || 0,
+        uvIndexMax: d.uvIndexMax || 0,
       })),
+      alerts: alerts || [],
+      nextHourRain: nextHourRain || [],
+      historicalComparison,
     };
-  }, [weather, hourly, daily, activeLocationName]);
+  }, [
+    weather,
+    hourly,
+    daily,
+    alerts,
+    nextHourRain,
+    historicalComparison,
+    activeLocationName,
+  ]);
 
   useEffect(() => {
     if (weatherData.current && !loadingCurrent) {
@@ -514,6 +544,15 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     : shouldUseCachedFallback
       ? cachedData?.daily || []
       : [];
+  const displayAlerts = weatherData.current
+    ? weatherData.alerts
+    : cachedData?.alerts || [];
+  const displayNextHourRain = weatherData.current
+    ? weatherData.nextHourRain
+    : cachedData?.nextHourRain || [];
+  const displayHistoricalComparison = weatherData.current
+    ? weatherData.historicalComparison
+    : cachedData?.historicalComparison || null;
   const isWaitingForLiveData = !weatherData.current && !cachedData && !weatherError;
   const currentFavoriteId =
     coords.lat && coords.lng ? getFavoriteId(coords) : "";
@@ -601,6 +640,20 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
             unit={unit}
             loading={!displayData?.current && (loadingCurrent || isWaitingForLiveData)}
           />
+          <Suspense
+            fallback={<div className="weather-intelligence-placeholder" />}
+          >
+            <WeatherIntelligence
+              alerts={displayAlerts}
+              hourly={displayHourly}
+              nextHourRain={displayNextHourRain}
+              historicalComparison={displayHistoricalComparison}
+              today={displayDaily[0] || null}
+              unit={unit}
+              loading={!displayData?.current && (loadingCurrent || isWaitingForLiveData)}
+              loadingHistorical={loadingHistorical && !displayHistoricalComparison}
+            />
+          </Suspense>
           {displayData?.current ? (
             <Suspense
               fallback={
