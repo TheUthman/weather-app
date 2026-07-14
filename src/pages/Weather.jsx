@@ -637,6 +637,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
         <div className="weather-dashboard">
           <CurrentWeather
             data={displayData}
+            hourly={displayHourly}
             unit={unit}
             loading={!displayData?.current && (loadingCurrent || isWaitingForLiveData)}
           />
