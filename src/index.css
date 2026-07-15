@@ -2103,6 +2103,79 @@ body.light .city-save-btn { color: #fff; }
   -webkit-mask: radial-gradient(circle, transparent 0 98.2%, #000 98.5% 100%);
   mask: radial-gradient(circle, transparent 0 98.2%, #000 98.5% 100%);
 }
+
+.weather-dial-radar {
+  position: absolute;
+  z-index: 0;
+  inset: 43px;
+  overflow: hidden;
+  border-radius: 50%;
+  background:
+    repeating-radial-gradient(
+      circle,
+      transparent 0 23%,
+      rgba(var(--accent-rgb), .075) 23.4% 23.8%,
+      transparent 24.2% 46%
+    ),
+    linear-gradient(90deg, transparent 49.75%, rgba(var(--accent-rgb), .07) 50%, transparent 50.25%),
+    linear-gradient(transparent 49.75%, rgba(var(--accent-rgb), .07) 50%, transparent 50.25%);
+  opacity: .82;
+  pointer-events: none;
+}
+
+.weather-dial-radar-sweep {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: conic-gradient(
+    from -90deg,
+    transparent 0deg 292deg,
+    rgba(var(--accent-rgb), .025) 308deg,
+    rgba(var(--accent-rgb), .22) 344deg,
+    rgba(var(--accent-rgb), .72) 359deg,
+    transparent 360deg
+  );
+  filter: drop-shadow(0 0 7px rgba(var(--accent-rgb), .48));
+  transform-origin: center;
+  animation: weatherRadarSweep 5.4s linear infinite;
+}
+
+.weather-dial-radar-sweep::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 50%;
+  width: 49%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-rgb), .9));
+  box-shadow: 0 0 8px rgba(var(--accent-rgb), .75);
+  transform: translateY(-50%);
+}
+
+.weather-dial-radar-blip {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 72%, white);
+  box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .55), 0 0 9px rgba(var(--accent-rgb), .9);
+  animation: weatherRadarBlip 5.4s ease-out infinite;
+}
+
+.radar-blip-one { top: 18%; left: 58%; animation-delay: -4.75s; }
+.radar-blip-two { top: 62%; left: 82%; animation-delay: -2.15s; }
+.radar-blip-three { top: 76%; left: 31%; animation-delay: -.55s; }
+
+@keyframes weatherRadarSweep {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes weatherRadarBlip {
+  0%, 72% { opacity: .12; box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+  78% { opacity: 1; box-shadow: 0 0 0 0 rgba(var(--accent-rgb), .62), 0 0 10px rgba(var(--accent-rgb), .95); }
+  96%, 100% { opacity: .1; box-shadow: 0 0 0 12px rgba(var(--accent-rgb), 0), 0 0 4px rgba(var(--accent-rgb), .18); }
+}
+
 .current-dial-panel .weather-dial-ticks {
   inset: 8px;
   background:
@@ -2799,6 +2872,8 @@ body.light .city-save-btn { color: #fff; }
   .minimal-weather-film.time-day { background: linear-gradient(160deg, #287bb4, #86bed5 68%, #dcecf0); }
   .minimal-weather-film.time-dusk { background: linear-gradient(160deg, #263052, #8b5265 68%, #d88a68); }
   .minimal-weather-film.time-night { background: linear-gradient(160deg, #030817, #0a1a2e 64%, #17334a); }
+  .weather-dial-radar-sweep { transform: rotate(28deg); }
+  .weather-dial-radar-blip { opacity: .38; }
 }
 
 @media (max-width: 560px) {
@@ -2810,6 +2885,7 @@ body.light .city-save-btn { color: #fff; }
   .current-dial-panel .weather-dial-shell { margin-top: 6px; padding-top: 4px; }
   .current-dial-panel .weather-dial { --dial-radius: -134px; width: min(326px, 100%); }
   .current-dial-panel .weather-dial-orbit { inset: 26px; }
+  .weather-dial-radar { inset: 27px; }
   .current-dial-panel .weather-dial-hand { top: 27px; }
   .current-dial-panel .weather-dial-ticks::before { inset: 42px; }
   .current-dial-panel .weather-dial-hour { width: 43px; height: 50px; margin: -25px 0 0 -21.5px; }

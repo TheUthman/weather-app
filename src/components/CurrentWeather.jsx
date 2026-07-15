@@ -171,6 +171,12 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
         onPointerCancel={handlePointerUp}
       >
         <div className="weather-dial-face" aria-hidden="true">
+          <div className="weather-dial-radar">
+            <span className="weather-dial-radar-sweep" />
+            <i className="weather-dial-radar-blip radar-blip-one" />
+            <i className="weather-dial-radar-blip radar-blip-two" />
+            <i className="weather-dial-radar-blip radar-blip-three" />
+          </div>
           <div className="weather-dial-ticks" />
           <div className="weather-dial-orbit" />
           <div className="weather-dial-hand" />
