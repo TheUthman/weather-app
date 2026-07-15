@@ -65,12 +65,18 @@ const getInitialBackgroundWeather = () => {
   };
 
   try {
-    const cached = JSON.parse(localStorage.getItem("last_weather_ui_data") || "null");
+    const cachedEntry = JSON.parse(localStorage.getItem("last_weather_ui_data") || "null");
+    const cached = cachedEntry?.data || cachedEntry;
     const sunrise = localStorage.getItem("weather_sunrise");
     const sunset = localStorage.getItem("weather_sunset");
     const sunriseTime = sunrise ? new Date(sunrise).getTime() : Number.NaN;
+    const hasAbsoluteSolarTimes = [sunrise, sunset].every(
+      (value) => typeof value === "string" && /(Z|[+-]\d{2}:?\d{2})$/.test(value),
+    );
     const solarDays =
-      sunrise && sunset && Number.isFinite(sunriseTime)
+      Array.isArray(cached?.daily) && cached.daily.some((day) => day?.sunEvents)
+        ? cached.daily
+        : hasAbsoluteSolarTimes && Number.isFinite(sunriseTime)
         ? [
             { sunEvents: { sunriseTime: sunrise, sunsetTime: sunset } },
             {

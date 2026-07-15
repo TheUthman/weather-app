@@ -4,6 +4,7 @@ import { FiStar } from "react-icons/fi";
 const Header = ({
   unit,
   data,
+  status = "live",
   setUnit,
   onDetectLocation,
   isDetecting,
@@ -11,14 +12,21 @@ const Header = ({
   isFavorite,
   canFavorite,
 }) => {
+  const statusCopy = {
+    live: { pill: data || "Live weather", heading: "Live conditions" },
+    cached: { pill: "Cached forecast", heading: "Saved conditions" },
+    loading: { pill: "Updating forecast", heading: "Loading conditions" },
+    error: { pill: "Forecast unavailable", heading: "Conditions unavailable" },
+  }[status] || { pill: data || "Weather", heading: "Weather conditions" };
+
   return (
     <header className="weather-header">
       <div className="header-copy">
         <div className="header-kicker-row">
           <span>Weather Radar</span>
-          <span className="weather-status-pill">{data || "Live weather"}</span>
+          <span className={`weather-status-pill status-${status}`}>{statusCopy.pill}</span>
         </div>
-        <strong>Live conditions</strong>
+        <strong>{statusCopy.heading}</strong>
       </div>
       <div className="header-actions">
         <button

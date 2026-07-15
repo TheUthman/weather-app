@@ -1,10 +1,11 @@
 /* eslint-disable no-unused-vars */
 import React from 'react'
 import Icon from "./Icon";
+import { displayTemperature } from "../utils/units";
 
-export const Outfits = ({data}) => {
+export const Outfits = ({data, unit = "F"}) => {
   const getOutfitRecommendation = (temperature) => {
-    if (temperature >= 28) {
+    if (temperature >= 82) {
       return {
         type: "Lightweight & Breathable",
         items: ["T-shirt", "Shorts", "Sunglasses"],
@@ -12,7 +13,7 @@ export const Outfits = ({data}) => {
         tempBg: "#FFF5E6",
         vibe: "Sunny & Hot"
       };
-    } else if (temperature >= 20) {
+    } else if (temperature >= 68) {
       return {
         type: "Smart Casual",
         items: ["Jeans", "T-shirt", "Light jacket"],
@@ -20,7 +21,7 @@ export const Outfits = ({data}) => {
         tempBg: "#FEF3C7",
         vibe: "Comfortable"
       };
-    } else if (temperature >= 15) {
+    } else if (temperature >= 59) {
       return {
         type: "Comfortable & Cozy",
         items: ["Sweater", "Jeans", "Jacket"],
@@ -52,7 +53,7 @@ export const Outfits = ({data}) => {
           className="outfit-temp-badge"
           style={{ "--badge-bg": outfit.tempBg, color: outfit.tempColor }}
         >
-          {data}°F
+          {displayTemperature(data, unit)}°{unit}
         </div>
         <div className="outfit-items">
           {outfit.items.map((item, index) => (

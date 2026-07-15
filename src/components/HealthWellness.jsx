@@ -1,8 +1,9 @@
 /* eslint-disable no-unused-vars */
 import React from 'react';
 import Icon from "./Icon";
+import { displayTemperature } from "../utils/units";
 
-const HealthWellness = ({ temperature = 70, humidity = 50 }) => {
+const HealthWellness = ({ temperature = 70, humidity = 50, unit = "F" }) => {
   const getHealthTips = (temp, hum) => {
     const tips = [];
     const color = temp > 80 ? '#F97316' : temp < 32 ? '#0EA5E9' : '#F59E0B';
@@ -79,7 +80,7 @@ const HealthWellness = ({ temperature = 70, humidity = 50 }) => {
       </div>
       <div className="wellness-meter">
         <div className="wellness-label">Temperature:</div>
-        <div className="wellness-value" style={{ color: color }}>{temperature}°F</div>
+        <div className="wellness-value" style={{ color: color }}>{displayTemperature(temperature, unit)}°{unit}</div>
       </div>
     </div>
   );

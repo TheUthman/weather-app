@@ -1,5 +1,6 @@
 import { memo } from "react";
 import Icon from "./Icon";
+import { formatSignedPrecipitationFromMm } from "../utils/units";
 
 const convertTemp = (value, unit) => {
   if (!Number.isFinite(value)) return null;
@@ -42,7 +43,7 @@ const HistoricalComparison = ({ data, today, unit, loading }) => {
           <div className="historical-metrics">
             <div><span>Typical high</span><strong>{Math.round(convertTemp(data.averageHigh, unit))}°</strong></div>
             <div><span>Typical low</span><strong>{Math.round(convertTemp(data.averageLow, unit))}°</strong></div>
-            <div><span>Rain difference</span><strong>{precipitationDifference === null ? "—" : `${signed(precipitationDifference)} mm`}</strong></div>
+            <div><span>Rain difference</span><strong>{precipitationDifference === null ? "—" : formatSignedPrecipitationFromMm(precipitationDifference, unit)}</strong></div>
           </div>
           <span className="feature-note">Based on a seven-day seasonal window across {data.years} recent years.</span>
         </>

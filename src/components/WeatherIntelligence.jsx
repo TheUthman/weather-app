@@ -16,7 +16,7 @@ const WeatherIntelligence = ({
   loadingHistorical,
 }) => (
   <div className="weather-intelligence">
-    <SevereWeatherAlerts alerts={alerts} loading={loading} />
+    <SevereWeatherAlerts alerts={alerts} loading={loading} unit={unit} />
     <section className="weather-intelligence-section" aria-labelledby="weather-intelligence-title">
       <div className="intelligence-section-heading">
         <div>
@@ -26,7 +26,7 @@ const WeatherIntelligence = ({
         <span>Next hour to seasonal context</span>
       </div>
       <div className="weather-intelligence-grid">
-        <WeatherChangeTimeline hourly={hourly} />
+        <WeatherChangeTimeline hourly={hourly} unit={unit} />
         <NextHourRain data={nextHourRain} />
         <ActivityPlanner hourly={hourly} />
         <HistoricalComparison

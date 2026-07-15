@@ -7,6 +7,9 @@ const WeatherExplained = () => {
   const [explanationIndex, setExplanationIndex] = useState(0);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return undefined;
+    }
     const interval = window.setInterval(() => {
       setExplanationIndex((current) => (current + 1) % weatherExplanations.length);
     }, 10000);
@@ -41,4 +44,3 @@ const WeatherExplained = () => {
 };
 
 export default WeatherExplained;
-

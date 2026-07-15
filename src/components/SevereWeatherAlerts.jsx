@@ -1,5 +1,10 @@
 import { memo } from "react";
 import Icon from "./Icon";
+import {
+  celsiusToFahrenheit,
+  formatPrecipitationFromMm,
+  formatWindFromKmh,
+} from "../utils/units";
 
 const formatExpiry = (value) => {
   if (!value) return "Next 12 hours";
@@ -8,7 +13,21 @@ const formatExpiry = (value) => {
   return `Through ${date.toLocaleTimeString([], { hour: "numeric" })}`;
 };
 
-const SevereWeatherAlerts = ({ alerts = [], loading = false }) => {
+const formatSummary = (alert, unit) => {
+  if (alert.kind === "wind") {
+    return `Wind gusts may reach ${formatWindFromKmh(alert.value, unit)}.`;
+  }
+  if (alert.kind === "rain") {
+    return `Around ${formatPrecipitationFromMm(alert.value, unit)} of rain may fall today.`;
+  }
+  if (alert.kind === "heat") {
+    const value = unit === "C" ? alert.value : celsiusToFahrenheit(alert.value);
+    return `Temperatures may reach ${Math.round(value)}°${unit}.`;
+  }
+  return alert.summary;
+};
+
+const SevereWeatherAlerts = ({ alerts = [], loading = false, unit = "C" }) => {
   if (loading) {
     return <section className="severe-alerts-panel forecast-panel feature-skeleton" aria-label="Weather alerts" />;
   }
@@ -45,7 +64,7 @@ const SevereWeatherAlerts = ({ alerts = [], loading = false }) => {
                 <h3>{alert.title}</h3>
                 <span>{formatExpiry(alert.expiresAt)}</span>
               </div>
-              <p>{alert.summary}</p>
+              <p>{formatSummary(alert, unit)}</p>
               <small>{alert.guidance}</small>
             </div>
           </article>

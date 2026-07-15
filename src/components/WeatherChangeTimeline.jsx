@@ -1,7 +1,11 @@
 import { memo, useMemo } from "react";
 import Icon from "./Icon";
+import {
+  displayTemperatureDelta,
+  formatWindFromKmh,
+} from "../utils/units";
 
-const WeatherChangeTimeline = ({ hourly = [] }) => {
+const WeatherChangeTimeline = ({ hourly = [], unit }) => {
   const changes = useMemo(() => {
     if (hourly.length < 2) return [];
     const items = [];
@@ -21,7 +25,7 @@ const WeatherChangeTimeline = ({ hourly = [] }) => {
         add("rain-stop", hour.time, "Rain risk eases", `Chance falls to ${hour.precip}%.`, "cloud");
       }
       if (hour.windGustKmh >= 45) {
-        add("wind", hour.time, "Gusty period", `Gusts may reach ${Math.round(hour.windGustKmh)} km/h.`, "wind");
+        add("wind", hour.time, "Gusty period", `Gusts may reach ${formatWindFromKmh(hour.windGustKmh, unit)}.`, "wind");
       }
       const temperatureChange = hour.rawTempC - previous.rawTempC;
       if (Math.abs(temperatureChange) >= 3) {
@@ -29,7 +33,7 @@ const WeatherChangeTimeline = ({ hourly = [] }) => {
           "temperature",
           hour.time,
           temperatureChange > 0 ? "Temperature rises quickly" : "Temperature drops quickly",
-          `${Math.abs(Math.round(temperatureChange))}° change within an hour.`,
+          `${Math.abs(displayTemperatureDelta(temperatureChange, unit)).toFixed(0)}°${unit} change within an hour.`,
           "sun",
         );
       }
@@ -39,7 +43,7 @@ const WeatherChangeTimeline = ({ hourly = [] }) => {
     });
 
     return items;
-  }, [hourly]);
+  }, [hourly, unit]);
 
   return (
     <section className="intelligence-card weather-change-card" aria-labelledby="weather-change-title">

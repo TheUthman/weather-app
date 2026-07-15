@@ -1,4 +1,13 @@
 const WEATHER_BASE = "https://api.open-meteo.com/v1/forecast";
+const AIR_QUALITY_BASE = "https://air-quality-api.open-meteo.com/v1/air-quality";
+import { buildHistoricalWindows } from "../utils/weatherState";
+
+const localTimeToIso = (localTime, utcOffsetSeconds = 0) => {
+  if (!localTime) return null;
+  const localAsUtc = Date.parse(`${localTime}Z`);
+  if (!Number.isFinite(localAsUtc)) return null;
+  return new Date(localAsUtc - utcOffsetSeconds * 1000).toISOString();
+};
 
 // Helper: Map Open-Meteo weather codes to icon names
 const weatherCodeToIcon = (code) => {
@@ -113,6 +122,7 @@ const transformHourly = (hourly) => {
     windSpeed: hourly.wind_speed_10m?.[i] ?? 0,
     windGust: hourly.wind_gusts_10m?.[i] ?? 0,
     uvIndex: hourly.uv_index?.[i] ?? 0,
+    isDay: hourly.is_day?.[i] === 1,
   }));
 };
 
@@ -192,6 +202,7 @@ const buildForecastAlerts = (current, hourly, daily) => {
       title: "Thunderstorm risk",
       summary: "Thunderstorms may bring lightning, sudden heavy rain, and gusty winds.",
       guidance: "Move indoors when thunder is heard and avoid exposed areas.",
+      kind: "thunderstorm",
       expiresAt,
       source: "Forecast signal",
     });
@@ -208,6 +219,8 @@ const buildForecastAlerts = (current, hourly, daily) => {
       severity: strongestGust >= 80 ? "severe" : "moderate",
       title: "Strong wind possible",
       summary: `Wind gusts may reach ${Math.round(strongestGust)} km/h.`,
+      kind: "wind",
+      value: strongestGust,
       guidance: "Secure loose outdoor items and take care around trees and power lines.",
       expiresAt,
       source: "Forecast signal",
@@ -226,6 +239,8 @@ const buildForecastAlerts = (current, hourly, daily) => {
       severity: "moderate",
       title: "Heavy rain possible",
       summary: `Around ${Math.round(today?.precipitationSum || 0)} mm of rain may fall today.`,
+      kind: "rain",
+      value: today?.precipitationSum || 0,
       guidance: "Allow extra travel time and avoid moving through flooded roads.",
       expiresAt,
       source: "Forecast signal",
@@ -238,6 +253,8 @@ const buildForecastAlerts = (current, hourly, daily) => {
       severity: "severe",
       title: "Extreme heat risk",
       summary: `Temperatures may reach ${Math.round(today.temperatureMax.degrees)}°C.`,
+      kind: "heat",
+      value: today.temperatureMax.degrees,
       guidance: "Limit strenuous activity, drink water often, and seek shade.",
       expiresAt,
       source: "Forecast signal",
@@ -250,7 +267,7 @@ const buildForecastAlerts = (current, hourly, daily) => {
 const buildForecastUrl = (lat, lng) =>
   `${WEATHER_BASE}?latitude=${lat}&longitude=${lng}` +
   "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index,pressure_msl,precipitation,cloud_cover,visibility,dew_point_2m" +
-  "&hourly=temperature_2m,relative_humidity_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,uv_index" +
+  "&hourly=temperature_2m,relative_humidity_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,uv_index,is_day" +
   "&forecast_hours=12" +
   "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max,uv_index_max,sunrise,sunset" +
   "&forecast_days=10" +
@@ -273,6 +290,28 @@ export const fetchForecastBundle = async (lat, lng, options = {}) => {
     const current = transformCurrent(data.current, data.daily);
     const hourly = transformHourly(data.hourly);
     const daily = transformDaily(data.daily);
+    const utcOffsetSeconds = data.utc_offset_seconds || 0;
+
+    daily.forEach((day) => {
+      if (!day.sunEvents) return;
+      day.sunEvents.sunriseTime = localTimeToIso(
+        day.sunEvents.sunriseTime,
+        utcOffsetSeconds,
+      );
+      day.sunEvents.sunsetTime = localTimeToIso(
+        day.sunEvents.sunsetTime,
+        utcOffsetSeconds,
+      );
+    });
+
+    if (current) {
+      current.timezone = data.timezone || null;
+      current.utcOffsetSeconds = data.utc_offset_seconds || 0;
+      current.updatedAt = localTimeToIso(
+        data.current?.time,
+        data.utc_offset_seconds || 0,
+      );
+    }
 
     return {
       current,
@@ -289,7 +328,26 @@ export const fetchForecastBundle = async (lat, lng, options = {}) => {
   }
 };
 
-const formatDate = (date) => date.toISOString().slice(0, 10);
+export const fetchAirQualityData = async (lat, lng, options = {}) => {
+  const url =
+    `${AIR_QUALITY_BASE}?latitude=${lat}&longitude=${lng}` +
+    "&current=us_aqi,pm2_5,pm10&timezone=auto";
+  const response = await fetch(url, { signal: options.signal });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch air quality: status ${response.status}`);
+  }
+  const data = await response.json();
+  if (!data.current) return null;
+  return {
+    aqi: data.current.us_aqi ?? null,
+    pm25: data.current.pm2_5 ?? null,
+    pm10: data.current.pm10 ?? null,
+    updatedAt: localTimeToIso(
+      data.current.time,
+      data.utc_offset_seconds || 0,
+    ),
+  };
+};
 
 const average = (values) => {
   const valid = values.filter((value) => Number.isFinite(value));
@@ -298,54 +356,59 @@ const average = (values) => {
 };
 
 export const fetchHistoricalComparison = async (lat, lng, options = {}) => {
-  const today = new Date();
-  const targetMonth = today.getMonth();
-  const targetDay = today.getDate();
-  const start = new Date(Date.UTC(today.getFullYear() - 3, targetMonth, targetDay - 3));
-  const end = new Date(Date.UTC(today.getFullYear() - 1, targetMonth, targetDay + 3));
-  const url =
-    `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}` +
-    `&start_date=${formatDate(start)}&end_date=${formatDate(end)}` +
-    "&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum" +
-    "&timezone=auto";
-
-  const response = await fetch(url, { signal: options.signal });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch historical comparison: status ${response.status}`);
+  const now = new Date();
+  let targetYear = now.getUTCFullYear();
+  let targetMonth = now.getUTCMonth();
+  let targetDay = now.getUTCDate();
+  if (options.timezone) {
+    try {
+      const parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: options.timezone,
+        year: "numeric",
+        month: "numeric",
+        day: "numeric",
+      }).formatToParts(now);
+      const get = (type) => Number(parts.find((part) => part.type === type)?.value);
+      targetYear = get("year");
+      targetMonth = get("month") - 1;
+      targetDay = get("day");
+    } catch {
+      // UTC date parts above are a safe fallback for an invalid timezone.
+    }
   }
-
-  const data = await response.json();
-  const daily = data.daily;
-  if (!daily?.time?.length) return null;
-
-  const matchingIndexes = daily.time.reduce((indexes, time, index) => {
-    const date = new Date(`${time}T12:00:00Z`);
-    const comparison = new Date(Date.UTC(2000, date.getUTCMonth(), date.getUTCDate()));
-    const target = new Date(Date.UTC(2000, targetMonth, targetDay));
-    const distance = Math.abs(comparison - target) / 86_400_000;
-    if (distance <= 3) indexes.push(index);
-    return indexes;
-  }, []);
-
-  const years = new Set(
-    matchingIndexes.map((index) => daily.time[index].slice(0, 4)),
-  ).size;
+  const windows = buildHistoricalWindows(targetYear, targetMonth, targetDay);
+  const datasets = await Promise.all(
+    windows.map(async ({ start, end }) => {
+      const url =
+        `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lng}` +
+        `&start_date=${start}&end_date=${end}` +
+        "&daily=temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum" +
+        "&timezone=auto";
+      const response = await fetch(url, { signal: options.signal });
+      if (!response.ok) {
+        throw new Error(`Failed to fetch historical comparison: status ${response.status}`);
+      }
+      return response.json();
+    }),
+  );
+  const dailyRecords = datasets.flatMap(({ daily }) =>
+    (daily?.time || []).map((time, index) => ({
+      time,
+      temperatureMean: daily.temperature_2m_mean?.[index],
+      temperatureMax: daily.temperature_2m_max?.[index],
+      temperatureMin: daily.temperature_2m_min?.[index],
+      precipitation: daily.precipitation_sum?.[index],
+    })),
+  );
+  if (!dailyRecords.length) return null;
 
   return {
-    years,
-    sampleDays: matchingIndexes.length,
-    averageTemperature: average(
-      matchingIndexes.map((index) => daily.temperature_2m_mean?.[index]),
-    ),
-    averageHigh: average(
-      matchingIndexes.map((index) => daily.temperature_2m_max?.[index]),
-    ),
-    averageLow: average(
-      matchingIndexes.map((index) => daily.temperature_2m_min?.[index]),
-    ),
-    averagePrecipitation: average(
-      matchingIndexes.map((index) => daily.precipitation_sum?.[index]),
-    ),
+    years: new Set(dailyRecords.map(({ time }) => time.slice(0, 4))).size,
+    sampleDays: dailyRecords.length,
+    averageTemperature: average(dailyRecords.map(({ temperatureMean }) => temperatureMean)),
+    averageHigh: average(dailyRecords.map(({ temperatureMax }) => temperatureMax)),
+    averageLow: average(dailyRecords.map(({ temperatureMin }) => temperatureMin)),
+    averagePrecipitation: average(dailyRecords.map(({ precipitation }) => precipitation)),
   };
 };
 

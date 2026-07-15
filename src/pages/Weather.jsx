@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable react-hooks/set-state-in-effect */
 import {
   useState,
   useEffect,
@@ -8,10 +6,17 @@ import {
   lazy,
   Suspense,
 } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import Header from "../components/Header";
 import CurrentWeather from "../components/CurrentWeather";
+import Icon from "../components/Icon";
 import { useWeather } from "../hooks/useWeather";
+import { formatZonedTime } from "../utils/dateTime";
+import {
+  coordinateKey,
+  coordsMatch,
+  hasValidCoords,
+} from "../utils/weatherState";
 
 const InsightsCard = lazy(() => import("../components/InsightsCard"));
 const WeatherIntelligence = lazy(
@@ -96,18 +101,6 @@ const getPressure = (pressureObj) => {
 };
 
 // Helper to format ISO time strings to standard AM/PM format
-const formatTimeStr = (isoString) => {
-  if (!isoString) return "";
-  try {
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return isoString;
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  } catch (e) {
-    console.warn("Failed to format date string:", e);
-    return isoString;
-  }
-};
-
 const formatHour = (isoString, index) => {
   if (index === 0) return "Now";
   if (!isoString) return "";
@@ -158,7 +151,6 @@ const getIcon = (uri) => {
 };
 
 const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { addToast } = useToast();
   const defaultCoords = useMemo(() => ({ lat: 37.7749, lng: -122.4194 }), []);
@@ -183,10 +175,18 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
   });
 
   // UI cache is only a fallback when the live request fails.
-  const [cachedData, setCachedData] = useState(() => {
+  const [cachedEntry, setCachedEntry] = useState(() => {
     try {
       const saved = localStorage.getItem("last_weather_ui_data");
-      return saved ? JSON.parse(saved) : null;
+      if (!saved) return null;
+      const parsed = JSON.parse(saved);
+      if (parsed?.data && parsed?.coords) return parsed;
+      const cachedCoords = JSON.parse(
+        localStorage.getItem("last_weather_coords") || "null",
+      );
+      return parsed?.current && cachedCoords
+        ? { data: parsed, coords: cachedCoords, savedAt: null }
+        : null;
     } catch {
       return null;
     }
@@ -198,8 +198,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     }
     return localStorage.getItem("last_weather_name") || "";
   });
-  const [unit, setUnit] = useState(preferences.units === "metric" ? "C" : "F");
-  const [pointer, setPointer] = useState({ x: 50, y: 35 });
+  const unit = preferences.units === "metric" ? "C" : "F";
   const [favorites, setFavorites] = useState(() => {
     try {
       const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
@@ -215,19 +214,10 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
   const handleUnitChange = useCallback(
     (newUnit) => {
       const newPreferenceUnit = newUnit === "C" ? "metric" : "imperial";
-      if (setPreferences) {
-        setPreferences((prev) => ({ ...prev, units: newPreferenceUnit }));
-      } else {
-        // Fallback if setter isn't provided
-        setUnit(newUnit);
-      }
+      setPreferences?.((prev) => ({ ...prev, units: newPreferenceUnit }));
     },
     [setPreferences],
   );
-
-  useEffect(() => {
-    setUnit(preferences.units === "metric" ? "C" : "F");
-  }, [preferences.units]);
 
   useEffect(() => {
     localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
@@ -245,7 +235,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
 
   // Persist coordinates whenever they change
   useEffect(() => {
-    if (coords.lat && coords.lng) {
+    if (hasValidCoords(coords)) {
       localStorage.setItem("last_weather_coords", JSON.stringify(coords));
     }
     if (activeLocationName) {
@@ -286,9 +276,9 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
 
       const { latitude, longitude } = position.coords;
       const result = { lat: latitude, lng: longitude };
-      setCoords(result);
       // Reverse geocode to get the city name
       const cityName = await fetchReverseGeocodingData(latitude, longitude);
+      setCoords(result);
       setActiveLocationName(cityName || "Detected Location");
       localStorage.setItem("last_weather_source", "auto");
       addToast(
@@ -302,7 +292,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
           ? "Location access denied. Check browser permissions."
           : err.code === 3
             ? "Location request timed out. Try again."
-            : "Could not detect location. Using default city.";
+            : "Could not update location. Keeping the current forecast.";
       addToast(message, "error");
     } finally {
       setTimeout(() => setIsRefreshing(false), 600);
@@ -320,7 +310,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     const cityMismatch =
       preferences.location === "manual" &&
       preferences.defaultCity !== cachedName;
-    const noCoords = !coords.lat || !coords.lng;
+    const noCoords = !hasValidCoords(coords);
 
     if (modeMismatch || cityMismatch || noCoords) {
       let cleanup = () => {};
@@ -330,15 +320,15 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
           active = false;
         };
 
-        const loadDefaultCity = async () => {
+        const loadDefaultCity = async (source = "manual") => {
           try {
             const city = preferences.defaultCity || "San Francisco";
             const result = await fetchGeocodingData(city);
             if (!active) return;
-            if (result && result.lat && result.lng) {
+            if (hasValidCoords(result)) {
               setCoords(result);
               setActiveLocationName(city);
-              localStorage.setItem("last_weather_source", "manual");
+              localStorage.setItem("last_weather_source", source);
             }
           } catch (err) {
             console.error("Failed to load default city location:", err);
@@ -377,14 +367,14 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
               "Auto-detect failed. Falling back to default city.",
               "warning",
             );
-            await loadDefaultCity();
+            await loadDefaultCity("auto");
           }
         };
 
         if (preferences.location === "auto") {
           loadLocationByBrowser();
         } else {
-          loadDefaultCity();
+          loadDefaultCity("manual");
         }
       }, 180);
 
@@ -397,8 +387,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     preferences.location,
     preferences.defaultCity,
     location.state,
-    coords.lat,
-    coords.lng,
+    coords,
     addToast,
   ]);
 
@@ -419,11 +408,15 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     alerts,
     nextHourRain,
     historicalComparison,
+    airQuality,
     loadingCurrent,
     loadingHourly,
     loadingDaily,
     loadingHistorical,
+    loadingAirQuality,
     error: weatherError,
+    retry: retryWeather,
+    resolvedKey,
   } = useWeather(coords.lat, coords.lng);
 
   // Persist sunrise/sunset times for automatic theme switching
@@ -445,10 +438,10 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
 
     const firstDay = daily?.[0];
     const sunriseStr = firstDay?.sunEvents?.sunriseTime
-      ? formatTimeStr(firstDay.sunEvents.sunriseTime)
+      ? formatZonedTime(firstDay.sunEvents.sunriseTime, weather?.timezone)
       : "06:00 AM";
     const sunsetStr = firstDay?.sunEvents?.sunsetTime
-      ? formatTimeStr(firstDay.sunEvents.sunsetTime)
+      ? formatZonedTime(firstDay.sunEvents.sunsetTime, weather?.timezone)
       : "07:30 PM";
 
     return {
@@ -476,6 +469,8 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
             dewPoint: parseTemp(weather.dewPoint),
             sunrise: sunriseStr,
             sunset: sunsetStr,
+            timezone: weather.timezone || null,
+            updatedAt: weather.updatedAt || null,
           }
         : null,
       hourly: (hourly || []).slice(0, 12).map((h, index) => ({
@@ -490,6 +485,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
         windSpeedKmh: h.windSpeed || 0,
         windGustKmh: h.windGust || 0,
         uvIndex: h.uvIndex || 0,
+        isDay: h.isDay,
       })),
       daily: (daily || []).map((d) => ({
         day: formatDayName(d.interval?.startTime),
@@ -503,10 +499,12 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
         precipitationSum: d.precipitationSum || 0,
         windGustMax: d.windGustMax || 0,
         uvIndexMax: d.uvIndexMax || 0,
+        sunEvents: d.sunEvents || null,
       })),
       alerts: alerts || [],
       nextHourRain: nextHourRain || [],
       historicalComparison,
+      airQuality,
     };
   }, [
     weather,
@@ -515,19 +513,35 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     alerts,
     nextHourRain,
     historicalComparison,
+    airQuality,
     activeLocationName,
   ]);
 
   useEffect(() => {
-    if (weatherData.current && !loadingCurrent) {
-      localStorage.setItem("last_weather_ui_data", JSON.stringify(weatherData));
+    if (
+      weatherData.current &&
+      !loadingCurrent &&
+      resolvedKey === coordinateKey(coords)
+    ) {
+      const entry = {
+        data: weatherData,
+        coords,
+        savedAt: new Date().toISOString(),
+      };
+      localStorage.setItem("last_weather_ui_data", JSON.stringify(entry));
+      // Mirror the successfully persisted entry for same-session offline fallback.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCachedEntry(entry);
     }
-  }, [weatherData, loadingCurrent]);
+  }, [weatherData, loadingCurrent, coords, resolvedKey]);
 
   // Render the last successful forecast immediately while the fresh request is
   // in flight. Coordinates and cached UI data are persisted together, so this
   // avoids holding the LCP card behind network latency without showing another
   // location's forecast.
+  const cachedData = coordsMatch(cachedEntry?.coords, coords)
+    ? cachedEntry?.data
+    : null;
   const shouldUseCachedFallback = !weatherData.current && Boolean(cachedData);
   const displayData = weatherData.current
     ? weatherData
@@ -553,9 +567,23 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
   const displayHistoricalComparison = weatherData.current
     ? weatherData.historicalComparison
     : cachedData?.historicalComparison || null;
+  const displayAirQuality = weatherData.current
+    ? weatherData.airQuality
+    : cachedData?.airQuality || null;
   const isWaitingForLiveData = !weatherData.current && !cachedData && !weatherError;
+  const isShowingCachedData = shouldUseCachedFallback;
+  const headerStatus = weatherError && !displayData?.current
+    ? "error"
+    : isShowingCachedData
+      ? "cached"
+      : !displayData?.current
+        ? "loading"
+        : "live";
+  const displayUpdatedAt = isShowingCachedData
+    ? cachedEntry?.savedAt || displayData?.current?.updatedAt
+    : displayData?.current?.updatedAt;
   const currentFavoriteId =
-    coords.lat && coords.lng ? getFavoriteId(coords) : "";
+    hasValidCoords(coords) ? getFavoriteId(coords) : "";
   const isCurrentFavorite =
     Boolean(currentFavoriteId) &&
     favorites.some((favorite) => favorite.id === currentFavoriteId);
@@ -614,19 +642,12 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
 
   return (
     <>
-      <div
-        className="weather-page page-container"
-        style={{
-          "--pointer-x": `${pointer.x}%`,
-          "--pointer-y": `${pointer.y}%`,
-        }}
-      >
+      <div className="weather-page page-container">
         <Header
           unit={unit}
-          data={weatherData?.current?.condition}
+          data={displayData?.current?.condition}
+          status={headerStatus}
           setUnit={handleUnitChange}
-          onOpenSettings={() => navigate("/settings")}
-          onOpenSearch={() => navigate("/search")}
           onDetectLocation={handleManualDetect}
           isDetecting={isRefreshing}
           onToggleFavorite={handleToggleFavorite}
@@ -635,10 +656,31 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
         />
 
         <div className="weather-dashboard">
+          {weatherError && displayData?.current ? (
+            <section className="weather-refresh-warning" role="status">
+              <Icon name="info" size={19} />
+              <span>Live update failed. Showing the last saved forecast.</span>
+              <button type="button" onClick={retryWeather}>Retry</button>
+            </section>
+          ) : null}
+          {weatherError && !displayData?.current ? (
+            <section className="weather-error-panel forecast-panel" role="alert">
+              <span className="feature-icon"><Icon name="cloud" size={24} /></span>
+              <div>
+                <span className="feature-kicker">Forecast unavailable</span>
+                <h2>We couldn’t update this location</h2>
+                <p>Check your connection and try loading the forecast again.</p>
+              </div>
+              <button type="button" onClick={retryWeather}>Try again</button>
+            </section>
+          ) : (
+          <>
           <CurrentWeather
             data={displayData}
             hourly={displayHourly}
             unit={unit}
+            isStale={isShowingCachedData}
+            updatedAt={displayUpdatedAt}
             loading={!displayData?.current && (loadingCurrent || isWaitingForLiveData)}
           />
           <Suspense
@@ -672,9 +714,9 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
                 temperature={displayData.current.temp}
                 humidity={displayData.current.humidity}
                 uvIndex={displayData.current.uvIndex}
-                aqi={50}
-                pm25={15}
-                pm10={25}
+                unit={unit}
+                airQuality={displayAirQuality}
+                loadingAirQuality={loadingAirQuality && !displayAirQuality}
               />
             </Suspense>
           ) : (
@@ -700,7 +742,10 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
             >
               <HourlyForecast
                 data={displayHourly}
+                current={displayData?.current}
                 unit={unit}
+                isStale={isShowingCachedData}
+                updatedAt={displayUpdatedAt}
                 loading={!displayHourly.length && (loadingHourly || isWaitingForLiveData)}
               />
             </Suspense>
@@ -722,6 +767,8 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
               />
             </Suspense>
           </div>
+          </>
+          )}
         </div>
       </div>
     </>

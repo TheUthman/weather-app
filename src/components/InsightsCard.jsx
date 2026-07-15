@@ -12,9 +12,9 @@ const InsightsCard = ({
   temperature = 70,
   humidity = 50,
   uvIndex = 5,
-  aqi = 50,
-  pm25 = 15,
-  pm10 = 25,
+  unit = "F",
+  airQuality = null,
+  loadingAirQuality = false,
 }) => {
   const scrollContainerRef = useRef(null);
   const frameRef = useRef(null);
@@ -100,10 +100,10 @@ const InsightsCard = ({
 
         <div className="insights-scroll-container" ref={scrollContainerRef}>
           <Tips data={weatherCondition} />
-          <Outfits data={temperature} />
-          <AirQualityIndex aqi={aqi} pm25={pm25} pm10={pm10} />
+          <Outfits data={temperature} unit={unit} />
+          <AirQualityIndex data={airQuality} loading={loadingAirQuality} />
           <UVIndex uvIndex={uvIndex} />
-          <HealthWellness temperature={temperature} humidity={humidity} />
+          <HealthWellness temperature={temperature} humidity={humidity} unit={unit} />
           <WeatherExplained />
         </div>
 

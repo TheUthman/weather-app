@@ -220,7 +220,10 @@ const Tips = ({ data }) => {
   // })();
 
   useEffect(() => {
-    if (tips.length <= 1) return;
+    if (
+      tips.length <= 1 ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) return;
 
     const interval = setInterval(() => {
       setTipIndex((prev) => (prev + 1) % tips.length);
