@@ -1655,7 +1655,7 @@ body.light .app-layout::before {
   font-weight: 760;
 }
 
-.daily-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 10px; }
+.daily-list { display: grid; grid-template-columns: repeat(1, minmax(0, 1fr)); gap: 5px 10px; }
 .daily-row,
 .daily-row-skeleton {
   display: grid;
@@ -1664,12 +1664,12 @@ body.light .app-layout::before {
   gap: 9px;
   min-height: 54px;
   padding: 10px 5px;
-  border: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
   transition: background var(--duration-base) var(--ease);
   border-radius: var(--radius-sm);
 }
 .daily-row:hover { background: var(--surface-soft); }
-/* .daily-row:last-child { border-bottom: 0; } */
+.daily-row:last-child { border-bottom: 0; }
 /* Highlight "Today" row */
 .daily-row:first-child {
   background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.05), transparent 70%);
@@ -2410,8 +2410,8 @@ body.light .city-save-btn { color: #fff; }
 .current-dial-panel .weather-dial-summary {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
-  width: min(520px, 100%);
-  margin-top: 22px;
+  width: min(1000px, 100%);
+  margin-top: 30px;
 }
 .current-dial-panel .weather-dial-summary-card {
   position: relative;
@@ -2553,7 +2553,6 @@ body.light .city-save-btn { color: #fff; }
 .current-dial-panel .weather-dial-hour-content:focus-visible {
   box-shadow: 0 6px 14px rgba(var(--shadow-rgb), .11), inset 0 1px 0 rgba(255,255,255,.07);
 }
-.current-dial-panel .weather-dial-summary { width: min(900px, 100%); }
 .weather-dial-instructions {
   display: flex;
   align-items: center;
@@ -2857,7 +2856,7 @@ body.light .city-save-btn { color: #fff; }
   .hourly-current-reading { gap: 2px; }
   .hourly-current-reading > .animated-weather-icon-wrapper { flex-basis: 104px; width: 104px; height: 104px; }
   .hourly-current-temp { font-size: 48px; }
-  .hourly-metric-grid { gap: 8px; }
+  .hourly-metric-grid { gap: 8px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .hourly-metric-card { min-height: 68px; padding: 10px; gap: 8px; }
   .hourly-metric-card > svg { width: 23px; height: 23px; }
   .hourly-metric-card strong { font-size: 13px; }
@@ -2882,7 +2881,7 @@ body.light .city-save-btn { color: #fff; }
   .weather-dial-legend { gap: 3px !important; }
   .weather-dial-legend span { gap: 5px; font-size: 9px; }
   .weather-dial-legend i { width: 5px; height: 5px; }
-  .current-dial-panel .weather-dial-shell { margin-top: 6px; padding-top: 4px; }
+  .current-dial-panel .weather-dial-shell { margin-top: 6px; padding-top: 20px; }
   .current-dial-panel .weather-dial { --dial-radius: -134px; width: min(326px, 100%); }
   .current-dial-panel .weather-dial-orbit { inset: 26px; }
   .weather-dial-radar { inset: 27px; }
@@ -2905,7 +2904,7 @@ body.light .city-save-btn { color: #fff; }
   .current-dial-panel .weather-dial-center { width: 166px; height: 166px; padding: 12px; }
   .current-dial-panel .weather-dial-center .animated-weather-icon-wrapper { width: 40px; height: 40px; }
   .current-dial-panel .weather-dial-center .current-temp { font-size: 3.35rem; }
-  .current-dial-panel .weather-dial-summary { gap: 4px; width: min(316px, 100%); margin-top: 9px; }
+  .current-dial-panel .weather-dial-summary { gap: 4px; width: min(400px, 100%); margin-top: 15px; }
   .current-dial-panel .weather-dial-summary-card { min-height: 68px; padding: 7px 8px 6px; border-radius: 11px; }
   .current-dial-panel .weather-dial-summary-card > span { font-size: 9px; line-height: 1.2; white-space: normal; }
   .current-dial-panel .weather-dial-summary-card > strong { font-size: 10px; }
@@ -2916,6 +2915,7 @@ body.light .city-save-btn { color: #fff; }
   .daily-row,
   .daily-row-skeleton { border-bottom: 1px solid var(--line); border-top: none; border-left: none; border-right: none; }
   .daily-row:last-child { border-bottom: none; }
+  .hourly-metric-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 920px) {

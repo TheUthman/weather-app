@@ -1,5 +1,5 @@
 import { memo, useEffect, useRef, useState } from "react";
-import { FiMoon, FiRotateCcw, FiSun } from "react-icons/fi";
+import { FiRotateCcw } from "react-icons/fi";
 import Icon from "./Icon";
 import WeatherIcon from "./WeatherIcon";
 import { formatFreshnessLabel, formatZonedTime } from "../utils/dateTime";
@@ -194,12 +194,6 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
               <i key={index} style={{ "--marker-angle": `${index * 30 + 15}deg` }} />
             ))}
           </div>
-        </div>
-        <div className="weather-dial-celestial weather-dial-sun" aria-hidden="true">
-          <FiSun size={23} strokeWidth={1.55} />
-        </div>
-        <div className="weather-dial-celestial weather-dial-moon" aria-hidden="true">
-          <FiMoon size={22} strokeWidth={1.7} />
         </div>
         {dialHours.map((hour, index) => {
           const hourTemperature = convertTemp(hour.temp, unit);
