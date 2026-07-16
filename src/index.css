@@ -3023,8 +3023,6 @@ body.light .city-save-btn { color: #fff; }
 .hourly-chart-tabs button { min-height: 44px; }
 
 @media (max-width: 760px) {
-  .hourly-current-summary,
-  .hourly-metric-grid { display: none; }
   .hourly-detail-body { padding: 12px; }
   .hourly-chart { min-width: 0; min-height: 210px; }
   .hourly-chart-column { overflow: visible; }
