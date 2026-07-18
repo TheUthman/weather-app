@@ -1478,16 +1478,7 @@ body.light .app-layout::before {
   transform: translateY(-2px);
   box-shadow: 0 12px 32px rgba(0,5,15,0.16);
 }
-/* Left accent strip */
-.insight-card-minimalist::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 3px;
-  border-radius: 0 2px 2px 0;
-  background: color-mix(in srgb, var(--detail, var(--accent)) calc(var(--component-opacity) * 100%), transparent);
-  box-shadow: 2px 0 12px color-mix(in srgb, var(--detail, var(--accent)) 30%, transparent);
-}
+
 /* Top corner glow for insight cards */
 .insight-card-minimalist::after {
   content: '';
@@ -1922,6 +1913,11 @@ body.light .city-save-btn { color: #fff; }
 .help-guide-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .help-guide-grid article { display: grid; gap: 9px; padding: 17px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-soft); }
 .help-guide-grid svg { color: var(--accent); }
+.help-step-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0; list-style: none; counter-reset: help-step; }
+.help-step-list li { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; padding: 17px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface-soft); counter-increment: help-step; }
+.help-step-list li::before { content: counter(help-step); display: grid; grid-row: 1 / 3; place-items: center; width: 34px; height: 34px; border-radius: 11px; color: var(--accent); background: var(--accent-wash); font-weight: 820; }
+.help-step-list strong { color: var(--text); font-size: 14px; }
+.help-step-list span { color: var(--text-secondary); font-size: 12px; line-height: 1.5; }
 .help-support-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 22px; border-radius: var(--radius-lg); }
 .help-support-panel > div { display: grid; gap: 6px; }
 .help-primary-link { padding: 11px 14px; border: 1px solid var(--line); border-radius: 12px; white-space: nowrap; background: var(--accent-wash); }
@@ -2766,7 +2762,9 @@ body.light .city-save-btn { color: #fff; }
   background: color-mix(in srgb, var(--surface-soft) 72%, transparent);
   box-shadow: 0 7px 18px rgba(var(--shadow-rgb), .07), inset 0 1px 0 rgba(255,255,255,.06);
 }
-.hourly-details-panel .hourly-card:first-child {
+.hourly-details-panel button.hourly-card { color: var(--text); font: inherit; text-align: left; cursor: pointer; }
+.hourly-details-panel .hourly-card:focus-visible { outline: 3px solid rgba(var(--accent-rgb), .48); outline-offset: 2px; }
+.hourly-details-panel .hourly-card.selected {
   border-color: rgba(var(--accent-rgb), .82);
   background: linear-gradient(155deg, rgba(var(--accent-rgb), .14), transparent 62%), color-mix(in srgb, var(--surface-soft) 84%, transparent);
   box-shadow: 0 0 0 1px rgba(var(--accent-rgb), .2), 0 9px 22px rgba(var(--shadow-rgb), .12);
@@ -2775,7 +2773,7 @@ body.light .city-save-btn { color: #fff; }
 .hourly-details-panel .hourly-card::after { display: none; }
 .hourly-details-panel .hourly-card:hover { transform: translateY(-2px); }
 .hourly-details-panel .hourly-time { color: var(--text-secondary); font-size: 12px; letter-spacing: 0; }
-.hourly-details-panel .hourly-card:first-child .hourly-time { color: var(--accent); }
+.hourly-details-panel .hourly-card.selected .hourly-time { color: var(--accent); }
 .hourly-details-panel .hourly-card-main { gap: 5px; flex-direction: column; }
 .hourly-details-panel .hourly-card-main .animated-weather-icon-wrapper { width: 52px; height: 52px; flex-basis: 52px; }
 .hourly-details-panel .hourly-temp { font-size: 25px; font-weight: 760; }
@@ -2822,6 +2820,9 @@ body.light .city-save-btn { color: #fff; }
 .hourly-chart-gridline text { fill: var(--text-tertiary); font-size: 10px; }
 .hourly-chart-line { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 2px 3px rgba(var(--accent-rgb), .2)); }
 .hourly-chart-point circle { fill: var(--accent); stroke: color-mix(in srgb, var(--surface-strong) 90%, transparent); stroke-width: 2; }
+.hourly-chart-point.selected circle { fill: var(--text); stroke: var(--accent); stroke-width: 3; }
+.hourly-chart-point.selected .hourly-chart-value,
+.hourly-chart-point.selected .hourly-chart-time { fill: var(--accent); font-weight: 850; }
 .hourly-chart-value { fill: var(--text); font-size: 10px; font-weight: 650; }
 .hourly-chart-time { fill: var(--text-tertiary); font-size: 9px; }
 .hourly-trend-note { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 13px; min-height: 76px; margin-top: auto; padding: 13px 15px; border: 1px solid var(--line); border-radius: 14px; background: rgba(var(--accent-rgb), .045); }
@@ -2846,6 +2847,7 @@ body.light .city-save-btn { color: #fff; }
   .hourly-chart { min-width: 0; }
   .hourly-chart-column { overflow: visible; }
   .hourly-chart-tabs, .hourly-trend-note { position: static; width: 100%; }
+  .help-step-list { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {

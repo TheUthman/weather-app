@@ -111,6 +111,10 @@ const transformHourly = (hourly) => {
       degrees: Math.round(hourly.temperature_2m[i]),
       unit: "C",
     },
+    feelsLikeTemperature: {
+      degrees: Math.round(hourly.apparent_temperature?.[i] ?? hourly.temperature_2m[i]),
+      unit: "C",
+    },
     weatherCondition: {
       text: weatherCodeToCondition(hourly.weather_code[i]),
       iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(hourly.weather_code[i])}`,
@@ -121,7 +125,12 @@ const transformHourly = (hourly) => {
     relativeHumidity: hourly.relative_humidity_2m?.[i] ?? null,
     windSpeed: hourly.wind_speed_10m?.[i] ?? 0,
     windGust: hourly.wind_gusts_10m?.[i] ?? 0,
+    windDirection: hourly.wind_direction_10m?.[i] ?? null,
     uvIndex: hourly.uv_index?.[i] ?? 0,
+    pressure: hourly.pressure_msl?.[i] ?? null,
+    cloudCover: hourly.cloud_cover?.[i] ?? null,
+    visibility: hourly.visibility?.[i] ?? null,
+    dewPoint: hourly.dew_point_2m?.[i] ?? null,
     isDay: hourly.is_day?.[i] === 1,
   }));
 };
@@ -267,7 +276,7 @@ const buildForecastAlerts = (current, hourly, daily) => {
 const buildForecastUrl = (lat, lng) =>
   `${WEATHER_BASE}?latitude=${lat}&longitude=${lng}` +
   "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index,pressure_msl,precipitation,cloud_cover,visibility,dew_point_2m" +
-  "&hourly=temperature_2m,relative_humidity_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,uv_index,is_day" +
+  "&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index,pressure_msl,cloud_cover,visibility,dew_point_2m,is_day" +
   "&forecast_hours=12" +
   "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max,uv_index_max,sunrise,sunset" +
   "&forecast_days=10" +

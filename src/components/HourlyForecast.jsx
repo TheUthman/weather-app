@@ -20,7 +20,7 @@ const clampNumber = (value, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const HourlyChart = ({ data, mode, unit, convertTemp }) => {
+const HourlyChart = ({ data, mode, unit, convertTemp, selectedIndex }) => {
   const config = useMemo(() => {
     const values = data.map((hour) => {
       if (mode === "rain") return clampNumber(hour.precip);
@@ -69,8 +69,8 @@ const HourlyChart = ({ data, mode, unit, convertTemp }) => {
       <polygon points={areaPoints} fill={`url(#hourly-chart-fill-${mode})`} />
       <polyline className="hourly-chart-line" points={points} />
       {config.values.map((value, index) => (
-        <g key={`${data[index].time}-${index}`} className="hourly-chart-point">
-          <circle cx={xFor(index)} cy={yFor(value)} r="4" />
+        <g key={`${data[index].time}-${index}`} className={`hourly-chart-point ${selectedIndex === index ? "selected" : ""}`}>
+          <circle cx={xFor(index)} cy={yFor(value)} r={selectedIndex === index ? 7 : 4} />
           <text className="hourly-chart-value" x={xFor(index)} y={yFor(value) - 12} textAnchor="middle">{displayValue(value)}</text>
           <text className="hourly-chart-time" x={xFor(index)} y={CHART_HEIGHT - 12} textAnchor="middle">{data[index].time}</text>
         </g>
@@ -88,15 +88,13 @@ const HourlyForecast = ({
   updatedAt = null,
 }) => {
   const [chartMode, setChartMode] = useState("temperature");
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const convertTemp = useCallback(
     (temp) => displayTemperature(clampNumber(temp), unit) ?? 0,
     [unit],
   );
   const formatPercent = (value) => `${Math.round(clampNumber(value))}%`;
-  const pressure = formatPressureFromInHg(current?.pressure, unit);
-  const visibility = formatVisibilityFromMiles(current?.visibility, unit);
-  const firstHour = data?.[0];
   const freshnessLabel = formatFreshnessLabel({
     updatedAt,
     timezone: current?.timezone,
@@ -126,15 +124,21 @@ const HourlyForecast = ({
     );
   }
 
+  const activeIndex = Math.min(selectedIndex, data.length - 1);
+  const selectedHour = data[activeIndex];
+  const pressure = formatPressureFromInHg(selectedHour.pressure ?? current?.pressure, unit);
+  const visibility = formatVisibilityFromMiles(selectedHour.visibility ?? current?.visibility, unit);
   const metricCards = [
-    ["cloudRain", "Rain chance", formatPercent(firstHour.precip)],
-    ["droplet", "Rain amount", formatPrecipitationFromMm(firstHour.precipAmount, unit)],
-    ["droplet", "Humidity", firstHour.humidity == null ? "—" : formatPercent(firstHour.humidity)],
-    ["wind", "Wind", formatWindFromKmh(firstHour.windSpeedKmh, unit)],
+    ["cloudRain", "Rain chance", formatPercent(selectedHour.precip)],
+    ["droplet", "Rain amount", formatPrecipitationFromMm(selectedHour.precipAmount, unit)],
+    ["droplet", "Humidity", selectedHour.humidity == null ? "—" : formatPercent(selectedHour.humidity)],
+    ["wind", "Wind", `${formatWindFromKmh(selectedHour.windSpeedKmh, unit)}${selectedHour.windDirection ? ` ${selectedHour.windDirection}` : ""}`],
+    ["wind", "Wind gusts", formatWindFromKmh(selectedHour.windGustKmh, unit)],
+    ["sun", "UV index", Math.round(clampNumber(selectedHour.uvIndex))],
     ["eye", "Visibility", visibility],
-    ["cloud", "Cloud cover", formatPercent(current?.cloudCover)],
+    ["cloud", "Cloud cover", selectedHour.cloudCover == null ? "—" : formatPercent(selectedHour.cloudCover)],
     ["barometer", "Pressure", pressure],
-    ["droplet", "Dew point", current?.dewPoint == null ? "—" : `${convertTemp(current.dewPoint)}°${unit}`],
+    ["droplet", "Dew point", selectedHour.dewPoint == null ? "—" : `${convertTemp(selectedHour.dewPoint)}°${unit}`],
   ];
 
   return (
@@ -146,25 +150,32 @@ const HourlyForecast = ({
 
       <div className="hourly-scroll" aria-label="Next 12 hours">
         {data.map((hour, index) => (
-          <article key={`${hour.time}-${index}`} className="hourly-card">
+          <button
+            key={`${hour.time}-${index}`}
+            type="button"
+            className={`hourly-card ${activeIndex === index ? "selected" : ""}`}
+            aria-pressed={activeIndex === index}
+            aria-label={`Show details for ${index === 0 ? "now" : hour.time}, ${convertTemp(hour.temp)} degrees, ${hour.condition}`}
+            onClick={() => setSelectedIndex(index)}
+          >
             <span className="hourly-time">{index === 0 ? "Now" : hour.time}</span>
             <div className="hourly-card-main">
               <WeatherIcon iconName={hour.icon} size={48} />
               <span className="hourly-temp">{convertTemp(hour.temp)}°</span>
             </div>
             <span className="hourly-card-rain"><Icon name="droplet" size={14} />{formatPercent(hour.precip)}</span>
-          </article>
+          </button>
         ))}
       </div>
 
-      <div className="hourly-detail-body">
+      <div className="hourly-detail-body" aria-live="polite">
         <div className="hourly-current-summary">
-          <div className="hourly-current-status"><strong>{isStale ? "Cached" : "Current"}</strong><span>{freshnessLabel}</span></div>
+          <div className="hourly-current-status"><strong>{isStale ? "Cached" : activeIndex === 0 ? "Current" : "Forecast"}</strong><span>{activeIndex === 0 ? freshnessLabel : selectedHour.time}</span></div>
           <div className="hourly-current-reading">
-            <WeatherIcon iconName={firstHour.icon} size={132} />
-            <div><div className="hourly-current-temp">{convertTemp(firstHour.temp)}<sup>°{unit}</sup></div><h3>{firstHour.condition}</h3><p>Feels like {convertTemp(current?.feelsLike)}°{unit}</p></div>
+            <WeatherIcon iconName={selectedHour.icon} size={132} />
+            <div><div className="hourly-current-temp">{convertTemp(selectedHour.temp)}<sup>°{unit}</sup></div><h3>{selectedHour.condition}</h3><p>Feels like {convertTemp(selectedHour.feelsLike ?? current?.feelsLike)}°{unit}</p></div>
           </div>
-          <p className="hourly-condition-copy">{firstHour.condition} conditions now, with a {formatPercent(firstHour.precip)} chance of rain.</p>
+          <p className="hourly-condition-copy">{selectedHour.condition} conditions {activeIndex === 0 ? "now" : `at ${selectedHour.time}`}, with a {formatPercent(selectedHour.precip)} chance of rain.</p>
           <div className="hourly-sun-times">
             <div><Icon name="sunrise" size={28} /><span><strong>{current?.sunrise || "—"}</strong>Sunrise</span></div>
             <div><Icon name="sunset" size={28} /><span><strong>{current?.sunset || "—"}</strong>Sunset</span></div>
@@ -181,7 +192,7 @@ const HourlyForecast = ({
           <div className="hourly-chart-tabs" role="group" aria-label="Chart measurement">
             {["temperature", "rain", "wind"].map((mode) => <button key={mode} type="button" aria-pressed={chartMode === mode} className={chartMode === mode ? "active" : ""} onClick={() => setChartMode(mode)}>{mode[0].toUpperCase() + mode.slice(1)}</button>)}
           </div>
-          <HourlyChart data={data} mode={chartMode} unit={unit} convertTemp={convertTemp} />
+          <HourlyChart data={data} mode={chartMode} unit={unit} convertTemp={convertTemp} selectedIndex={activeIndex} />
           <div className="hourly-trend-note"><span><Icon name="barometer" size={23} /></span><p><strong>12-hour temperature trend</strong>{trend}</p></div>
         </div>
       </div>

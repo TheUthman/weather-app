@@ -476,6 +476,10 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
       hourly: (hourly || []).slice(0, 12).map((h, index) => ({
         time: formatHour(h.interval?.startTime, index),
         temp: parseTemp(h.temperature),
+        feelsLike:
+          h.feelsLikeTemperature == null
+            ? null
+            : parseTemp(h.feelsLikeTemperature),
         rawTempC: h.temperature?.degrees ?? 0,
         icon: getIcon(h.weatherCondition?.iconBaseUri),
         condition: h.weatherCondition?.text || "Unknown",
@@ -484,7 +488,18 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
         humidity: h.relativeHumidity,
         windSpeedKmh: h.windSpeed || 0,
         windGustKmh: h.windGust || 0,
+        windDirection: getWindDirection(h.windDirection),
         uvIndex: h.uvIndex || 0,
+        pressure: h.pressure == null ? null : getPressure(h.pressure),
+        cloudCover: h.cloudCover,
+        visibility:
+          h.visibility == null
+            ? null
+            : Math.round((h.visibility / 1609.344) * 10) / 10,
+        dewPoint:
+          h.dewPoint == null
+            ? null
+            : parseTemp({ degrees: h.dewPoint, unit: "C" }),
         isDay: h.isDay,
       })),
       daily: (daily || []).map((d) => ({
