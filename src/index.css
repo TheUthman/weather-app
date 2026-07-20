@@ -814,7 +814,7 @@ body.light .app-layout::before {
   border-radius: 50%;
   isolation: isolate;
   cursor: grab;
-  touch-action: none;
+  touch-action: pan-y;
   user-select: none;
 }
 .weather-dial.weather-dial-dragging { cursor: grabbing; }
@@ -1165,7 +1165,7 @@ body.light .app-layout::before {
   --dial-radius: -184px;
   outline: none;
   cursor: grab;
-  touch-action: none;
+  touch-action: pan-y;
   user-select: none;
 }
 .weather-dial:active { cursor: grabbing; }
@@ -2520,6 +2520,12 @@ body.light .city-save-btn { color: #fff; }
   align-items: center;
   gap: 6px;
 }
+.weather-dial-controls {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+.weather-dial-controls + .weather-dial-summary { margin-top: 14px; }
 .weather-dial-instructions i {
   display: grid;
   place-items: center;

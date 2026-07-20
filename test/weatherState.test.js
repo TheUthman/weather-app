@@ -5,6 +5,7 @@ import {
   coordinateKey,
   coordsMatch,
   isFiniteMeasurement,
+  shouldUseCachedForecast,
 } from "../src/utils/weatherState.js";
 
 test("measurement validation rejects absent values without rejecting zero", () => {
@@ -19,6 +20,16 @@ test("coordinate identity supports zero and distinguishes locations", () => {
   assert.equal(coordinateKey({ lat: 0, lng: 0 }), "0:0");
   assert.equal(coordsMatch({ lat: 1, lng: 2 }, { lat: 1, lng: 2 }), true);
   assert.equal(coordsMatch({ lat: 1, lng: 2 }, { lat: 1.01, lng: 2 }), false);
+});
+
+test("cached weather remains hidden until the live request fails", () => {
+  const cached = { current: { temperature: 24 } };
+  assert.equal(shouldUseCachedForecast(null, null, cached), false);
+  assert.equal(shouldUseCachedForecast("Network error", null, cached), true);
+  assert.equal(
+    shouldUseCachedForecast("Network error", { temperature: 25 }, cached),
+    false,
+  );
 });
 
 test("historical windows stay bounded and cross year boundaries correctly", () => {

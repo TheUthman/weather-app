@@ -3,6 +3,7 @@ import { FiRotateCcw } from "react-icons/fi";
 import Icon from "./Icon";
 import WeatherIcon from "./WeatherIcon";
 import { formatFreshnessLabel, formatZonedTime } from "../utils/dateTime";
+import { classifyTouchGesture } from "../utils/dialInteraction";
 import {
   displayTemperature,
   formatPrecipitationFromMm,
@@ -195,31 +196,65 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
 
   const handlePointerDown = (event) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
-    stopDialAnimation();
+    const isTouch = event.pointerType === "touch";
     dragState.current = {
       lastAngle: pointerAngle(event),
       lastTime: event.timeStamp,
+      startX: event.clientX,
+      startY: event.clientY,
+      pointerId: event.pointerId,
+      isTouch,
       velocity: 0,
       moved: false,
-      active: true,
+      active: !isTouch,
+      tracking: true,
     };
-    event.currentTarget.classList.add("weather-dial-dragging");
-    event.currentTarget.setPointerCapture?.(event.pointerId);
+    if (!isTouch) {
+      stopDialAnimation();
+      event.currentTarget.classList.add("weather-dial-dragging");
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+    }
   };
 
   const handlePointerMove = (event) => {
-    if (!dragState.current?.active || !dialHours.length) return;
+    const state = dragState.current;
+    if (!state?.tracking || !dialHours.length) return;
+
+    if (state.isTouch && !state.active) {
+      const intent = classifyTouchGesture(
+        event.clientX - state.startX,
+        event.clientY - state.startY,
+      );
+      if (intent === "pending") return;
+      if (intent === "scroll") {
+        dragState.current = { ...state, moved: true, tracking: false };
+        return;
+      }
+
+      state.active = true;
+      state.moved = true;
+      state.lastAngle = pointerAngle(event);
+      state.lastTime = event.timeStamp;
+      stopDialAnimation();
+      event.currentTarget.classList.add("weather-dial-dragging");
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      event.preventDefault();
+      return;
+    }
+
+    if (!state.active) return;
+    if (state.isTouch) event.preventDefault();
     const time = event.timeStamp;
     const angle = pointerAngle(event);
-    const angleDelta = normalizeAngleDelta(angle - dragState.current.lastAngle);
-    const deltaTime = Math.max((time - dragState.current.lastTime) / 1000, 0.008);
+    const angleDelta = normalizeAngleDelta(angle - state.lastAngle);
+    const deltaTime = Math.max((time - state.lastTime) / 1000, 0.008);
     const nextRotation = rotationRef.current + angleDelta;
     const instantaneousVelocity = angleDelta / deltaTime;
 
-    dragState.current.velocity = dragState.current.velocity * 0.72 + instantaneousVelocity * 0.28;
-    dragState.current.lastAngle = angle;
-    dragState.current.lastTime = time;
-    dragState.current.moved ||= Math.abs(angleDelta) > 0.35;
+    state.velocity = state.velocity * 0.72 + instantaneousVelocity * 0.28;
+    state.lastAngle = angle;
+    state.lastTime = time;
+    state.moved ||= Math.abs(angleDelta) > 0.35;
     commitRotation(nextRotation);
 
     const nearestIndex = wrapIndex(Math.round(-nextRotation / 30), dialHours.length);
@@ -234,8 +269,11 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
       const nearestIndex = wrapIndex(Math.round(-projectedRotation / 30), dialHours.length);
       selectHour(nearestIndex, state.velocity);
     }
+    dragState.current = state ? { ...state, tracking: false } : null;
     event.currentTarget.classList.remove("weather-dial-dragging");
-    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) {
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+    }
   };
 
   return (
@@ -327,6 +365,19 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
         </div>
       </div>
 
+      {selectedIndex !== 0 && (
+        <div className="weather-dial-controls">
+          <button
+            className="weather-dial-recalibrate"
+            type="button"
+            onClick={() => selectHour(0)}
+          >
+            <FiRotateCcw size={13} aria-hidden="true" />
+            Recalibrate to now
+          </button>
+        </div>
+      )}
+
       <div className="weather-dial-summary" aria-label="12-hour weather summary">
         <div className="weather-dial-summary-card">
           <span>Temperature range</span>
@@ -367,16 +418,6 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
         <span><i>1</i>Drag or swipe around the dial</span>
         <span><i>2</i>Snaps to the nearest hour</span>
         <span><i>3</i>Center updates with selection</span>
-        {selectedIndex !== 0 && (
-          <button
-            className="weather-dial-recalibrate"
-            type="button"
-            onClick={() => selectHour(0)}
-          >
-            <FiRotateCcw size={13} aria-hidden="true" />
-            Recalibrate to now
-          </button>
-        )}
       </div>
     </div>
   );

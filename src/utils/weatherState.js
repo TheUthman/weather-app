@@ -20,6 +20,9 @@ export const coordsMatch = (left, right) =>
   Math.abs(left.lat - right.lat) < 0.000001 &&
   Math.abs(left.lng - right.lng) < 0.000001;
 
+export const shouldUseCachedForecast = (error, liveCurrent, cachedData) =>
+  Boolean(error && !liveCurrent && cachedData);
+
 const formatDate = (date) => date.toISOString().slice(0, 10);
 
 export const buildHistoricalWindows = (targetYear, targetMonth, targetDay) =>

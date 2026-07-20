@@ -59,7 +59,7 @@ const AnalyticsAndInsights = () => {
 };
 
 const getInitialBackgroundWeather = () => {
-  const fallback = {
+  return {
     daily: [],
     condition: "Clear",
     icon: "sunny",
@@ -67,44 +67,6 @@ const getInitialBackgroundWeather = () => {
     windSpeed: 0,
     precipitation: 0,
   };
-
-  try {
-    const cachedEntry = JSON.parse(localStorage.getItem("last_weather_ui_data") || "null");
-    const cached = cachedEntry?.data || cachedEntry;
-    const sunrise = localStorage.getItem("weather_sunrise");
-    const sunset = localStorage.getItem("weather_sunset");
-    const sunriseTime = sunrise ? new Date(sunrise).getTime() : Number.NaN;
-    const hasAbsoluteSolarTimes = [sunrise, sunset].every(
-      (value) => typeof value === "string" && /(Z|[+-]\d{2}:?\d{2})$/.test(value),
-    );
-    const solarDays =
-      Array.isArray(cached?.daily) && cached.daily.some((day) => day?.sunEvents)
-        ? cached.daily
-        : hasAbsoluteSolarTimes && Number.isFinite(sunriseTime)
-        ? [
-            { sunEvents: { sunriseTime: sunrise, sunsetTime: sunset } },
-            {
-              sunEvents: {
-                sunriseTime: new Date(
-                  sunriseTime + 24 * 60 * 60 * 1000,
-                ).toISOString(),
-              },
-            },
-          ]
-        : [];
-
-    return {
-      ...fallback,
-      daily: solarDays,
-      condition: cached?.current?.condition || fallback.condition,
-      icon: cached?.current?.icon || fallback.icon,
-      cloudCover: cached?.current?.cloudCover || 0,
-      windSpeed: cached?.current?.windSpeed || 0,
-      precipitation: cached?.current?.precipitation || 0,
-    };
-  } catch {
-    return fallback;
-  }
 };
 
 const App = () => {

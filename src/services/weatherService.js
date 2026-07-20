@@ -1,6 +1,6 @@
 const WEATHER_BASE = "https://api.open-meteo.com/v1/forecast";
 const AIR_QUALITY_BASE = "https://air-quality-api.open-meteo.com/v1/air-quality";
-import { buildHistoricalWindows } from "../utils/weatherState";
+import { buildHistoricalWindows } from "../utils/weatherState.js";
 
 const localTimeToIso = (localTime, utcOffsetSeconds = 0) => {
   if (!localTime) return null;
@@ -10,9 +10,9 @@ const localTimeToIso = (localTime, utcOffsetSeconds = 0) => {
 };
 
 // Helper: Map Open-Meteo weather codes to icon names
-const weatherCodeToIcon = (code) => {
-  if (code === 0 || code === 1) return "sunny";
-  if (code === 2) return "partly-cloudy";
+export const weatherCodeToIcon = (code, isDay = true) => {
+  if (code === 0 || code === 1) return isDay ? "sunny" : "night-clear";
+  if (code === 2) return isDay ? "partly-cloudy" : "night-cloudy";
   if (code === 3) return "cloudy";
   if (code === 45 || code === 48) return "cloudy";
   if (code >= 51 && code <= 57) return "rain";
@@ -78,7 +78,7 @@ const transformCurrent = (current, daily) => {
     weatherCode: current.weather_code,
     weatherCondition: {
       text: weatherCodeToCondition(current.weather_code),
-      iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(current.weather_code)}`,
+      iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(current.weather_code, current.is_day === 1)}`,
     },
     wind: {
       speed: { value: current.wind_speed_10m, unit: "KM_PER_HOUR" },
@@ -90,6 +90,7 @@ const transformCurrent = (current, daily) => {
     },
     uvIndex: current.uv_index ?? 0,
     precipitation: current.precipitation ?? 0,
+    isDay: current.is_day === 1,
     cloudCover: current.cloud_cover ?? 0,
     visibility: current.visibility ?? null,
     dewPoint: {
@@ -117,7 +118,7 @@ const transformHourly = (hourly) => {
     },
     weatherCondition: {
       text: weatherCodeToCondition(hourly.weather_code[i]),
-      iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(hourly.weather_code[i])}`,
+      iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(hourly.weather_code[i], hourly.is_day?.[i] === 1)}`,
     },
     weatherCode: hourly.weather_code[i],
     precipitationProbability: hourly.precipitation_probability?.[i] ?? 0,
@@ -275,7 +276,7 @@ const buildForecastAlerts = (current, hourly, daily) => {
 
 const buildForecastUrl = (lat, lng) =>
   `${WEATHER_BASE}?latitude=${lat}&longitude=${lng}` +
-  "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index,pressure_msl,precipitation,cloud_cover,visibility,dew_point_2m" +
+  "&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index,pressure_msl,precipitation,cloud_cover,visibility,dew_point_2m,is_day" +
   "&hourly=temperature_2m,apparent_temperature,relative_humidity_2m,weather_code,precipitation_probability,precipitation,wind_speed_10m,wind_gusts_10m,wind_direction_10m,uv_index,pressure_msl,cloud_cover,visibility,dew_point_2m,is_day" +
   "&forecast_hours=12" +
   "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum,wind_gusts_10m_max,uv_index_max,sunrise,sunset" +

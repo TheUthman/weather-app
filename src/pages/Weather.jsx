@@ -16,6 +16,7 @@ import {
   coordinateKey,
   coordsMatch,
   hasValidCoords,
+  shouldUseCachedForecast,
 } from "../utils/weatherState";
 
 const InsightsCard = lazy(() => import("../components/InsightsCard"));
@@ -31,6 +32,7 @@ import {
 import { useToast } from "../context/ToastContext";
 
 const FAVORITES_STORAGE_KEY = "weatherAppFavoriteLocations";
+const EMPTY_FORECAST = [];
 
 const getFavoriteId = (coords) => `${coords.lat}-${coords.lng}`;
 
@@ -550,14 +552,17 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     }
   }, [weatherData, loadingCurrent, coords, resolvedKey]);
 
-  // Render the last successful forecast immediately while the fresh request is
-  // in flight. Coordinates and cached UI data are persisted together, so this
-  // avoids holding the LCP card behind network latency without showing another
-  // location's forecast.
+  // A saved forecast is an offline/error fallback only. While a live request is
+  // in flight, keep the dashboard in its loading state instead of presenting
+  // stale values as though they were the current forecast.
   const cachedData = coordsMatch(cachedEntry?.coords, coords)
     ? cachedEntry?.data
     : null;
-  const shouldUseCachedFallback = !weatherData.current && Boolean(cachedData);
+  const shouldUseCachedFallback = shouldUseCachedForecast(
+    weatherError,
+    weatherData.current,
+    cachedData,
+  );
   const displayData = weatherData.current
     ? weatherData
     : shouldUseCachedFallback
@@ -571,21 +576,29 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
   const displayDaily = weatherData.current
     ? weatherData.daily
     : shouldUseCachedFallback
-      ? cachedData?.daily || []
-      : [];
+      ? cachedData?.daily || EMPTY_FORECAST
+      : EMPTY_FORECAST;
   const displayAlerts = weatherData.current
     ? weatherData.alerts
-    : cachedData?.alerts || [];
+    : shouldUseCachedFallback
+      ? cachedData?.alerts || []
+      : [];
   const displayNextHourRain = weatherData.current
     ? weatherData.nextHourRain
-    : cachedData?.nextHourRain || [];
+    : shouldUseCachedFallback
+      ? cachedData?.nextHourRain || []
+      : [];
   const displayHistoricalComparison = weatherData.current
     ? weatherData.historicalComparison
-    : cachedData?.historicalComparison || null;
+    : shouldUseCachedFallback
+      ? cachedData?.historicalComparison || null
+      : null;
   const displayAirQuality = weatherData.current
     ? weatherData.airQuality
-    : cachedData?.airQuality || null;
-  const isWaitingForLiveData = !weatherData.current && !cachedData && !weatherError;
+    : shouldUseCachedFallback
+      ? cachedData?.airQuality || null
+      : null;
+  const isWaitingForLiveData = !weatherData.current && !weatherError;
   const isShowingCachedData = shouldUseCachedFallback;
   const headerStatus = weatherError && !displayData?.current
     ? "error"
@@ -608,17 +621,27 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
   const backgroundCurrent = displayData?.current;
 
   useEffect(() => {
-    if (!backgroundCurrent) return;
+    if (!backgroundCurrent) {
+      onBackgroundWeather?.({
+        daily: [],
+        condition: "Clear",
+        icon: "sunny",
+        cloudCover: 0,
+        windSpeed: 0,
+        precipitation: 0,
+      });
+      return;
+    }
 
     onBackgroundWeather?.({
-      daily,
+      daily: displayDaily,
       condition: backgroundCurrent.condition || "Clear",
       icon: backgroundCurrent.icon || "sunny",
       cloudCover: backgroundCurrent.cloudCover || 0,
       windSpeed: backgroundCurrent.windSpeed || 0,
       precipitation: backgroundCurrent.precipitation || 0,
     });
-  }, [backgroundCurrent, daily, onBackgroundWeather]);
+  }, [backgroundCurrent, displayDaily, onBackgroundWeather]);
 
   const handleToggleFavorite = useCallback(() => {
     if (!canFavoriteCurrent) {
