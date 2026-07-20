@@ -777,7 +777,7 @@ body.light .app-layout::before {
 }
 .current-local-time { display: flex; align-items: center; gap: 6px; color: var(--text-secondary); }
 .current-local-time svg { color: var(--accent); }
-.current-local-time h3 { font-size: 13px; font-weight: 760; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.current-local-time time { font-size: 13px; font-weight: 760; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
 .current-weather-content { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr); min-height: 570px; }
 .current-details-panel {
   display: flex;
@@ -1566,6 +1566,11 @@ body.light .app-layout::before {
 .wellness-meter { display: flex; justify-content: space-between; gap: 10px; color: var(--text-secondary); font-size: 11px; }
 
 .main-stats { display: grid; grid-template-columns: 1fr; align-items: stretch; gap: 14px; content-visibility: auto; contain-intrinsic-size: auto 560px; }
+.weather-intelligence-section,
+.insights-container {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 560px;
+}
 .hourly-forecast { display: flex; flex-direction: column; min-height: 0; }
 .hourly-scroll {
   display: grid;

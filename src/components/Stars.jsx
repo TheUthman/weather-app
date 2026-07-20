@@ -11,7 +11,7 @@ function generateStars(count = 72) {
 
 function Stars({ opacity, reducedMotion = false, compact = false }) {
   const stars = useMemo(() => {
-    const count = reducedMotion ? 18 : compact ? 28 : 40;
+    const count = reducedMotion ? 12 : compact ? 16 : 24;
     return generateStars(count);
   }, [compact, reducedMotion]);
 

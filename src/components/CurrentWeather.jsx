@@ -35,7 +35,7 @@ const LocalTime = memo(function LocalTime({ timezone }) {
     return () => clearInterval(id);
   }, [timezone]);
 
-  return <h3>{time}</h3>;
+  return <time>{time}</time>;
 });
 
 const normalizeAngleDelta = (angle) => ((angle + 180) % 360 + 360) % 360 - 180;
@@ -300,11 +300,11 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
           <div className="weather-dial-orbit" />
           <div className="weather-dial-hand" />
           <div className="weather-dial-scale">
-            {Array.from({ length: 60 }, (_, index) => (
+            {Array.from({ length: 12 }, (_, index) => (
               <i
-                className={`${index % 15 === 0 ? "scale-quarter " : ""}${index % 5 === 0 ? "scale-major" : "scale-minor"}`}
+                className={index % 3 === 0 ? "scale-quarter" : "scale-major"}
                 key={index}
-                style={{ "--marker-angle": `${index * 6}deg` }}
+                style={{ "--marker-angle": `${index * 30}deg` }}
               />
             ))}
           </div>
@@ -329,7 +329,7 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
                 type="button"
                 tabIndex={index === selectedIndex ? 0 : -1}
                 aria-pressed={index === selectedIndex}
-                aria-label={`${index === 0 ? "Now" : hour.time}, ${hourTemperature} degrees, ${hour.condition}${hour.isDay === true ? ", daylight" : hour.isDay === false ? ", night" : ""}`}
+                title={`${hour.condition}${hour.isDay === true ? " during daylight" : hour.isDay === false ? " at night" : ""}`}
                 onClick={() => {
                   if (!dragState.current?.moved) selectHour(index);
                 }}

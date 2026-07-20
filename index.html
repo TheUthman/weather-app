@@ -5,37 +5,6 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="manifest" href="/site.webmanifest" />
     <link rel="preconnect" href="https://api.open-meteo.com" />
-    <script>
-      try {
-        const saved = localStorage.getItem("last_weather_ui_data");
-        if (saved) {
-          const data = JSON.parse(saved);
-          const icon = data?.current?.icon;
-          if (icon) {
-            const iconMap = {
-              sunny: "clear-day",
-              "night-clear": "clear-night",
-              "partly-cloudy": "partly-cloudy-day",
-              "night-cloudy": "partly-cloudy-night",
-              cloudy: "cloudy",
-              rain: "rain",
-              snow: "snow",
-              thunderstorm: "thunderstorms",
-            };
-            const file = iconMap[icon] || "cloudy";
-            const link = document.createElement("link");
-            link.rel = "preload";
-            link.as = "image";
-            link.href = "/icons/meteocons/" + file + ".svg";
-            link.type = "image/svg+xml";
-            link.fetchPriority = "high";
-            document.head.appendChild(link);
-          }
-        }
-      } catch (e) {
-        console.warn("Failed to inject dynamic LCP preload:", e);
-      }
-    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="A responsive weather dashboard with live conditions, hourly insights, planning tools, and a 10-day forecast." />
     <meta name="theme-color" content="#071626" />

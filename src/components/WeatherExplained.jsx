@@ -36,7 +36,7 @@ const WeatherExplained = () => {
       <div className="weather-explained-footer">
         <span className="indicator-text">{explanationIndex + 1} of {weatherExplanations.length}</span>
         <Link to="/help" className="insight-card-link">
-          Learn more <Icon name="chevronRight" size={15} />
+          Learn about weather terms <Icon name="chevronRight" size={15} />
         </Link>
       </div>
     </div>

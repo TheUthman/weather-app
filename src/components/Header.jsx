@@ -51,7 +51,7 @@ const Header = ({
         <button
           className="unit-toggle"
           onClick={() => setUnit(unit === "F" ? "C" : "F")}
-          aria-label={`Switch to ${unit === "F" ? "Celsius" : "Fahrenheit"}`}
+          title={`Switch to ${unit === "F" ? "Celsius" : "Fahrenheit"}`}
         >
           °{unit}
         </button>

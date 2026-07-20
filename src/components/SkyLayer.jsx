@@ -51,23 +51,23 @@ function SkyLayer({
 
   useEffect(() => {
     let cancelled = false;
+    let idleId = null;
 
     const revealEffects = () => {
       if (!cancelled) setShouldRenderEffects(true);
     };
 
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      const id = window.requestIdleCallback(revealEffects, { timeout: 400 });
-      return () => {
-        cancelled = true;
-        window.cancelIdleCallback?.(id);
-      };
-    }
-
-    const id = window.setTimeout(revealEffects, 120);
+    const id = window.setTimeout(() => {
+      if ("requestIdleCallback" in window) {
+        idleId = window.requestIdleCallback(revealEffects, { timeout: 1800 });
+      } else {
+        revealEffects();
+      }
+    }, 1200);
     return () => {
       cancelled = true;
       window.clearTimeout(id);
+      if (idleId !== null) window.cancelIdleCallback?.(idleId);
     };
   }, []);
 
@@ -105,8 +105,7 @@ function SkyLayer({
     celestial.progress,
     cloudCover,
   );
-  const shouldRenderDetailedEffects =
-    shouldRenderEffects || reducedMotion || isCompactViewport;
+  const shouldRenderDetailedEffects = shouldRenderEffects || reducedMotion;
 
   const cloudBands = shouldRenderDetailedEffects
     ? getCloudBands(

@@ -27,6 +27,19 @@ npm audit --omit=dev
 
 The same checks run in GitHub Actions for pull requests and pushes to `main`.
 
+## Lighthouse testing
+
+Run Lighthouse against the optimized production build, not the Vite development
+server. Development mode includes React diagnostics, source transforms, and
+hot-reload code that heavily distort performance results.
+
+```bash
+npm run build
+npm run preview
+```
+
+Then audit the preview URL printed by Vite (normally `http://localhost:4173`).
+
 ## Deployment
 
 The project is configured for Vercel. `vercel.json` provides the SPA rewrite required for direct access to `/search`, `/settings`, and `/help`, along with baseline security headers.

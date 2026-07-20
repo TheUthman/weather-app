@@ -625,8 +625,8 @@ export function getCloudBands(
         1,
       );
       const maxClouds = reducedMotion
-        ? 3
-        : Math.min(6, Math.round(4 * viewportScale));
+        ? 2
+        : Math.min(4, Math.round(3 * viewportScale));
       const count = Math.max(
         1,
         Math.min(
