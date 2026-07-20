@@ -128,6 +128,7 @@ const CustomSelect = ({ value, onChange, options, name }) => {
       ref={dropdownRef}
     >
       <button
+        id={name}
         ref={triggerRef}
         type="button"
         className={`custom-select-trigger ${isOpen ? "open" : ""}`}

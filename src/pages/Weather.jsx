@@ -196,7 +196,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
     if (location.state?.searchQuery) {
       return location.state.searchQuery;
     }
-    return localStorage.getItem("last_weather_name") || "";
+    return localStorage.getItem("last_weather_name") || preferences.defaultCity;
   });
   const unit = preferences.units === "metric" ? "C" : "F";
   const [favorites, setFavorites] = useState(() => {

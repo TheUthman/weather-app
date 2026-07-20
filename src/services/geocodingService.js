@@ -2,18 +2,18 @@
 
 export const fetchGeocodingData = async (location) => {
   try {
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(location)}&format=jsonv2&limit=1`;
-    const response = await fetch(url, {
-      headers: {
-        "User-Agent": "WeatherRadarApp/1.0",
-      },
-    });
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=en&format=json`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Geocoding request failed: status ${response.status}`);
+    }
     const data = await response.json();
+    const result = data?.results?.[0];
 
-    if (data && data.length > 0) {
+    if (result) {
       return {
-        lat: parseFloat(data[0].lat),
-        lng: parseFloat(data[0].lon),
+        lat: Number(result.latitude),
+        lng: Number(result.longitude),
       };
     }
 
@@ -28,10 +28,11 @@ export const fetchReverseGeocodingData = async (lat, lng) => {
   try {
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2`;
     const response = await fetch(url, {
-      headers: {
-        "User-Agent": "WeatherRadarApp/1.0",
-      },
+      headers: { "Accept-Language": "en" },
     });
+    if (!response.ok) {
+      throw new Error(`Reverse geocoding failed: status ${response.status}`);
+    }
     const data = await response.json();
 
     if (data && data.address) {
@@ -62,6 +63,10 @@ export async function fetchGeocodingSuggestions(query, signal) {
     )}&count=5&language=en&format=json`,
     { signal }
   );
+
+  if (!res.ok) {
+    throw new Error(`Location suggestions failed: status ${res.status}`);
+  }
 
   const data = await res.json();
 

@@ -24,7 +24,6 @@ const Header = ({
       <div className="header-copy">
         <div className="header-kicker-row">
           <span>Weather Radar</span>
-          <span className={`weather-status-pill status-${status}`}>{statusCopy.pill}</span>
         </div>
         <strong>{statusCopy.heading}</strong>
       </div>

@@ -21,7 +21,9 @@ const publishMetric = (metric) => {
     }),
   );
 
-  console.info(`[Web Vitals] ${nextMetric.name}`, nextMetric);
+  if (import.meta.env.DEV) {
+    console.info(`[Web Vitals] ${nextMetric.name}`, nextMetric);
+  }
 };
 
 export default function reportWebVitals() {

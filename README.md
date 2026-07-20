@@ -1,36 +1,46 @@
-# Weather App
+# Weather Radar
 
-A modern, responsive weather application built with React and Vite. This application allows users to check real-time weather conditions and forecasts for locations worldwide.
+A responsive React and Vite weather dashboard with current conditions, an interactive 12-hour dial, planning insights, air quality, historical comparison, and a 10-day forecast.
 
-## Features
+## Requirements
 
-- **Current Weather:** View temperature, humidity, wind speed, and conditions.
-- **City Search:** Search for weather data by city name.
-- **Forecast:** View multi-day or hourly forecasts.
-- **Responsive UI:** Optimized for both mobile and desktop viewing.
+- Node.js 22 or newer
+- npm
 
-## Getting Started
+## Local development
 
-### Prerequisites
+```bash
+npm ci
+npm run dev
+```
 
-- Node.js (v18.0.0 or higher)
-- npm or yarn
+The default dashboard loads San Francisco without requesting browser location permission. Users can opt into device location from the dashboard or Settings.
 
-### Installation
+## Quality checks
 
-1. Clone the repository:
-   ```bash
-   git clone <your-repo-url>
-   ```
-2. Navigate to the project directory:
-   ```bash
-   cd weather-app
-   ```
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-4. Start the development server:
-   ```bash
-   npm run dev
-   ```
+```bash
+npm run lint
+npm test
+npm run build
+npm audit --omit=dev
+```
+
+The same checks run in GitHub Actions for pull requests and pushes to `main`.
+
+## Deployment
+
+The project is configured for Vercel. `vercel.json` provides the SPA rewrite required for direct access to `/search`, `/settings`, and `/help`, along with baseline security headers.
+
+Before publishing a deployment:
+
+1. Run all quality checks.
+2. Verify every route from a fresh browser session.
+3. Test with the weather APIs blocked to confirm cached and unavailable states.
+4. Review the Content Security Policy whenever a new external service is added.
+
+## Data and storage
+
+- Forecast, air-quality, geocoding, and historical data come from Open-Meteo.
+- Device-location labels use OpenStreetMap Nominatim reverse geocoding.
+- Preferences, favorites, the last successful forecast, and location coordinates are stored in browser local storage.
+- Vercel Analytics and Speed Insights are loaded only in production.

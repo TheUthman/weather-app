@@ -4,6 +4,10 @@ import Weather from "./pages/Weather";
 import Sidebar from "./components/Sidebar";
 import ToastContainer from "./components/Toast";
 import { ToastProvider } from "./context/ToastContext";
+import {
+  DEFAULT_PREFERENCES,
+  normalizePreferences,
+} from "./utils/preferences";
 
 // Lazy load non-critical pages to improve LCP of the main dashboard
 const Settings = lazy(() => import("./pages/Settings"));
@@ -122,46 +126,13 @@ const App = () => {
     try {
       const storedPrefs = localStorage.getItem("weatherAppPreferences");
       if (storedPrefs) {
-        const parsed = JSON.parse(storedPrefs);
-        return {
-          units: parsed.units || "imperial",
-          theme: ["light", "dark", "auto"].includes(parsed.theme)
-            ? parsed.theme
-            : "auto",
-          visualStyle:
-            parsed.visualStyle === "minimal" ? "minimal" : "classic",
-          componentTransparency: Number.isFinite(
-            Number(parsed.componentTransparency),
-          )
-            ? Math.min(100, Math.max(0, Number(parsed.componentTransparency)))
-            : 0,
-          notifications:
-            parsed.notifications !== undefined ? parsed.notifications : true,
-          location: parsed.location || "auto",
-          defaultCity: parsed.defaultCity || "San Francisco",
-        };
+        return normalizePreferences(JSON.parse(storedPrefs));
       }
 
-      return {
-        units: "imperial",
-        theme: "auto",
-        visualStyle: "classic",
-        componentTransparency: 0,
-        notifications: true,
-        location: "auto",
-        defaultCity: "San Francisco",
-      };
+      return { ...DEFAULT_PREFERENCES };
     } catch (error) {
       console.error("Failed to parse preferences from localStorage", error);
-      return {
-        units: "imperial",
-        theme: "auto",
-        visualStyle: "classic",
-        componentTransparency: 0,
-        notifications: true,
-        location: "auto",
-        defaultCity: "San Francisco",
-      };
+      return { ...DEFAULT_PREFERENCES };
     }
   });
 
@@ -241,10 +212,6 @@ const App = () => {
         style={{
           "--component-opacity":
             1 - (preferences.componentTransparency || 0) / 100,
-          "--contrast-shadow-alpha":
-            ((preferences.componentTransparency || 0) / 100) * 0.9,
-          "--contrast-glow-alpha":
-            ((preferences.componentTransparency || 0) / 100) * 0.38,
         }}
       >
         <Suspense

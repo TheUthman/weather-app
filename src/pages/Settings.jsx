@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import Toggle from "../components/Toggle";
 import CustomSelect from "../components/CustomSelect";
 import Icon from "../components/Icon";
 import { useToast } from "../context/ToastContext";
@@ -98,15 +97,6 @@ const Settings = ({ preferences, setPreferences }) => {
     }, 1000);
   };
 
-  const handleToggleNotifications = () => {
-    const next = !preferences.notifications;
-    updatePreference("notifications", next);
-    addToast(
-      next ? "Push notifications enabled" : "Push notifications disabled",
-      "info",
-    );
-  };
-
   return (
     <div className="settings-page page-container">
       <header className="settings-hero glass-page-hero">
@@ -114,7 +104,7 @@ const Settings = ({ preferences, setPreferences }) => {
           <span className="page-eyebrow">Preferences</span>
           <h1>Shape your weather experience</h1>
           <p className="page-description">
-            Tune the app’s look, units, alerts, and default location without
+            Tune the app’s look, units, and default location without
             changing any of the forecasting functionality.
           </p>
         </div>
@@ -277,28 +267,6 @@ const Settings = ({ preferences, setPreferences }) => {
               </div>
             </div>
           )}
-        </section>
-
-        <section className="settings-group">
-          <div className="settings-group-head">
-            <span className="settings-group-kicker">Alerts</span>
-            <h2>Notifications</h2>
-          </div>
-
-          <div className="setting-row">
-            <div className="setting-info">
-              <label>Push notifications</label>
-              <span className="setting-description">
-                Receive alerts for major weather changes and forecast shifts.
-              </span>
-            </div>
-            <div className="setting-control">
-              <Toggle
-                isOn={preferences.notifications}
-                onClick={handleToggleNotifications}
-              />
-            </div>
-          </div>
         </section>
 
         <section className="about-section">

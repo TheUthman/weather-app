@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Icon from "../components/Icon";
 import { weatherExplanations } from "../data/weatherExplanations";
 
@@ -21,10 +21,20 @@ const featureGuides = [
   { icon: "alertCircle", title: "Freshness and offline fallback", detail: "Live, updating, cached, and unavailable labels show the forecast state. If a refresh fails, the last saved forecast remains available with a retry option." },
 ];
 
-const HelpSupport = () => (
-  <div className="help-page page-container">
-    <header className="help-hero glass-page-hero">
-      <div>
+const HelpSupport = () => {
+  const navigate = useNavigate();
+  const goBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate("/settings");
+  };
+
+  return (
+    <div className="help-page page-container">
+      <header className="help-hero glass-page-hero">
+        <div className="help-hero-copy">
+          <button type="button" className="help-back-button" onClick={goBack}>
+            <Icon name="chevronLeft" size={17} /> Back
+          </button>
         <span className="page-eyebrow">Help &amp; support</span>
         <h1>Get more from every forecast</h1>
         <p className="page-description">A complete guide to finding locations, reading conditions, planning activities, and personalizing Weather Radar.</p>
@@ -87,11 +97,12 @@ const HelpSupport = () => (
       <div>
         <span className="settings-group-kicker">Make it yours</span>
         <h2>Review your app preferences</h2>
-        <p>Change units, location, visual style, color mode, notifications, or component opacity at any time.</p>
+        <p>Change units, location, visual style, color mode, or component opacity at any time.</p>
       </div>
       <Link to="/settings" className="help-primary-link">Open settings <Icon name="chevronRight" size={17} /></Link>
     </section>
-  </div>
-);
+    </div>
+  );
+};
 
 export default HelpSupport;

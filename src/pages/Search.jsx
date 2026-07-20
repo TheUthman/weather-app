@@ -19,6 +19,7 @@ import {
   fetchGeocodingSuggestions,
 } from "../services/geocodingService";
 import { useToast } from "../context/ToastContext";
+import { hasValidCoords } from "../utils/weatherState";
 
 const FAVORITES_STORAGE_KEY = "weatherAppFavoriteLocations";
 
@@ -153,7 +154,7 @@ const Search = () => {
     try {
       const coords = await fetchGeocodingData(trimmed);
 
-      if (coords?.lat && coords?.lng) {
+      if (hasValidCoords(coords)) {
         startTransition(() => {
           navigate("/", {
             state: {

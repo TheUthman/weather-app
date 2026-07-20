@@ -37,15 +37,19 @@ const LocalTime = memo(function LocalTime({ timezone }) {
   return <h3>{time}</h3>;
 });
 
-const dialPosition = (index, selectedIndex = 0) => {
-  const offset = (index - selectedIndex + 12) % 12;
-  const distance = Math.min(offset, 12 - offset);
+const normalizeAngleDelta = (angle) => ((angle + 180) % 360 + 360) % 360 - 180;
+const wrapIndex = (index, length) => ((index % length) + length) % length;
+
+const dialPosition = (index, selectedIndex = 0, rotation = 0) => {
+  const indexDistance = Math.abs(index - selectedIndex);
+  const distance = Math.min(indexDistance, 12 - indexDistance);
   const scale = distance === 0 ? 1.25 : Math.max(0.74, 1 - distance * 0.055);
   const opacity = distance === 0 ? 1 : Math.max(0.34, 0.88 - distance * 0.09);
+  const angle = index * 30 + rotation;
 
   return {
-    "--dial-angle": `${offset * 30}deg`,
-    "--dial-angle-inverse": `${offset * -30}deg`,
+    "--dial-angle": `${angle}deg`,
+    "--dial-angle-inverse": `${-angle}deg`,
     "--hour-scale": scale.toFixed(3),
     "--hour-opacity": opacity.toFixed(2),
     "--hour-distance": distance,
@@ -61,7 +65,12 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
 }) {
   const dialHours = hourly.slice(0, 12);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [dialRotation, setDialRotation] = useState(0);
   const dragState = useRef(null);
+  const rotationRef = useRef(0);
+  const velocityRef = useRef(0);
+  const animationFrameRef = useRef(null);
+  const reducedMotionRef = useRef(false);
   const selectedHour = dialHours[selectedIndex] || dialHours[0];
   const selectedTemperature = selectedHour
     ? convertTemp(selectedHour.temp, unit)
@@ -97,11 +106,70 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
     ? `polygon(0 100%, ${chartPoints.map((point) => `${point.x}% ${100 - point.y}%`).join(", ")}, 100% 100%)`
     : "polygon(0 100%, 0 60%, 100% 60%, 100% 100%)";
 
-  const selectRelativeHour = (step) => {
+  useEffect(() => {
+    reducedMotionRef.current = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ?? false;
+    return () => cancelAnimationFrame(animationFrameRef.current);
+  }, []);
+
+  const stopDialAnimation = () => {
+    cancelAnimationFrame(animationFrameRef.current);
+    animationFrameRef.current = null;
+  };
+
+  const commitRotation = (rotation) => {
+    rotationRef.current = rotation;
+    setDialRotation(rotation);
+  };
+
+  const springToRotation = (target, releaseVelocity = 0) => {
+    stopDialAnimation();
+
+    if (reducedMotionRef.current) {
+      velocityRef.current = 0;
+      commitRotation(target);
+      return;
+    }
+
+    velocityRef.current = Math.max(-540, Math.min(540, releaseVelocity));
+    let previousTime = null;
+
+    const settle = (time) => {
+      const deltaTime = previousTime === null
+        ? 1 / 60
+        : Math.min((time - previousTime) / 1000, 0.032);
+      previousTime = time;
+      const displacement = target - rotationRef.current;
+
+      // A slightly under-damped rotary spring gives the dial weight without wobbling.
+      const acceleration = displacement * 205 - velocityRef.current * 25;
+      velocityRef.current += acceleration * deltaTime;
+      const nextRotation = rotationRef.current + velocityRef.current * deltaTime;
+      commitRotation(nextRotation);
+
+      if (Math.abs(target - nextRotation) < 0.025 && Math.abs(velocityRef.current) < 0.35) {
+        velocityRef.current = 0;
+        commitRotation(target);
+        animationFrameRef.current = null;
+        return;
+      }
+
+      animationFrameRef.current = requestAnimationFrame(settle);
+    };
+
+    animationFrameRef.current = requestAnimationFrame(settle);
+  };
+
+  const selectHour = (index, releaseVelocity = 0) => {
     if (!dialHours.length) return;
-    setSelectedIndex((currentIndex) =>
-      (currentIndex + step + dialHours.length) % dialHours.length,
-    );
+    const nextIndex = wrapIndex(index, dialHours.length);
+    const nominalTarget = -nextIndex * 30;
+    const target = rotationRef.current + normalizeAngleDelta(nominalTarget - rotationRef.current);
+    setSelectedIndex(nextIndex);
+    springToRotation(target, releaseVelocity);
+  };
+
+  const selectRelativeHour = (step) => {
+    selectHour(selectedIndex + step);
   };
 
   const handleDialKeyDown = (event) => {
@@ -113,7 +181,7 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
       selectRelativeHour(-1);
     } else if (event.key === "Home") {
       event.preventDefault();
-      setSelectedIndex(0);
+      selectHour(0);
     }
   };
 
@@ -122,38 +190,51 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
     return Math.atan2(
       event.clientY - (bounds.top + bounds.height / 2),
       event.clientX - (bounds.left + bounds.width / 2),
-    );
+    ) * (180 / Math.PI);
   };
 
   const handlePointerDown = (event) => {
     if (event.pointerType === "mouse" && event.button !== 0) return;
+    stopDialAnimation();
     dragState.current = {
-      angle: pointerAngle(event),
-      selectedIndex,
+      lastAngle: pointerAngle(event),
+      lastTime: event.timeStamp,
+      velocity: 0,
       moved: false,
       active: true,
     };
+    event.currentTarget.classList.add("weather-dial-dragging");
     event.currentTarget.setPointerCapture?.(event.pointerId);
   };
 
   const handlePointerMove = (event) => {
     if (!dragState.current?.active || !dialHours.length) return;
-    let angleDelta = pointerAngle(event) - dragState.current.angle;
-    if (angleDelta > Math.PI) angleDelta -= Math.PI * 2;
-    if (angleDelta < -Math.PI) angleDelta += Math.PI * 2;
-    const steps = Math.round(angleDelta / (Math.PI / 6));
+    const time = event.timeStamp;
+    const angle = pointerAngle(event);
+    const angleDelta = normalizeAngleDelta(angle - dragState.current.lastAngle);
+    const deltaTime = Math.max((time - dragState.current.lastTime) / 1000, 0.008);
+    const nextRotation = rotationRef.current + angleDelta;
+    const instantaneousVelocity = angleDelta / deltaTime;
 
-    if (steps !== 0) {
-      dragState.current.moved = true;
-      setSelectedIndex(
-        (dragState.current.selectedIndex - steps + dialHours.length) %
-          dialHours.length,
-      );
-    }
+    dragState.current.velocity = dragState.current.velocity * 0.72 + instantaneousVelocity * 0.28;
+    dragState.current.lastAngle = angle;
+    dragState.current.lastTime = time;
+    dragState.current.moved ||= Math.abs(angleDelta) > 0.35;
+    commitRotation(nextRotation);
+
+    const nearestIndex = wrapIndex(Math.round(-nextRotation / 30), dialHours.length);
+    setSelectedIndex((currentIndex) => currentIndex === nearestIndex ? currentIndex : nearestIndex);
   };
 
   const handlePointerUp = (event) => {
-    if (dragState.current) dragState.current.active = false;
+    const state = dragState.current;
+    if (state?.active) {
+      state.active = false;
+      const projectedRotation = rotationRef.current + state.velocity * 0.075;
+      const nearestIndex = wrapIndex(Math.round(-projectedRotation / 30), dialHours.length);
+      selectHour(nearestIndex, state.velocity);
+    }
+    event.currentTarget.classList.remove("weather-dial-dragging");
     event.currentTarget.releasePointerCapture?.(event.pointerId);
   };
 
@@ -203,7 +284,7 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
               className={`weather-dial-hour${index === selectedIndex ? " weather-dial-hour-active" : ""}${index === 0 ? " weather-dial-hour-now" : ""}${hour.isDay === true ? " weather-dial-hour-day" : hour.isDay === false ? " weather-dial-hour-night" : ""}`}
               key={`${hour.time}-${index}`}
               id={`weather-dial-hour-${index}`}
-              style={dialPosition(index, selectedIndex)}
+              style={dialPosition(index, selectedIndex, dialRotation)}
             >
               <button
                 className="weather-dial-hour-content"
@@ -212,7 +293,7 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
                 aria-pressed={index === selectedIndex}
                 aria-label={`${index === 0 ? "Now" : hour.time}, ${hourTemperature} degrees, ${hour.condition}${hour.isDay === true ? ", daylight" : hour.isDay === false ? ", night" : ""}`}
                 onClick={() => {
-                  if (!dragState.current?.moved) setSelectedIndex(index);
+                  if (!dragState.current?.moved) selectHour(index);
                 }}
               >
                 <span className="weather-dial-time">{index === 0 ? "Now" : hour.time}</span>
@@ -290,7 +371,7 @@ const HourlyWeatherDial = memo(function HourlyWeatherDial({
           <button
             className="weather-dial-recalibrate"
             type="button"
-            onClick={() => setSelectedIndex(0)}
+            onClick={() => selectHour(0)}
           >
             <FiRotateCcw size={13} aria-hidden="true" />
             Recalibrate to now
@@ -412,11 +493,6 @@ const CurrentWeather = ({
               <span>12-hour outlook</span>
               <strong>Weather Dial</strong>
               <small>Each stop is one hour</small>
-            </div>
-            <div className="weather-dial-legend" aria-label="Dial legend">
-              <span><i className="legend-daylight" />Daylight</span>
-              <span><i className="legend-night" />Night</span>
-              <span><i className="legend-current" />Current</span>
             </div>
           </div>
           <HourlyWeatherDial
