@@ -23,6 +23,18 @@ export const coordsMatch = (left, right) =>
 export const shouldUseCachedForecast = (error, liveCurrent, cachedData) =>
   Boolean(error && !liveCurrent && cachedData);
 
+export const applyDayNightIcon = (icon, isDay) => {
+  if (isDay === true) {
+    if (icon === "night-clear") return "sunny";
+    if (icon === "night-cloudy") return "partly-cloudy";
+  }
+  if (isDay === false) {
+    if (icon === "sunny") return "night-clear";
+    if (icon === "partly-cloudy") return "night-cloudy";
+  }
+  return icon;
+};
+
 const formatDate = (date) => date.toISOString().slice(0, 10);
 
 export const buildHistoricalWindows = (targetYear, targetMonth, targetDay) =>

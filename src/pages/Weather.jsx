@@ -13,6 +13,7 @@ import Icon from "../components/Icon";
 import { useWeather } from "../hooks/useWeather";
 import { formatZonedTime } from "../utils/dateTime";
 import {
+  applyDayNightIcon,
   coordinateKey,
   coordsMatch,
   hasValidCoords,
@@ -436,7 +437,10 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
       weather?.weatherCondition?.description?.text ||
       weather?.weatherCondition?.text ||
       "Clear";
-    const iconName = getIcon(weather?.weatherCondition?.iconBaseUri);
+    const iconName = applyDayNightIcon(
+      getIcon(weather?.weatherCondition?.iconBaseUri),
+      weather?.isDay,
+    );
 
     const firstDay = daily?.[0];
     const sunriseStr = firstDay?.sunEvents?.sunriseTime
@@ -453,6 +457,7 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
             temp: parseTemp(weather.temperature),
             condition: conditionText,
             icon: iconName,
+            isDay: weather.isDay,
             feelsLike: parseTemp(weather.feelsLikeTemperature),
             humidity:
               weather.relativeHumidity !== undefined
@@ -483,7 +488,10 @@ const Weather = ({ preferences, setPreferences, onBackgroundWeather }) => {
             ? null
             : parseTemp(h.feelsLikeTemperature),
         rawTempC: h.temperature?.degrees ?? 0,
-        icon: getIcon(h.weatherCondition?.iconBaseUri),
+        icon: applyDayNightIcon(
+          getIcon(h.weatherCondition?.iconBaseUri),
+          h.isDay,
+        ),
         condition: h.weatherCondition?.text || "Unknown",
         precip: h.precipitationProbability || 0,
         precipAmount: h.precipitation || 0,

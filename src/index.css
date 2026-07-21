@@ -429,7 +429,7 @@ body.light .app-layout::before {
   z-index: 1;
   min-height: 100vh;
   margin-left: var(--sidebar-offset);
-  padding: 24px clamp(18px, 2.6vw, 38px) 42px;
+  padding: 18px clamp(18px, 2.6vw, 38px) 42px;
   transition: margin-left .32s var(--ease), padding .32s var(--ease);
 }
 
@@ -752,10 +752,9 @@ body.light .app-layout::before {
   align-items: center;
   gap: 6px;
   padding: 6px 11px;
-  border: 1px solid rgba(var(--accent-rgb), .28);
   border-radius: 999px;
-  color: var(--accent);
-  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--success);
+  background:  color-mix(in srgb, var(--surface-strong) 80%, transparent);
   font-size: 9px;
   font-weight: 820;
   letter-spacing: .09em;
@@ -771,6 +770,7 @@ body.light .app-layout::before {
   box-shadow: 0 0 10px var(--accent);
   animation: livePulse 2s ease-in-out infinite;
 }
+.current-live-pill i { background: var(--success); }
 @keyframes livePulse {
   0%, 100% { opacity: 1; box-shadow: 0 0 6px var(--accent); }
   50% { opacity: 0.6; box-shadow: 0 0 14px var(--accent), 0 0 24px rgba(var(--accent-rgb), 0.4); }
@@ -2929,9 +2929,6 @@ body.light .city-save-btn { color: #fff; }
   .weather-dial-recalibrate { min-height: 44px; padding: 8px 12px; font-size: 10px; }
 }
 
-/* Border-light surface hierarchy
-   Large regions are separated by space, tone, and shadow. Borders remain on
-   form controls, menus, keyboard focus states, and meaningful alert accents. */
 .page-loader,
 .sidebar-inner,
 .weather-header,
@@ -2983,6 +2980,11 @@ body.light .city-save-btn { color: #fff; }
 
 .current-dial-panel {
   background: color-mix(in srgb, var(--surface-soft) 22%, transparent);
+  box-shadow: 0 9px 24px rgba(var(--shadow-rgb), .055);
+}
+
+.current-details-panel {
+  box-shadow: 0 9px 24px rgba(var(--shadow-rgb), .05);
 }
 
 .metric-item,
@@ -3023,7 +3025,15 @@ body.light .city-save-btn { color: #fff; }
 .hourly-metric-card,
 .hourly-trend-note {
   background: color-mix(in srgb, var(--surface-strong) 55%, transparent);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+  box-shadow:
+    0 6px 18px rgba(var(--shadow-rgb), .075),
+    inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+.current-dial-panel .weather-dial-summary-card {
+  box-shadow:
+    0 6px 16px rgba(var(--shadow-rgb), .08),
+    inset 0 1px 0 rgba(255,255,255,.04);
 }
 
 .metric-item:hover,

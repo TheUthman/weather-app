@@ -24,6 +24,30 @@ export const weatherCodeToIcon = (code, isDay = true) => {
   return "cloudy";
 };
 
+const parseWallClock = (value) => {
+  if (!value) return Number.NaN;
+  const hasOffset = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value);
+  return Date.parse(hasOffset ? value : `${value}Z`);
+};
+
+export const isDaytimeAtLocation = (dayFlag, interval, daily) => {
+  if ([1, "1", true].includes(dayFlag)) return true;
+  if ([0, "0", false].includes(dayFlag)) return false;
+
+  const date = interval?.slice(0, 10);
+  const dayIndex = daily?.time?.indexOf(date) ?? -1;
+  const time = parseWallClock(interval);
+  const sunrise = parseWallClock(daily?.sunrise?.[dayIndex]);
+  const sunset = parseWallClock(daily?.sunset?.[dayIndex]);
+
+  if ([time, sunrise, sunset].every(Number.isFinite)) {
+    return time >= sunrise && time < sunset;
+  }
+
+  const hour = Number(interval?.slice(11, 13));
+  return Number.isFinite(hour) ? hour >= 6 && hour < 18 : true;
+};
+
 // Helper: Map Open-Meteo weather codes to condition text
 const weatherCodeToCondition = (code) => {
   const map = {
@@ -64,6 +88,7 @@ const transformCurrent = (current, daily) => {
 
   const sunriseISO = daily?.sunrise?.[0];
   const sunsetISO = daily?.sunset?.[0];
+  const isDay = isDaytimeAtLocation(current.is_day, current.time, daily);
 
   return {
     temperature: {
@@ -78,7 +103,7 @@ const transformCurrent = (current, daily) => {
     weatherCode: current.weather_code,
     weatherCondition: {
       text: weatherCodeToCondition(current.weather_code),
-      iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(current.weather_code, current.is_day === 1)}`,
+      iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(current.weather_code, isDay)}`,
     },
     wind: {
       speed: { value: current.wind_speed_10m, unit: "KM_PER_HOUR" },
@@ -90,7 +115,7 @@ const transformCurrent = (current, daily) => {
     },
     uvIndex: current.uv_index ?? 0,
     precipitation: current.precipitation ?? 0,
-    isDay: current.is_day === 1,
+    isDay,
     cloudCover: current.cloud_cover ?? 0,
     visibility: current.visibility ?? null,
     dewPoint: {
@@ -103,37 +128,40 @@ const transformCurrent = (current, daily) => {
   };
 };
 
-const transformHourly = (hourly) => {
+const transformHourly = (hourly, daily) => {
   if (!hourly || !hourly.time) return [];
 
-  return hourly.time.map((time, i) => ({
-    interval: { startTime: time },
-    temperature: {
-      degrees: Math.round(hourly.temperature_2m[i]),
-      unit: "C",
-    },
-    feelsLikeTemperature: {
-      degrees: Math.round(hourly.apparent_temperature?.[i] ?? hourly.temperature_2m[i]),
-      unit: "C",
-    },
-    weatherCondition: {
-      text: weatherCodeToCondition(hourly.weather_code[i]),
-      iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(hourly.weather_code[i], hourly.is_day?.[i] === 1)}`,
-    },
-    weatherCode: hourly.weather_code[i],
-    precipitationProbability: hourly.precipitation_probability?.[i] ?? 0,
-    precipitation: hourly.precipitation?.[i] ?? 0,
-    relativeHumidity: hourly.relative_humidity_2m?.[i] ?? null,
-    windSpeed: hourly.wind_speed_10m?.[i] ?? 0,
-    windGust: hourly.wind_gusts_10m?.[i] ?? 0,
-    windDirection: hourly.wind_direction_10m?.[i] ?? null,
-    uvIndex: hourly.uv_index?.[i] ?? 0,
-    pressure: hourly.pressure_msl?.[i] ?? null,
-    cloudCover: hourly.cloud_cover?.[i] ?? null,
-    visibility: hourly.visibility?.[i] ?? null,
-    dewPoint: hourly.dew_point_2m?.[i] ?? null,
-    isDay: hourly.is_day?.[i] === 1,
-  }));
+  return hourly.time.map((time, i) => {
+    const isDay = isDaytimeAtLocation(hourly.is_day?.[i], time, daily);
+    return {
+      interval: { startTime: time },
+      temperature: {
+        degrees: Math.round(hourly.temperature_2m[i]),
+        unit: "C",
+      },
+      feelsLikeTemperature: {
+        degrees: Math.round(hourly.apparent_temperature?.[i] ?? hourly.temperature_2m[i]),
+        unit: "C",
+      },
+      weatherCondition: {
+        text: weatherCodeToCondition(hourly.weather_code[i]),
+        iconBaseUri: `https://open-meteo.com/${weatherCodeToIcon(hourly.weather_code[i], isDay)}`,
+      },
+      weatherCode: hourly.weather_code[i],
+      precipitationProbability: hourly.precipitation_probability?.[i] ?? 0,
+      precipitation: hourly.precipitation?.[i] ?? 0,
+      relativeHumidity: hourly.relative_humidity_2m?.[i] ?? null,
+      windSpeed: hourly.wind_speed_10m?.[i] ?? 0,
+      windGust: hourly.wind_gusts_10m?.[i] ?? 0,
+      windDirection: hourly.wind_direction_10m?.[i] ?? null,
+      uvIndex: hourly.uv_index?.[i] ?? 0,
+      pressure: hourly.pressure_msl?.[i] ?? null,
+      cloudCover: hourly.cloud_cover?.[i] ?? null,
+      visibility: hourly.visibility?.[i] ?? null,
+      dewPoint: hourly.dew_point_2m?.[i] ?? null,
+      isDay,
+    };
+  });
 };
 
 const transformDaily = (daily) => {
@@ -298,7 +326,7 @@ export const fetchForecastBundle = async (lat, lng, options = {}) => {
     const data = await response.json();
 
     const current = transformCurrent(data.current, data.daily);
-    const hourly = transformHourly(data.hourly);
+    const hourly = transformHourly(data.hourly, data.daily);
     const daily = transformDaily(data.daily);
     const utcOffsetSeconds = data.utc_offset_seconds || 0;
 
